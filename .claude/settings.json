@@ -2,8 +2,8 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "deny": [
-      "Read(./.env)",
-      "Read(./.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
       "Read(./secrets/**)",
       "Read(**/credentials.json)",
       "Read(**/secrets.yaml)",
@@ -12,6 +12,15 @@
       "Edit(**/yarn.lock)",
       "Edit(**/.git/**)"
     ]
+  },
+  "enabledPlugins": {
+    "context7@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "claude-security@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": true
   },
   "hooks": {
     "UserPromptSubmit": [
@@ -39,6 +48,17 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-double-background.mjs\"",
             "timeout": 30
           },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-hub-src-writes.mjs\"",
+            "onFailure": "block",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Monitor",
+        "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-hub-src-writes.mjs\"",
@@ -94,37 +114,6 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit-verify.mjs\"",
-            "if": "Write(*.ts)",
-            "timeout": 180
-          },
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit-verify.mjs\"",
-            "if": "Edit(*.ts)",
-            "timeout": 180
-          },
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit-verify.mjs\"",
-            "if": "Write(*.mts)",
-            "timeout": 180
-          },
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit-verify.mjs\"",
-            "if": "Edit(*.mts)",
-            "timeout": 180
-          },
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit-verify.mjs\"",
-            "if": "Write(*.cts)",
-            "timeout": 180
-          },
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit-verify.mjs\"",
-            "if": "Edit(*.cts)",
             "timeout": 180
           }
         ]

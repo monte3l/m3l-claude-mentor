@@ -77,12 +77,6 @@ export const CORE_STEPS = [
     cmd: ["pnpm", "test:coverage"],
   },
   {
-    id: "exports",
-    group: "build",
-    name: "Check package exports",
-    cmd: ["node", "bin/check-exports.mjs"],
-  },
-  {
     id: "node-version",
     group: "build",
     name: "Check Node version pin",

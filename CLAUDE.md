@@ -4,10 +4,11 @@ This file provides guidance to Claude Code when working in this repository.
 
 ## What this is
 
-**m3l-claude-mentor** — a TypeScript project bootstrapped by
-[m3l-groundwork](https://github.com/monte3l/m3l-groundwork). This baseline
-is deliberately generic: it holds for any TypeScript project regardless of
-domain. Run `/customize` to tailor it to what you're actually building.
+**m3l-claude-mentor** — a Claude Code plugin that mentors one learner on
+Claude and Claude Code, adapting to their mastery level (see `DESIGN.md`).
+It installs at user scope and ships through a plugin manifest, not npm.
+Bootstrapped by [m3l-groundwork](https://github.com/monte3l/m3l-groundwork)
+and tailored with `/customize` for the plugin kind on Node.
 
 ## Tech Stack
 
@@ -27,7 +28,6 @@ Run any task with `pnpm <script>`.
 | `pnpm format` / `format:check` | Prettier write / check                                                                                                                                                                                   |
 | `pnpm test` / `test:coverage`  | Vitest, with or without the coverage gate                                                                                                                                                                |
 | `pnpm knip`                    | Unused-dependency / unused-export hygiene; a `verify` step. `knip.json` ignores `@commitlint/config-conventional` and `@commitlint/types`, which are loaded by a string and a JSDoc type knip cannot see |
-| `pnpm check:exports`           | publint + are-the-types-wrong against a packed tarball                                                                                                                                                   |
 | `pnpm check:node-version`      | `.node-version` is authoritative; forbids a hardcoded pin in CI                                                                                                                                          |
 | `pnpm verify`                  | Every gate above plus the `harness`/`toolchain` graders, in `verify-steps.mjs` order; CI runs them as five parallel group lanes                                                                          |
 | `pnpm prepare`                 | Installs the lefthook git hooks                                                                                                                                                                          |
@@ -52,8 +52,8 @@ Never `git push --force` a shared branch.
 
 ## Architecture & Decisions
 
-`src/index.ts` is the current public entry point (see the `exports` map in
-`package.json`). By convention, anything under `src/internal/` (if you create
+`src/index.ts` is the current entry point (`main` in `package.json`; there
+is no public `exports` map, since the plugin is not published to npm). By convention, anything under `src/internal/` (if you create
 it) is private and is not re-exported from the entry point; no lint rule
 enforces this, so review for it.
 

@@ -31,8 +31,9 @@ Claude Code lets a subagent spawn its own, three layers deep by default
 (`CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`); every spoke here sets
 `disallowedTools: Agent`, which is what keeps the roster flat. A session in
 auto, `acceptEdits` or `bypassPermissions` mode overrides a spoke's
-`permissionMode` (the field applies only under `default`, `dontAsk` or
-`plan`), so `acceptEdits` on the writer spokes is often inert. The PreToolUse
+`permissionMode`; the field takes effect only when the main session is in
+`default` or `dontAsk`, and in `plan` the spoke stays in plan mode, so
+`acceptEdits` on the writer spokes is often inert. The PreToolUse
 guards bound a spoke, not `permissionMode`. Source:
 [sub-agents](https://code.claude.com/docs/en/sub-agents).
 
@@ -74,7 +75,10 @@ Sources: [hooks](https://code.claude.com/docs/en/hooks),
   non-empty `agent_id`. A fork subagent (on by default in every surface since
   Claude Code 2.1.302) is not a writer spoke, so unless its payload reports a
   writer `agent_type` it is treated as the hub (the docs don't say what a
-  fork's payload carries). At the depth limit a fork's `Agent` tool returns an error. With agent teams on, an in-process
+  fork's payload carries). At the depth limit a fork's `Agent` tool returns an error. While fork mode is
+  on, Claude cannot wait for a subagent in an interactive terminal, VS Code or
+  desktop session, so the sequential TDD dispatch needs
+  `CLAUDE_CODE_FORK_SUBAGENT=0` there ([sub-agents](https://code.claude.com/docs/en/sub-agents)). With agent teams on, an in-process
   teammate has a documented `agent_id`; one built from a writer definition that
   also reports that `agent_type` passes as a writer. A split-pane teammate does
   not get `disallowedTools` (only an in-process one does), so every spoke's
