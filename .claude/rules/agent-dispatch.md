@@ -31,8 +31,9 @@ Claude Code lets a subagent spawn its own, three layers deep by default
 (`CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`); every spoke here sets
 `disallowedTools: Agent`, which is what keeps the roster flat. A session in
 auto, `acceptEdits` or `bypassPermissions` mode overrides a spoke's
-`permissionMode` (the field applies only under `default`, `dontAsk` or
-`plan`), so `acceptEdits` on the writer spokes is often inert. The PreToolUse
+`permissionMode`; the field takes effect only when the main session is in
+`default` or `dontAsk`, and in `plan` the spoke stays in plan mode, so
+`acceptEdits` on the writer spokes is often inert. The PreToolUse
 guards bound a spoke, not `permissionMode`. Source:
 [sub-agents](https://code.claude.com/docs/en/sub-agents).
 
@@ -74,7 +75,10 @@ Sources: [hooks](https://code.claude.com/docs/en/hooks),
   non-empty `agent_id`. A fork subagent (on by default in every surface since
   Claude Code 2.1.302) is not a writer spoke, so unless its payload reports a
   writer `agent_type` it is treated as the hub (the docs don't say what a
-  fork's payload carries). At the depth limit a fork's `Agent` tool returns an error. With agent teams on, an in-process
+  fork's payload carries). At the depth limit a fork's `Agent` tool returns an error. While fork mode is
+  on, Claude cannot wait for a subagent in an interactive terminal, VS Code or
+  desktop session, so the sequential TDD dispatch needs
+  `CLAUDE_CODE_FORK_SUBAGENT=0` there ([sub-agents](https://code.claude.com/docs/en/sub-agents)). With agent teams on, an in-process
   teammate has a documented `agent_id`; one built from a writer definition that
   also reports that `agent_type` passes as a writer. A split-pane teammate does
   not get `disallowedTools` (only an in-process one does), so every spoke's
@@ -149,16 +153,17 @@ Sources: [hooks](https://code.claude.com/docs/en/hooks),
 - **Review spokes return a bounded digest**, not an open-ended report — the
   full report travels back inline in the response, capped at roughly 8,000
   characters (~2,000 tokens). No review spoke writes a scratchpad file.
-- **Do not assume plan mode makes a dispatched subagent read-only.** A
-  live probe on Claude Code 2.1.296 (2026-10-11) dispatched `test-author` and
-  a `general-purpose` agent from a session in plan mode, each told to write
-  one file outside the repo: both writes succeeded. Anthropic's
-  [subagent docs](https://code.claude.com/docs/en/sub-agents.md) say a
-  subagent that sets its own `permissionMode` keeps it, and our writer
-  spokes set `acceptEdits`. The main session itself may still decline to
-  dispatch a writer in plan mode. If a design depends on a subagent writing
-  or not writing a file, verify with `git status`/`ls` after the dispatch
-  rather than trusting the return value's success claim.
+- **Do not assume plan mode makes a dispatched subagent read-only.** The
+  [subagent docs](https://code.claude.com/docs/en/sub-agents) say that when the
+  main session is in plan mode, a subagent stays in plan mode whatever
+  `permissionMode` it sets. A live probe on Claude Code 2.1.296 (2026-10-11)
+  contradicted that: it dispatched `test-author` and a `general-purpose` agent
+  from a session in plan mode, each told to write one file outside the repo,
+  and both writes succeeded. The probe has not been re-run on a newer version,
+  so treat the docs and the probe as unreconciled. The main session itself may
+  still decline to dispatch a writer in plan mode. If a design depends on a
+  subagent writing or not writing a file, verify with `git status`/`ls` after
+  the dispatch rather than trusting the return value's success claim.
 - **A `SubagentStop`/`PreToolUse` hook flagging a dispatch is a prompt to
   verify, not a replacement for verifying.** Treat its stderr reminder as a
   signal to check state yourself.
