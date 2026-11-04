@@ -263,8 +263,8 @@ is a built-in marketplace, so no `extraKnownMarketplaces` entry is needed
 for any entry.
 
 **Committing this entry does not install the plugin for anyone.** A
-project-scope `enabledPlugins: true` with no local install produces no
-folder-trust auto-prompt -- Claude Code's `/plugin` Errors tab instead shows
+project-scope `enabledPlugins: true` with no local install is not fetched
+onto a machine that lacks it -- Claude Code's `/plugin` Errors tab shows
 "enabled in project settings but isn't installed here" until someone runs
 the install by hand. So for every newly-`true` entry, print the exact
 follow-up command in Step 7's report: `claude plugin install <id> --scope

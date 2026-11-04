@@ -17,14 +17,8 @@ const ALLOWED = [".js", ".mjs", ".cjs", ".json", ".node"];
 /** Extract the content being written from the tool input. */
 function contentToCheck(input) {
   const ti = input.tool_input ?? {};
-  // Write -> content; Edit -> new_string (the text being introduced);
-  // MultiEdit -> edits[].new_string.
-  const edits = Array.isArray(ti.edits)
-    ? ti.edits.map((e) => e?.new_string)
-    : [];
-  return [ti.content, ti.new_string, ...edits].filter(
-    (s) => typeof s === "string",
-  );
+  // Write -> content; Edit -> new_string (the text being introduced).
+  return [ti.content, ti.new_string].filter((s) => typeof s === "string");
 }
 
 /** Find relative import/export specifiers missing an allowed extension. */

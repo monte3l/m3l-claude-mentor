@@ -1,5 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "CLAUDE_CODE_FORK_SUBAGENT": "0"
+  },
   "permissions": {
     "deny": [
       "Read(**/.env)",
@@ -12,15 +15,6 @@
       "Edit(**/yarn.lock)",
       "Edit(**/.git/**)"
     ]
-  },
-  "enabledPlugins": {
-    "context7@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true,
-    "github@claude-plugins-official": true,
-    "claude-security@claude-plugins-official": true,
-    "security-guidance@claude-plugins-official": true,
-    "plugin-dev@claude-plugins-official": true
   },
   "hooks": {
     "UserPromptSubmit": [
@@ -51,8 +45,8 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-hub-src-writes.mjs\"",
-            "onFailure": "block",
-            "timeout": 30
+            "timeout": 30,
+            "onFailure": "block"
           }
         ]
       },
@@ -62,8 +56,8 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-hub-src-writes.mjs\"",
-            "onFailure": "block",
-            "timeout": 30
+            "timeout": 30,
+            "onFailure": "block"
           }
         ]
       },
@@ -83,26 +77,26 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-protected-paths.mjs\"",
-            "onFailure": "block",
-            "timeout": 30
+            "timeout": 30,
+            "onFailure": "block"
           },
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-branch-isolation.mjs\"",
-            "onFailure": "block",
-            "timeout": 30
+            "timeout": 30,
+            "onFailure": "block"
           },
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-hub-src-writes.mjs\"",
-            "onFailure": "block",
-            "timeout": 30
+            "timeout": 30,
+            "onFailure": "block"
           },
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-secret-writes.mjs\"",
-            "onFailure": "block",
-            "timeout": 30
+            "timeout": 30,
+            "onFailure": "block"
           }
         ]
       }
@@ -119,5 +113,14 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "context7@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "claude-security@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": true
   }
 }

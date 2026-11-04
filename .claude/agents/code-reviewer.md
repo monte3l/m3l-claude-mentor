@@ -6,6 +6,12 @@ disallowedTools: Agent
 model: claude-opus-5-5
 effort: medium
 maxTurns: 40
+hooks:
+  PreToolUse:
+    - matcher: Bash
+      hooks:
+        - type: command
+          command: 'node "$CLAUDE_PROJECT_DIR/bin/validate-readonly-bash.mjs"'
 color: blue
 ---
 
