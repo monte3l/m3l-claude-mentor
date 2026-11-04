@@ -1854,7 +1854,7 @@ function runBashGuard(input) {
   const command = input.tool_input?.command;
   if (typeof command !== "string") {
     process.stderr.write(
-      `guard-hub-src-writes: Bash payload has no string tool_input.command (got ${typeof command}); allowing without analysis.\n`,
+      `guard-hub-src-writes: ${input.tool_name ?? "Bash"} payload has no string tool_input.command (got ${typeof command}); allowing without analysis.\n`,
     );
     process.exit(0);
   }
@@ -1926,8 +1926,11 @@ if (isEntryPoint()) {
     );
     process.exit(0);
   }
+  // Monitor runs a shell command under Bash's permission rules, so it takes
+  // the Bash path; its WebSocket form has no `command` and is allowed there.
   const isBash =
     input.tool_name === "Bash" ||
+    input.tool_name === "Monitor" ||
     (input.tool_name === undefined &&
       typeof input.tool_input?.command === "string");
   if (isBash) runBashGuard(input);

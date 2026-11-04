@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "id": "file-budget",
+    "group": "build",
+    "name": "Check file budget",
+    "cmd": ["node", "bin/check-file-budget.mjs"]
+  }
+]
