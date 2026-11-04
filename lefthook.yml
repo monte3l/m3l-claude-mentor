@@ -1,0 +1,39 @@
+# Git hooks, managed by Lefthook.
+# Install/refresh with `pnpm exec lefthook install` (wired into `prepare`).
+# yaml-language-server: $schema=https://json.schemastore.org/lefthook.json
+
+# Fail closed when no lefthook binary resolves at all. Without this, a
+# generated shim whose final else-branch only echoes "Can't find lefthook in
+# PATH" falls through with exit 0, silently skipping every gate below.
+assert_lefthook_installed: true
+
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      glob: "**/*.ts"
+      run: pnpm exec eslint --fix {staged_files}
+      stage_fixed: true
+    format:
+      glob: "**/*.{ts,json,md,yml,yaml}"
+      run: pnpm exec prettier --write {staged_files}
+      stage_fixed: true
+
+commit-msg:
+  commands:
+    commitlint:
+      run: node bin/strip-claude-trailers.mjs {1} && node bin/lint-commit.mjs --edit {1}
+
+pre-push:
+  parallel: true
+  commands:
+    format:
+      run: node bin/verify.mjs --group format
+    lint:
+      run: node bin/verify.mjs --group lint
+    typecheck:
+      run: node bin/verify.mjs --group typecheck
+    build:
+      run: node bin/verify.mjs --group build
+    test:
+      run: node bin/verify.mjs --group test
