@@ -73,8 +73,8 @@ contract:
    Must-fix findings route back to `code-implementer`, and the loop repeats
    until clean.
 
-Also shipped: `.claude/agents/Explore.md`, a fast read-only search agent for
-locating files and symbols.
+Also shipped: `.claude/agents/Explore.md` (fast read-only search) and
+`.claude/agents/type-design-analyzer.md` (read-only type-design review).
 
 Skills, each in `.claude/skills/<name>/`:
 
@@ -83,8 +83,8 @@ Skills, each in `.claude/skills/<name>/`:
 - `creating-prs` — verifies gates, pushes, opens the PR and picks a merge path.
 - `triaging-ci` — diagnoses a failed CI run and proposes fixes.
 - `finishing-work` — post-merge cleanup: branches, refs, work log.
-- `typescript-guidance` / `harness-guidance` — live research and refresh
-  sweeps (see Freshness).
+- `typescript-guidance` / `harness-guidance` — live refresh sweeps (see Freshness).
+- `reviewing-dependabot-prs` / `triaging-scan-alerts` / `watching-pr-checks` — gh-CLI GitHub ops.
 
 **The guard also screens `Bash`, but only conservatively.** The same hook
 blocks a `Bash` command that visibly writes into `src/` or `tests/` (redirects,
@@ -135,7 +135,8 @@ rewriting the lock file, or a linked worktree, where `.git` is a file.
 
 **A spoke's `permissionMode` can be overridden.** A session in auto,
 `acceptEdits` or `bypassPermissions` mode overrides a spoke's `permissionMode`
-(the field applies only in `default`, `dontAsk` or `plan`), so the hooks, not
+(the field takes effect only when the main session is in `default` or
+`dontAsk`; in `plan` a spoke stays in plan mode), so the hooks, not
 `permissionMode`, bound a spoke. A subagent can spawn subagents three layers
 deep by default; `disallowedTools: Agent` on every spoke keeps the roster flat.
 

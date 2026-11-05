@@ -11,3 +11,9 @@ allowBuilds:
   # the build with a notice instead of erroring when no compiler toolchain
   # is available.
   unrs-resolver: false
+
+# Supply-chain hardening (pnpm.io/supply-chain-security). minimumReleaseAge is
+# in minutes and already defaults to 1 day; stated here so the delay is
+# visible. trustPolicy: no-downgrade is deliberately not set: it rejects
+# lefthook@2.2.2 (see docs/research/typescript-refresh.md, pnpm hardening).
+minimumReleaseAge: 1440
