@@ -9,7 +9,8 @@ A Claude Code plugin that mentors one learner on Claude and Claude Code: theory,
 Evidence base (official sources, via research pass):
 
 - Anthropic's coding-skills study (52 engineers): full delegation and AI-led debugging scored lowest; asking for explanations or conceptual questions scored higher. Learning-mode efficacy in agentic Claude Code is **unproven**, so this harness measures its own effect (section 11).
-- Built-in `Learning` and `Explanatory` output styles are the closest precedent. Output styles are instructions, not guarantees.
+- Built-in output styles (Proactive, Concise, Explanatory, Learning) are the closest precedent; `Learning` is the nearest match to a mentor. Output styles are instructions, not guarantees.
+- Study: "How AI Impacts Skill Formation" (Shen and Tamkin, January 2026, 52 engineers). Sources: anthropic.com/research/AI-assistance-coding-skills and arxiv.org/pdf/2601.20245.
 
 ## 2. Decisions from the interview
 
@@ -112,46 +113,60 @@ Rules:
 ## 5. Plugin architecture
 
 ```
-mentor-plugin/
-  plugin.json
-  output-styles/mentor.md            # voice and ambient behavior; force-for-plugin optional
-  skills/
+m3l-claude-mentor/
+  .claude-plugin/plugin.json         # manifest (only `name` required); userConfig: dial, transcriptAnalysis
+  output-styles/mentor.md            # voice and tip prefix; opt-in (no force-for-plugin)
+  skills/                            # namespaced /m3l-claude-mentor:<verb>
     teach/                           # on-demand lesson (style picker)
     ask/                             # reference lookup, live docs
     quiz/                            # Recall quiz and spaced review
     whats-new/                       # changelog digest since last session
-    profile/                         # view/edit goals, catalog, dial, overrides
+    profile/                         # view/edit goals, catalog, mutes, export/import, purge
     assess/                          # verification probes, explain-back judging
   agents/
     mastery-assessor.md              # read-only: scores evidence, proposes level changes
     docs-researcher.md               # fetches official docs and changelog; isolated context
-  hooks/
-    SessionStart                     # load profile summary, due reviews, digest flag
-    UserPromptSubmit                 # detect signals ("just tell me"); inject style hint
-    PostToolUse / Stop               # observe usage; decide whether a tip is due
-    PreCompact / post-compact        # re-inject learner state after compaction
+  hooks/hooks.json                   # command hooks running dist/hooks/*.js
+  dist/                              # committed build output (hooks and CLI run from here)
   data/topic-catalog.json            # default topics, types, dependencies
+  evals/                             # `claude plugin eval` cases and graders
 ```
+
+Hook events (command hooks only):
+
+| Event                                   | Job                                                                       |
+| --------------------------------------- | ------------------------------------------------------------------------- |
+| `SessionStart` (startup, resume, clear) | Load profile summary, due reviews, digest flag via `additionalContext`    |
+| `SessionStart` (compact)                | Re-inject learner state after compaction                                  |
+| `UserPromptSubmit`                      | Detect signals; run the segment gate; inject style hint and tip directive |
+| `PostToolUse`                           | Extract feature-usage signals; append observed-usage evidence             |
+| `Stop`                                  | Mark segment end only; never returns context or a decision                |
+| `PostCompact`                           | Update segment state only (it cannot inject context)                      |
 
 Notes:
 
 - Hooks are the deterministic part (rate limiting, state loading, usage observation). The output style and skills carry the soft behavior.
+- `Stop` `additionalContext` forces the conversation to continue, and `PreCompact`/`PostCompact` output cannot reach the model, so tips are injected on `UserPromptSubmit` and context is restored with `SessionStart` matcher `compact`.
+- Skills are namespaced by plugin: `/m3l-claude-mentor:teach`, not `/mentor teach`. State access from skills goes through a small CLI (`dist/cli/mentor-state.js`), so Markdown never hand-edits JSON.
+- Plugin agents ignore `hooks`, `mcpServers` and `permissionMode` frontmatter; hooks ship at plugin level.
 - Hook event names and payload fields must be re-verified against current docs at build time.
 
 ## 6. Ambient engine
 
 - **Segment** = a stretch of work between natural breaks (task completion, topic change, or a time gap). Limit: **1 tip per segment**.
 - A tip is only emitted if: it relates to the current task, the topic is below target mastery, the learner's dial permits, and the session is not in a "busy" state.
+- **Delivery (hybrid):** a command hook makes the deterministic decision (rate limit, dial, busy state, topic). The `UserPromptSubmit` hook then injects `additionalContext` asking the model to add one prefixed tip line after its answer. Compliance is soft; evals measure it.
 - Format: one or two lines, prefixed distinctly so it can be ignored or silenced; never blocks or alters the task result.
-- Controls: `/mentor mute`, `/mentor dial 1-5`, per-topic mute. Dial 0 means silent.
+- Controls: `userConfig` `dial` (0-5, default 2) and `transcriptAnalysis` (on/off), editable in `/config`; mute and per-topic mutes live in `state.json` and change through `/m3l-claude-mentor:profile` or conversation. Dial 0 means silent.
 - Mastered topics are silent unless a spaced Recall quiz is due.
 
 ## 7. On-demand lessons and reference
 
-- `/mentor teach <topic>`: picks the style via section 3, runs a multi-turn lesson, updates the map.
-- `/mentor ask <question>`: Reference style, answer sourced from live docs with a link.
-- `/mentor quiz`: spaced Recall quiz from due items.
-- `/mentor whats-new`: changelog digest filtered to the learner's goals and mastery map.
+- `/m3l-claude-mentor:teach <topic>`: picks the style via section 3, runs a multi-turn lesson, updates the map.
+- `/m3l-claude-mentor:ask <question>`: Reference style, answer sourced from live docs with a link.
+- `/m3l-claude-mentor:quiz`: spaced Recall quiz from due items.
+- `/m3l-claude-mentor:whats-new`: changelog digest filtered to the learner's goals and mastery map.
+- `/m3l-claude-mentor:profile`: goals, catalog, mutes, export/import, show-and-delete.
 
 ## 8. Customization
 
@@ -170,7 +185,7 @@ Two surfaces, kept in sync:
 
 ## 10. State and privacy
 
-User-level storage (location to be decided at build time; candidates are `~/.claude/` plugin data or a dedicated directory), containing:
+User-level storage in `${CLAUDE_PLUGIN_DATA}` (`~/.claude/plugins/data/<id>/`). It survives plugin updates but is deleted when the plugin is uninstalled, unless `--keep-data` is passed, so export/import ships early. Contents:
 
 | File                       | Content                                                        |
 | -------------------------- | -------------------------------------------------------------- |
@@ -188,7 +203,7 @@ Transcript reading (chosen by the user) is a sensitive capability. Proposed safe
 
 ## 11. Evaluation
 
-- Plugin evals to check that behaviors fire (rate limit respected, probe issued on over-claim, mastered topics silent).
+- Plugin evals via `claude plugin eval` (cases in `evals/<case>/prompt.md` with graders; `history_file` replays multi-turn context) to check that behaviors fire (rate limit respected, probe issued on over-claim, mastered topics silent). By default each case also runs without the plugin, which gives the with/without comparison.
 - Learner-facing metrics: quiz retention over time, calibration score trend, tips dismissed vs. acted on.
 - Hypothesis to test: ambient plus Socratic teaching improves retention compared with Reference-only. Anthropic's study did not cover agentic use.
 
@@ -214,6 +229,15 @@ Confirmed by the user:
 
 Defaults chosen by the designer (not asked; change freely): 5. **Name, license, publishing:** name TBD at project start; license follows the owner's stated stance (open source acceptable with authors and org credited); publishing deferred until the harness has been used privately. 6. **`mastery-assessor` memory:** none. It reads only the state files, so all learner state stays in one inspectable place. 7. **Output style:** opt-in, not forced for the plugin. Hooks and skills carry ambient behavior regardless, and the style is recommended during setup.
 
-## 14. Open questions
+## 14. Decisions from the design audit (2026-11-05)
+
+Confirmed by the user after checking this spec against current official docs:
+
+8. **Commands:** separate skills, namespaced `/m3l-claude-mentor:<verb>`.
+9. **Tips:** hybrid delivery (hook decides, model words the tip on `UserPromptSubmit`).
+10. **Hook build:** commit built `dist/`; a verify step fails when it is stale.
+11. **Controls:** `userConfig` for `dial` and `transcriptAnalysis`; `state.json` for mutes.
+
+## 15. Open questions
 
 None blocking. Items 5-7 above are unconfirmed defaults.
