@@ -90,6 +90,16 @@ Rules:
 - **Cross-dimension disagreement is not a conflict.** It is a diagnosis (a gap), and is handled with a targeted lesson (4.5).
 - Negative evidence is weighted at least as heavily as positive evidence from the same channel.
 
+**What the weights do, and the defaults chosen at implementation.** Levels are decided per dimension, as section 4.1 says: each channel scores its own dimension, and a dimension counts as shown when its score reaches 0.5. The 0.40/0.30/0.20/0.10 weights do not set a level. They only combine the four channel scores into one overall topic score, used to rank which topic to teach or review next, and they cap what self-report can contribute to that score. The interviews did not specify the following numbers; they were chosen when the scoring was built and are the shipped defaults, safe to change while no learner profile holds real data:
+
+| Parameter                    | Default | Effect                                                                                         |
+| ---------------------------- | ------- | ---------------------------------------------------------------------------------------------- |
+| Negative evidence multiplier | 1.5     | A wrong answer counts 1.5 times as much as a right one in the same channel                     |
+| Recency half-life            | 30 days | Evidence loses half its weight every 30 days, and old events also count less toward confidence |
+| Dimension satisfied at score | 0.5     | One fresh good answer scores 1/3, two score 0.5, so two fresh good answers are needed          |
+
+These values decide when the mentor stays quiet on a topic and when it quizzes again, so they shape the whole mentor. The functions take them as options today; wiring them to catalog overrides (section 13, item 3) is not done yet.
+
 ### 4.4 Self-report handling (challenge, never trust blindly)
 
 1. Record the claim as `Claimed` and note the confidence the learner states.
@@ -240,4 +250,4 @@ Confirmed by the user after checking this spec against current official docs:
 
 ## 15. Open questions
 
-None blocking. Items 5-7 above are unconfirmed defaults.
+None blocking. Items 5-7 above are unconfirmed defaults. Open item: scoring constants (weights, half-life, negative multiplier, threshold) are function options but are not yet read from catalog overrides, which section 13 item 3 calls for.
