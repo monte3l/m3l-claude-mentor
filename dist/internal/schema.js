@@ -80,6 +80,18 @@ export const STYLES = [
     "recall-quiz",
     "reference",
 ];
+/**
+ * The most evidence events the mentor handles at once: the largest
+ * `maxEvents` for `readEvidence` (and its default), and the largest evidence
+ * list an export bundle may carry.
+ *
+ * @example
+ * ```ts
+ * import { MAX_EVIDENCE_EVENTS } from "./schema.js";
+ * MAX_EVIDENCE_EVENTS; // 10_000
+ * ```
+ */
+export const MAX_EVIDENCE_EVENTS = 10_000;
 const TOPIC_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
 const MAX_TOPIC_ID_LENGTH = 64;

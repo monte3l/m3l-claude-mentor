@@ -209,6 +209,19 @@ export interface Evidence {
 }
 
 /**
+ * The most evidence events the mentor handles at once: the largest
+ * `maxEvents` for `readEvidence` (and its default), and the largest evidence
+ * list an export bundle may carry.
+ *
+ * @example
+ * ```ts
+ * import { MAX_EVIDENCE_EVENTS } from "./schema.js";
+ * MAX_EVIDENCE_EVENTS; // 10_000
+ * ```
+ */
+export const MAX_EVIDENCE_EVENTS = 10_000;
+
+/**
  * One topic in the catalog.
  *
  * @example
