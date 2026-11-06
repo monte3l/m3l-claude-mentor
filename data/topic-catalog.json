@@ -1,0 +1,227 @@
+[
+  {
+    "id": "context-window",
+    "title": "The context window",
+    "type": "concept",
+    "dependencies": [],
+    "keywords": ["context window", "context", "tokens"],
+    "targetLevel": "Understood",
+    "enabled": true
+  },
+  {
+    "id": "compaction",
+    "title": "Compaction and context hygiene",
+    "type": "concept",
+    "dependencies": ["context-window"],
+    "keywords": ["compact", "compaction", "clear"],
+    "targetLevel": "Understood",
+    "enabled": true
+  },
+  {
+    "id": "agentic-loop",
+    "title": "The agentic loop: gather, act, verify",
+    "type": "concept",
+    "dependencies": [],
+    "keywords": ["agentic loop", "agent loop", "tool use"],
+    "targetLevel": "Understood",
+    "enabled": true
+  },
+  {
+    "id": "permissions-model",
+    "title": "Permissions and permission modes",
+    "type": "concept",
+    "dependencies": [],
+    "keywords": ["permission", "permissions", "allowlist", "deny rule"],
+    "targetLevel": "Understood",
+    "enabled": true
+  },
+  {
+    "id": "settings-scopes",
+    "title": "Settings scopes and precedence",
+    "type": "concept",
+    "dependencies": ["permissions-model"],
+    "keywords": ["settings.json", "settings", "scope", "managed settings"],
+    "targetLevel": "Understood",
+    "enabled": true
+  },
+  {
+    "id": "mcp",
+    "title": "Model Context Protocol servers",
+    "type": "concept",
+    "dependencies": ["agentic-loop"],
+    "keywords": ["mcp", "mcp server", "model context protocol"],
+    "targetLevel": "Understood",
+    "enabled": true
+  },
+  {
+    "id": "claude-md",
+    "title": "CLAUDE.md and project memory",
+    "type": "feature",
+    "dependencies": ["context-window"],
+    "keywords": ["claude.md", "memory", "project instructions"],
+    "targetLevel": "Applied",
+    "enabled": true
+  },
+  {
+    "id": "slash-commands",
+    "title": "Slash commands",
+    "type": "feature",
+    "dependencies": [],
+    "keywords": ["slash command", "slash commands"],
+    "targetLevel": "Applied",
+    "enabled": true
+  },
+  {
+    "id": "plan-mode",
+    "title": "Plan mode",
+    "type": "feature",
+    "dependencies": ["permissions-model"],
+    "keywords": ["plan mode", "plan"],
+    "targetLevel": "Applied",
+    "enabled": true
+  },
+  {
+    "id": "skills",
+    "title": "Skills",
+    "type": "feature",
+    "dependencies": ["context-window"],
+    "keywords": ["skill", "skills", "skill.md"],
+    "targetLevel": "Applied",
+    "enabled": true
+  },
+  {
+    "id": "subagents",
+    "title": "Subagents",
+    "type": "feature",
+    "dependencies": ["context-window", "agentic-loop"],
+    "keywords": ["subagent", "subagents", "agent tool"],
+    "targetLevel": "Applied",
+    "enabled": true
+  },
+  {
+    "id": "hooks",
+    "title": "Hooks",
+    "type": "feature",
+    "dependencies": ["agentic-loop", "settings-scopes"],
+    "keywords": ["hook", "hooks", "pretooluse", "posttooluse"],
+    "targetLevel": "Applied",
+    "enabled": true
+  },
+  {
+    "id": "plugins",
+    "title": "Plugins and marketplaces",
+    "type": "feature",
+    "dependencies": ["skills", "hooks", "subagents"],
+    "keywords": ["plugin", "plugins", "marketplace"],
+    "targetLevel": "Applied",
+    "enabled": true
+  },
+  {
+    "id": "output-styles",
+    "title": "Output styles",
+    "type": "feature",
+    "dependencies": [],
+    "keywords": ["output style", "output styles"],
+    "targetLevel": "Applied",
+    "enabled": true
+  },
+  {
+    "id": "worktrees",
+    "title": "Git worktrees for parallel sessions",
+    "type": "feature",
+    "dependencies": [],
+    "keywords": ["worktree", "worktrees"],
+    "targetLevel": "Applied",
+    "enabled": true
+  },
+  {
+    "id": "verify-your-work",
+    "title": "Give Claude a way to verify its work",
+    "type": "practice",
+    "dependencies": ["agentic-loop"],
+    "keywords": ["tests", "verify", "lint", "typecheck"],
+    "targetLevel": "Applied",
+    "enabled": true
+  },
+  {
+    "id": "explore-plan-code",
+    "title": "Explore, plan, then code",
+    "type": "practice",
+    "dependencies": ["plan-mode"],
+    "keywords": ["plan", "explore", "design"],
+    "targetLevel": "Applied",
+    "enabled": true
+  },
+  {
+    "id": "context-hygiene",
+    "title": "Keep sessions focused and context clean",
+    "type": "practice",
+    "dependencies": ["compaction"],
+    "keywords": ["long session", "clear", "new session", "context full"],
+    "targetLevel": "Applied",
+    "enabled": true
+  },
+  {
+    "id": "specific-prompts",
+    "title": "Write specific prompts with references",
+    "type": "practice",
+    "dependencies": [],
+    "keywords": ["prompt", "prompts", "be specific"],
+    "targetLevel": "Applied",
+    "enabled": true
+  },
+  {
+    "id": "review-ai-changes",
+    "title": "Review and understand generated changes",
+    "type": "practice",
+    "dependencies": [],
+    "keywords": ["review", "diff", "pull request"],
+    "targetLevel": "Applied",
+    "enabled": true
+  },
+  {
+    "id": "term-token",
+    "title": "Term: token",
+    "type": "terminology",
+    "dependencies": [],
+    "keywords": ["token", "tokens"],
+    "targetLevel": "Recalled",
+    "enabled": true
+  },
+  {
+    "id": "term-system-prompt",
+    "title": "Term: system prompt",
+    "type": "terminology",
+    "dependencies": [],
+    "keywords": ["system prompt"],
+    "targetLevel": "Recalled",
+    "enabled": true
+  },
+  {
+    "id": "term-harness",
+    "title": "Term: harness",
+    "type": "terminology",
+    "dependencies": [],
+    "keywords": ["harness"],
+    "targetLevel": "Recalled",
+    "enabled": true
+  },
+  {
+    "id": "model-names-and-limits",
+    "title": "Model names, pricing and limits (always fetched live)",
+    "type": "fast-moving",
+    "dependencies": [],
+    "keywords": ["model", "pricing", "rate limit"],
+    "targetLevel": "Introduced",
+    "enabled": true
+  },
+  {
+    "id": "new-features",
+    "title": "New Claude Code features (changelog digest)",
+    "type": "fast-moving",
+    "dependencies": [],
+    "keywords": ["changelog", "new feature", "release"],
+    "targetLevel": "Introduced",
+    "enabled": true
+  }
+]
