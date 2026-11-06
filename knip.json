@@ -1,12 +1,18 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "entry": [
-    "src/index.ts",
-    "src/internal/*.ts",
-    "src/cli/*.ts",
+    "src/hooks/entry-*.ts",
+    "src/cli/mentor-state.ts",
+    "tests/**/*.test.ts",
     "bin/*.mjs",
     ".claude/hooks/*.mjs"
   ],
-  "project": ["src/**/*.ts", "bin/**/*.mjs", ".claude/hooks/**/*.mjs"],
+  "project": [
+    "src/**/*.ts",
+    "tests/**/*.ts",
+    "bin/**/*.mjs",
+    ".claude/hooks/**/*.mjs"
+  ],
+  "ignoreExportsUsedInFile": true,
   "ignoreDependencies": ["@commitlint/config-conventional", "@commitlint/types"]
 }

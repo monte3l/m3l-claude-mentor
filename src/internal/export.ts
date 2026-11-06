@@ -40,18 +40,11 @@ import {
 export {
   BUNDLE_FORMAT,
   BUNDLE_VERSION,
-  MAX_BUNDLE_BYTES,
   parseBundle,
   serializeBundle,
   type Bundle,
 } from "./export-bundle.js";
-export {
-  describeData,
-  purgeData,
-  type DataFileInfo,
-  type DataSummary,
-  type PurgeResult,
-} from "./purge.js";
+export { describeData, purgeData } from "./purge.js";
 
 /** Every managed file, in {@link DATA_FILES} order. */
 const MANAGED_FILES = Object.keys(DATA_FILES) as readonly DataFile[];
