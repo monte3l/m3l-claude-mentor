@@ -82,6 +82,18 @@ export const CORE_STEPS = [
     name: "Check Node version pin",
     cmd: ["node", "bin/check-node-version.mjs"],
   },
+  {
+    id: "dist-fresh",
+    group: "build",
+    name: "Check committed dist/ is fresh",
+    cmd: ["node", "bin/check-dist-fresh.mjs"],
+  },
+  {
+    id: "version-sync",
+    group: "lint",
+    name: "Check plugin.json and package.json versions agree",
+    cmd: ["node", "bin/check-version-sync.mjs"],
+  },
 ];
 
 /** Reads and validates verify-steps.packs.json. Absence is fine (no packs installed). */

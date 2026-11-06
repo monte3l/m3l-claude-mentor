@@ -1,8 +1,9 @@
 # Dependencies
 node_modules/
 
-# Build output (tsc-owned; never committed)
-dist/
+# Build output: dist/ IS committed (a plugin installed from git has no build
+# step, so hooks and the CLI run from it). `pnpm verify`'s dist-fresh step
+# fails when it drifts from src/. Only the incremental cache is ignored.
 *.tsbuildinfo
 
 # Test / coverage artifacts
