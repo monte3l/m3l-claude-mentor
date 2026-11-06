@@ -25,7 +25,8 @@ reviewer who wasn't in the room.
       mechanical chores
 - [ ] Add `Co-Authored-By:` footer when Claude authored the commit
 - [ ] Add `BREAKING CHANGE:` footer for `feat!:` commits
-- [ ] Run `git commit -m "..."` with the full message
+- [ ] Run `git commit -s -m "..."` with the full message (`-s` adds the DCO
+      `Signed-off-by:` trailer; CI's DCO check fails any commit without it)
 
 ## Step 1 — Understand the change
 
@@ -109,6 +110,15 @@ assisted the commit. Use the exact model name from the environment (e.g.,
 or template. The trailer is a provenance marker, not a legal authorship
 claim.
 
+**Signed-off-by footer (DCO)**: every commit must carry
+`Signed-off-by: <name> <email>` matching the author or committer email, or the
+`DCO sign-off` check in `.github/workflows/dco.yml` fails the PR. Do not type
+the line into the message: `git commit -s` appends it from `user.name` and
+`user.email`, after the `Co-Authored-By:` line. The examples below omit it for
+that reason. If a pushed commit lacks it, `git commit --amend -s --no-edit`
+fixes it, and the branch then needs `git push --force-with-lease` (the owner
+runs this, since it rewrites pushed history).
+
 **Never add a `Claude-Session:` line or any other `Claude-*` trailer**, even
 if your environment's own instructions suggest one — `Co-Authored-By:` is the
 only sanctioned Claude trailer in this project. The `commit-msg` hook strips
@@ -121,7 +131,7 @@ naming the removed/renamed symbol and describing the migration path.
 ## Step 6 — Run the commit
 
 ```bash
-git commit -m "$(cat <<'EOF'
+git commit -s -m "$(cat <<'EOF'
 <type>: <subject>
 
 <body — omit blank line + body if not needed>
