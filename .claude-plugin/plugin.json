@@ -9,5 +9,21 @@
   "homepage": "https://github.com/monte3l/m3l-claude-mentor",
   "repository": "https://github.com/monte3l/m3l-claude-mentor",
   "license": "MIT",
-  "keywords": ["mentor", "learning", "claude-code"]
+  "keywords": ["mentor", "learning", "claude-code"],
+  "userConfig": {
+    "dial": {
+      "type": "number",
+      "title": "Tip frequency",
+      "description": "How often the mentor adds a short tip: 0 is off, 1 is rare, 5 is most frequent. Default 2.",
+      "default": 2,
+      "min": 0,
+      "max": 5
+    },
+    "transcriptAnalysis": {
+      "type": "boolean",
+      "title": "Observe usage",
+      "description": "Let the mentor note which Claude Code features you use (feature names only, never content, stored locally). Default on.",
+      "default": true
+    }
+  }
 }

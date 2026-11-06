@@ -156,6 +156,7 @@ Hook events (command hooks only):
 Notes:
 
 - Hooks are the deterministic part (rate limiting, state loading, usage observation). The output style and skills carry the soft behavior.
+- `PostToolUse` only appends observed evidence. `SessionStart` then recomputes levels from that evidence, **raise-only**: it never lowers a stored level (decay and truncation of the evidence window could otherwise erase a quiz-earned level), and the explicit `recompute` command is the only path that lowers one. This keeps tips from firing on topics the learner already uses.
 - `Stop` `additionalContext` forces the conversation to continue, and `PreCompact`/`PostCompact` output cannot reach the model, so tips are injected on `UserPromptSubmit` and context is restored with `SessionStart` matcher `compact`.
 - Skills are namespaced by plugin: `/m3l-claude-mentor:teach`, not `/mentor teach`. State access from skills goes through a small CLI (`dist/cli/mentor-state.js`), so Markdown never hand-edits JSON.
 - Plugin agents ignore `hooks`, `mcpServers` and `permissionMode` frontmatter; hooks ship at plugin level.

@@ -84,6 +84,16 @@ export interface Profile {
     readonly calibration: Calibration;
 }
 /**
+ * The most topic entries a profile may hold (`profile.json` `topics`).
+ *
+ * @example
+ * ```ts
+ * import { MAX_TOPICS } from "./state-schema.js";
+ * MAX_TOPICS; // 500
+ * ```
+ */
+export declare const MAX_TOPICS: number;
+/**
  * Creates the state for a learner with no history: unmuted, empty lists, no
  * changelog version, and a first segment from {@link newSegment}.
  *
