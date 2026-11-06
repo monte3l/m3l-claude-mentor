@@ -3,6 +3,7 @@
   "entry": [
     "src/index.ts",
     "src/internal/*.ts",
+    "src/cli/*.ts",
     "bin/*.mjs",
     ".claude/hooks/*.mjs"
   ],
