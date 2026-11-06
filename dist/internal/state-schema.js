@@ -22,12 +22,21 @@ import { newSegment } from "./segment.js";
  * ```
  */
 export const SCHEMA_VERSION = 1;
+/**
+ * The most topic entries a profile may hold (`profile.json` `topics`).
+ *
+ * @example
+ * ```ts
+ * import { MAX_TOPICS } from "./state-schema.js";
+ * MAX_TOPICS; // 500
+ * ```
+ */
+export const MAX_TOPICS = 500;
 const MAX_MUTED_TOPICS = 500;
 const MAX_EXCLUDED_PROJECTS = 200;
 const MAX_PROJECT_LENGTH = 1024;
 const MAX_VERSION_LENGTH = 64;
 const VERSION_PATTERN = /^[0-9A-Za-z.+-]+$/;
-const MAX_TOPICS = 500;
 const MAX_PASSES = 1_000_000_000;
 function ok(value) {
     return { ok: true, value };
