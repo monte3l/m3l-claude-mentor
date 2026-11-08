@@ -146,7 +146,6 @@ describe("userPromptSubmitHandler silence and no-ops", () => {
     const old = new Date(1_000_000_000_000);
     utimesSync(file, old, old);
     const bytes = readFileSync(file, "utf8");
-    const mtime = statSync(file).mtimeMs;
 
     const out = await userPromptSubmitHandler(
       payload({ prompt: "How do I use plan mode?" }),
@@ -154,7 +153,7 @@ describe("userPromptSubmitHandler silence and no-ops", () => {
     );
     expect(out).toBeNull();
     expect(readFileSync(file, "utf8")).toBe(bytes);
-    expect(statSync(file).mtimeMs).toBe(mtime);
+    expect(statSync(file).mtimeMs).toBe(old.getTime());
   });
 });
 
