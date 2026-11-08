@@ -14,8 +14,8 @@ import { BUNDLE_FORMAT, BUNDLE_VERSION, MAX_BUNDLE_BYTES, checkNow, isConfirmed,
 import { writeTextAtomic } from "./fs-atomic.js";
 import { DATA_FILES, assertValidDataDir, dataFilePath, } from "./paths.js";
 import { loadCatalogFile, loadGoals, loadProfile, loadState, readEvidence, } from "./store.js";
-export { BUNDLE_FORMAT, BUNDLE_VERSION, MAX_BUNDLE_BYTES, parseBundle, serializeBundle, } from "./export-bundle.js";
-export { describeData, purgeData, } from "./purge.js";
+export { BUNDLE_FORMAT, BUNDLE_VERSION, parseBundle, serializeBundle, } from "./export-bundle.js";
+export { describeData, purgeData } from "./purge.js";
 /** Every managed file, in {@link DATA_FILES} order. */
 const MANAGED_FILES = Object.keys(DATA_FILES);
 /** The order import replaces files in: `state` last, as hooks read it first. */

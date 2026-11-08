@@ -33,7 +33,7 @@ export const BUNDLE_VERSION = 1;
  *
  * @example
  * ```ts
- * import { MAX_BUNDLE_BYTES } from "./export.js";
+ * import { MAX_BUNDLE_BYTES } from "./export-bundle.js";
  * MAX_BUNDLE_BYTES; // 16_777_216
  * ```
  */

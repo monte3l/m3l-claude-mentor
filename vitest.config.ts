@@ -18,7 +18,16 @@ export default defineConfig({
       // No "**/index.ts" exclusion here (unlike a multi-module library
       // barrel pattern): a fresh scaffold's index.ts IS its real content,
       // so excluding it would make this gate measure nothing at all.
-      exclude: ["**/*.d.ts"],
+      exclude: [
+        "**/*.d.ts",
+        // Process-boundary shims: they only run as `node dist/...` child
+        // processes (stdin/stdout/exitCode), which in-process V8 coverage
+        // cannot see. tests/entries spawns them instead, and the logic
+        // they call lives in files that stay under the threshold.
+        "src/hooks/entry-*.ts",
+        "src/hooks/process-shell.ts",
+        "src/cli/mentor-state.ts",
+      ],
       // json emits coverage-final.json: the text table can hide files that
       // are 100% on every metric (Vitest sets `skipFull` when it detects an
       // AI coding agent), so the JSON is the authoritative per-file record

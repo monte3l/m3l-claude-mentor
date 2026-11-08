@@ -6,8 +6,8 @@
  * validates the whole bundle before it changes a single file.
  */
 import { type Bundle } from "./export-bundle.js";
-export { BUNDLE_FORMAT, BUNDLE_VERSION, MAX_BUNDLE_BYTES, parseBundle, serializeBundle, type Bundle, } from "./export-bundle.js";
-export { describeData, purgeData, type DataFileInfo, type DataSummary, type PurgeResult, } from "./purge.js";
+export { BUNDLE_FORMAT, BUNDLE_VERSION, parseBundle, serializeBundle, type Bundle, } from "./export-bundle.js";
+export { describeData, purgeData } from "./purge.js";
 /**
  * The result of {@link exportBundle}.
  *
