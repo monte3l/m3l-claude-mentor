@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { beforeAll, describe, expect, test } from "vitest";
 import {
@@ -40,7 +40,7 @@ describe("rule 1: exactly six skill directories", () => {
   });
 
   test.each(SKILL_NAMES)("%s has a SKILL.md", (name) => {
-    expect(statSync(join(SKILLS_DIR, name, "SKILL.md")).isFile()).toBe(true);
+    expect(readSkill(name).length).toBeGreaterThan(0);
   });
 });
 
@@ -97,9 +97,9 @@ describe("rule 2: frontmatter", () => {
 describe("rule 3: size", () => {
   test.each(SKILL_NAMES)("%s: <= 200 lines and <= 9000 bytes", (name) => {
     const path = join(SKILLS_DIR, name, "SKILL.md");
-    const text = readFileSync(path, "utf8");
-    expect(text.split("\n").length).toBeLessThanOrEqual(200);
-    expect(statSync(path).size).toBeLessThanOrEqual(9000);
+    const bytes = readFileSync(path);
+    expect(bytes.toString("utf8").split("\n").length).toBeLessThanOrEqual(200);
+    expect(bytes.byteLength).toBeLessThanOrEqual(9000);
   });
 });
 

@@ -1,4 +1,4 @@
-import { readFileSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 import {
@@ -26,7 +26,8 @@ describe("output style mentor", () => {
   });
 
   test("is at most 4000 bytes and states no model ids, prices or limits", () => {
-    expect(statSync(PATH).size).toBeLessThanOrEqual(4000);
-    expect(checkFastFacts(readFileSync(PATH, "utf8"))).toEqual([]);
+    const bytes = readFileSync(PATH);
+    expect(bytes.byteLength).toBeLessThanOrEqual(4000);
+    expect(checkFastFacts(bytes.toString("utf8"))).toEqual([]);
   });
 });

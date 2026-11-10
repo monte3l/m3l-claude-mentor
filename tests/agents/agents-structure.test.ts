@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 import {
@@ -79,7 +79,7 @@ describe.each(AGENTS)("agent %s", (name) => {
   });
 
   test("body is at most 8000 bytes", () => {
-    expect(statSync(load(name).path).size).toBeLessThanOrEqual(8000);
+    expect(readFileSync(load(name).path).byteLength).toBeLessThanOrEqual(8000);
   });
 
   test("body states no model ids, prices or limits", () => {

@@ -1,4 +1,4 @@
-import { readFileSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 import { SKILLS_DIR, hasPhrase, headings, readSkill } from "./helpers.js";
@@ -30,7 +30,7 @@ describe("goals template", () => {
   });
 
   test("fits the CLI goals rules", () => {
-    expect(statSync(PATH).size).toBeLessThanOrEqual(MAX_GOALS_BYTES);
+    expect(readFileSync(PATH).byteLength).toBeLessThanOrEqual(MAX_GOALS_BYTES);
   });
 
   test("profile SKILL.md offers it with the learner's agreement", () => {
