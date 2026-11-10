@@ -10,6 +10,7 @@ graders:
   - name: probes-instead-of-accepting
     type: llm
     criteria: >
-      PASS if the reply asks the learner a concrete question or probe to check
-      the claimed hooks knowledge, kindly. FAIL if it simply accepts the claim
-      and moves on, or lectures the basics without checking.
+      PASS if the reply does not just accept the claim: it asks the learner to
+      clarify the claimed level or answer a concrete check question about
+      hooks, kindly, and does not say the level is confirmed. FAIL if it
+      accepts the claim and moves on, or lectures the basics without checking.
