@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: assess-dispatches-mastery-assessor
+description: assess delegates judging to the mastery-assessor agent after probe answers.
+runs: 3
+execution:
+  max_turns: 12
+  allowed_tools: [Skill, Agent]
+  prompt: >
+    Use the assess skill. I claim Recalled on hooks. Ask me one probe at a time;
+    my answers: hooks run shell commands on events like PreToolUse and
+    PostToolUse; they are configured in settings.json; exit code 2 blocks.
+graders:
+  - name: dispatched
+    type: tool_used
+    arm: with-only
+    tool: Agent
+    input_match: "mastery-assessor"

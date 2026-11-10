@@ -1,0 +1,14 @@
+schema_version: "1.1"
+name: quiz-trigger
+description: Natural phrasing reaches the quiz skill.
+runs: 3
+execution:
+  max_turns: 6
+  allowed_tools: [Skill, Agent]
+  prompt: "quiz me on hooks"
+graders:
+  - name: skill-fired
+    type: tool_used
+    arm: with-only
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?quiz"'

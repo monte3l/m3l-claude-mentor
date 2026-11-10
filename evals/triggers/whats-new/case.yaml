@@ -1,0 +1,14 @@
+schema_version: "1.1"
+name: whats-new-trigger
+description: Natural phrasing reaches the whats-new skill.
+runs: 3
+execution:
+  max_turns: 6
+  allowed_tools: [Skill, Agent]
+  prompt: "what changed in Claude Code lately?"
+graders:
+  - name: skill-fired
+    type: tool_used
+    arm: with-only
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?whats-new"'
