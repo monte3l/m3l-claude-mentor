@@ -33,6 +33,10 @@ node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_D
 ```
 
 ```bash
+node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} get-goals
+```
+
+```bash
 node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} get-profile
 ```
 
@@ -41,7 +45,9 @@ node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_D
 ```
 
 Summarise readably: topics grouped by level, topics due for review, calibration, mute
-and exclusion settings, and the goals. Do not dump raw JSON.
+and exclusion settings, and the goals. Every count (topics seen, totals) comes only from the
+`topics` or `get-profile` output by counting the array; never state a count that is
+not computed from the output. Do not dump raw JSON.
 
 ## Goals
 
@@ -92,6 +98,40 @@ node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_D
 
 The tip dial and the usage-observation switch (transcriptAnalysis) are plugin options.
 Point the learner to `/config`; this skill cannot change them.
+
+## Permissions
+
+A skill's pre-approval lasts only for the turn in which it is invoked, so later CLI
+calls in a lesson or quiz may ask for approval. To avoid that, the learner can add this
+rule to the user-level `~/.claude/settings.json` (or through `/permissions`):
+
+```json
+{ "permissions": { "allow": ["Bash(node */dist/cli/mentor-state.js *)"] } }
+```
+
+That broad rule also pre-approves the destructive commands (delete, import), so the
+explicit in-conversation confirmation described above is then the ONLY guard before
+them. A narrower alternative leaves destructive and export commands prompting; it covers
+the day-to-day commands only:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(node */dist/cli/mentor-state.js --data-dir * show)",
+      "Bash(node */dist/cli/mentor-state.js --data-dir * get-profile)",
+      "Bash(node */dist/cli/mentor-state.js --data-dir * topics)",
+      "Bash(node */dist/cli/mentor-state.js --data-dir * get-goals)",
+      "Bash(node */dist/cli/mentor-state.js --data-dir * introduce *)",
+      "Bash(node */dist/cli/mentor-state.js --data-dir * record-batch *)"
+    ]
+  }
+}
+```
+
+The narrower set has not been verified in a live session yet; if a command still
+prompts, approving it once is fine. This skill must never edit settings files itself
+and never claims a rule is set; approving the one-off prompts is also fine.
 
 ## Export, import, delete
 

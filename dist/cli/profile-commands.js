@@ -55,7 +55,71 @@ export async function getProfile(env) {
         lastChangelogVersion: state.lastChangelogVersion,
     };
 }
-function optionalClaim(args) {
+/**
+ * Re-derives `entry`'s level from its evidence with the catalog's scoring
+ * overrides and returns `profile` updated with it (keeping the topic's
+ * `introduced`, `passes` and `lastPassAt`), the `recompute` view, and the
+ * topic's stored `passes`.
+ * The calibration counts a `confirmed` or `refuted` outcome only when
+ * `claimedLevel` is given. Reads evidence; writes nothing: the caller saves
+ * the returned profile once.
+ *
+ * Known limitation: only the evidence tail window `readEvidence` returns
+ * (its default `maxEvents`) is read, so a topic's oldest events can fall out
+ * of it on a long history.
+ *
+ * @example
+ * ```ts
+ * import { recomputeTopic } from "./profile-commands.js";
+ * const { profile, view } = await recomputeTopic(env, file, entry, stored);
+ * await saveProfile(env.dir, profile);
+ * ```
+ */
+export async function recomputeTopic(env, file, entry, profile, claimedLevel) {
+    const topic = entry.id;
+    const { halfLifeDays, fluencySessions } = file.scoring;
+    const { events, skipped } = await readEvidence(env.dir);
+    const previous = existingTopic(profile, topic) ?? UNSEEN_TOPIC;
+    const result = reconcile({
+        type: entry.type,
+        events: events.filter((event) => event.topic === topic),
+        introduced: previous.introduced,
+        now: env.now,
+        ...(claimedLevel !== undefined ? { claimedLevel } : {}),
+        ...(halfLifeDays !== undefined ? { halfLifeDays } : {}),
+        ...(fluencySessions !== undefined ? { fluencySessions } : {}),
+    });
+    const calibration = claimedLevel === undefined
+        ? profile.calibration
+        : updateCalibration(profile.calibration, result.claim);
+    return {
+        profile: {
+            ...withTopic(profile, topic, { ...previous, level: result.level }),
+            calibration,
+        },
+        view: {
+            topic,
+            level: result.level,
+            previousLevel: previous.level,
+            claim: result.claim,
+            diagnoses: result.diagnoses,
+            evidenceSkipped: skipped,
+        },
+        passes: previous.passes,
+    };
+}
+/**
+ * The optional `--claim` value as a Level.
+ *
+ * @throws CliUsageError when `--claim` is given but is not a Level.
+ *
+ * @example
+ * ```ts
+ * import { optionalClaim } from "./profile-commands.js";
+ * const claimed = optionalClaim(args); // undefined without --claim
+ * ```
+ */
+export function optionalClaim(args) {
     return args.values.has("claim")
         ? requireOneOf(args, "claim", LEVELS)
         : undefined;
@@ -85,34 +149,10 @@ export async function recompute(args, env) {
     const claimedLevel = optionalClaim(args);
     const { file, entries } = await loadMergedCatalog(env);
     const entry = requireCatalogEntry(entries, topic);
-    const { halfLifeDays, fluencySessions } = file.scoring;
-    const profile = await loadProfile(env.dir, env.now);
-    const { events, skipped } = await readEvidence(env.dir);
-    const previous = existingTopic(profile, topic) ?? UNSEEN_TOPIC;
-    const result = reconcile({
-        type: entry.type,
-        events: events.filter((event) => event.topic === topic),
-        introduced: previous.introduced,
-        now: env.now,
-        ...(claimedLevel !== undefined ? { claimedLevel } : {}),
-        ...(halfLifeDays !== undefined ? { halfLifeDays } : {}),
-        ...(fluencySessions !== undefined ? { fluencySessions } : {}),
-    });
-    const calibration = claimedLevel === undefined
-        ? profile.calibration
-        : updateCalibration(profile.calibration, result.claim);
-    await saveProfile(env.dir, {
-        ...withTopic(profile, topic, { ...previous, level: result.level }),
-        calibration,
-    });
-    return {
-        topic,
-        level: result.level,
-        previousLevel: previous.level,
-        claim: result.claim,
-        diagnoses: result.diagnoses,
-        evidenceSkipped: skipped,
-    };
+    const stored = await loadProfile(env.dir, env.now);
+    const { profile, view } = await recomputeTopic(env, file, entry, stored, claimedLevel);
+    await saveProfile(env.dir, profile);
+    return view;
 }
 /**
  * `introduce --topic <id>`: marks the topic introduced, raising its level to
@@ -139,6 +179,26 @@ export async function introduce(args, env) {
     return { topic, level };
 }
 /**
+ * `profile` with one spaced-review result applied to `topic`: a pass
+ * increments `passes` and stamps `lastPassAt = now`; a fail resets
+ * `passes` to 0 and leaves `lastPassAt` alone. A topic the profile lacks
+ * starts as Unseen and not introduced. Pure; returns the updated profile and
+ * the topic's new `passes`.
+ *
+ * @example
+ * ```ts
+ * import { applyPass } from "./profile-commands.js";
+ * const { profile: next, passes } = applyPass(profile, topic, "pass", Date.now());
+ * ```
+ */
+export function applyPass(profile, topic, result, now) {
+    const previous = existingTopic(profile, topic) ?? UNSEEN_TOPIC;
+    const next = result === "pass"
+        ? { ...previous, passes: previous.passes + 1, lastPassAt: now }
+        : { ...previous, passes: 0 };
+    return { profile: withTopic(profile, topic, next), passes: next.passes };
+}
+/**
  * `record-pass --topic <id> --result <pass|fail>`: a pass increments
  * `passes` and stamps `lastPassAt = now`; a fail resets `passes` to 0 and
  * leaves `lastPassAt` alone.
@@ -156,12 +216,8 @@ export async function recordPass(args, env) {
     const result = requireOneOf(args, "result", ["pass", "fail"]);
     const { entries } = await loadMergedCatalog(env);
     requireCatalogEntry(entries, topic);
-    const profile = await loadProfile(env.dir, env.now);
-    const previous = existingTopic(profile, topic) ?? UNSEEN_TOPIC;
-    const next = result === "pass"
-        ? { ...previous, passes: previous.passes + 1, lastPassAt: env.now }
-        : { ...previous, passes: 0 };
-    await saveProfile(env.dir, withTopic(profile, topic, next));
-    return { topic, passes: next.passes };
+    const { profile, passes } = applyPass(await loadProfile(env.dir, env.now), topic, result, env.now);
+    await saveProfile(env.dir, profile);
+    return { topic, passes };
 }
 //# sourceMappingURL=profile-commands.js.map

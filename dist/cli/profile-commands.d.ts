@@ -1,6 +1,7 @@
 import { type Calibration, type ClaimOutcome, type Diagnosis } from "../internal/reconcile.js";
-import { type Level, type TopicId } from "../internal/schema.js";
-import type { TopicProfile } from "../internal/state-schema.js";
+import { type CatalogEntry, type Level, type TopicId } from "../internal/schema.js";
+import type { CatalogFile } from "../internal/catalog-file.js";
+import type { Profile, TopicProfile } from "../internal/state-schema.js";
 import { type ParsedArgs } from "./args.js";
 import { type CommandEnv } from "./env.js";
 /**
@@ -74,6 +75,43 @@ export interface RecomputeView {
     readonly evidenceSkipped: number;
 }
 /**
+ * Re-derives `entry`'s level from its evidence with the catalog's scoring
+ * overrides and returns `profile` updated with it (keeping the topic's
+ * `introduced`, `passes` and `lastPassAt`), the `recompute` view, and the
+ * topic's stored `passes`.
+ * The calibration counts a `confirmed` or `refuted` outcome only when
+ * `claimedLevel` is given. Reads evidence; writes nothing: the caller saves
+ * the returned profile once.
+ *
+ * Known limitation: only the evidence tail window `readEvidence` returns
+ * (its default `maxEvents`) is read, so a topic's oldest events can fall out
+ * of it on a long history.
+ *
+ * @example
+ * ```ts
+ * import { recomputeTopic } from "./profile-commands.js";
+ * const { profile, view } = await recomputeTopic(env, file, entry, stored);
+ * await saveProfile(env.dir, profile);
+ * ```
+ */
+export declare function recomputeTopic(env: CommandEnv, file: CatalogFile, entry: CatalogEntry, profile: Profile, claimedLevel?: Level): Promise<{
+    readonly profile: Profile;
+    readonly view: RecomputeView;
+    readonly passes: number;
+}>;
+/**
+ * The optional `--claim` value as a Level.
+ *
+ * @throws CliUsageError when `--claim` is given but is not a Level.
+ *
+ * @example
+ * ```ts
+ * import { optionalClaim } from "./profile-commands.js";
+ * const claimed = optionalClaim(args); // undefined without --claim
+ * ```
+ */
+export declare function optionalClaim(args: ParsedArgs): Level | undefined;
+/**
  * `recompute --topic <id> [--claim <Level>]`: re-derives the topic's level
  * from its evidence with the catalog's scoring overrides, saves it (keeping
  * `introduced`, `passes` and `lastPassAt`), and counts a `confirmed` or
@@ -110,6 +148,23 @@ export declare function introduce(args: ParsedArgs, env: CommandEnv): Promise<{
     readonly topic: TopicId;
     readonly level: Level;
 }>;
+/**
+ * `profile` with one spaced-review result applied to `topic`: a pass
+ * increments `passes` and stamps `lastPassAt = now`; a fail resets
+ * `passes` to 0 and leaves `lastPassAt` alone. A topic the profile lacks
+ * starts as Unseen and not introduced. Pure; returns the updated profile and
+ * the topic's new `passes`.
+ *
+ * @example
+ * ```ts
+ * import { applyPass } from "./profile-commands.js";
+ * const { profile: next, passes } = applyPass(profile, topic, "pass", Date.now());
+ * ```
+ */
+export declare function applyPass(profile: Profile, topic: TopicId, result: "pass" | "fail", now: number): {
+    readonly profile: Profile;
+    readonly passes: number;
+};
 /**
  * `record-pass --topic <id> --result <pass|fail>`: a pass increments
  * `passes` and stamps `lastPassAt = now`; a fail resets `passes` to 0 and

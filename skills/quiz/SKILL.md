@@ -41,31 +41,24 @@ types and `enabled`.
    `/m3l-claude-mentor:profile`.
 3. **Skip fast-moving topics entirely** (`type` is `fast-moving`): say why (their
    facts change too quickly to quiz from memory) and offer `/m3l-claude-mentor:ask`.
-   Never answer their questions from memory, and never run `record-evidence` or
-   `record-pass` for them.
+   Never answer their questions from memory, and never record anything for them.
 4. **Ask three recall questions per topic when possible, one at a time**, on facts, terms
    and the why. Fewer questions cannot raise a level; say so honestly. Wait for each answer. Never reveal an answer before the learner tries; give
    one small hint on "I don't know" and reveal only after a second attempt or request.
 5. **Judge and explain** each answer briefly, even when right.
-6. **Record one event per question answered:**
+6. **Record each answered group with ONE call**: one `quiz:<result>` event per question
+   answered, plus the pass result. Use `pass` when the learner got at least 2 of 3
+   right (or the single question, or both when two were asked), else `fail`; a fail
+   resets passes. Quote the events list. When the learner stops mid-group (fewer answers
+   than questions asked), record nothing for that group, unless they ask to stop and
+   score what they answered; never record `--pass fail` for an abandoned group.
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} record-evidence --topic <id> --channel quiz --result <positive|negative>
+node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} record-batch --topic <id> --events '<quiz:positive,quiz:negative,...>' --pass <pass|fail>
 ```
 
-7. **Record the pass.** Use `pass` when the learner got at least 2 of 3 right (or the
-   single question, or both when two were asked), else `fail`; a fail resets passes.
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} record-pass --topic <id> --result <pass|fail>
-```
-
-8. **Recompute:**
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} recompute --topic <id>
-```
-
+7. **Report the returned level** honestly: one group or low counts rarely move a level.
+8. Repeat from step 4 for the next topic.
 9. **Summarise** in two or three lines: what was solid, what to revisit, and the
    returned level. Levels change after repeated evidence, not one quiz; say so honestly
    and never promise a level change. Point weak topics to `/m3l-claude-mentor:teach <id>`.

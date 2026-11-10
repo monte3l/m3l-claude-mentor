@@ -1,6 +1,7 @@
 import { MentorStateError } from "../internal/errors.js";
 import { parseSessionId } from "../internal/schema.js";
 import { CliUsageError, parseArgs } from "./args.js";
+import { recordBatch } from "./batch-commands.js";
 import { setTopicOverride, topics } from "./catalog-commands.js";
 import { GLOBAL_USAGE } from "./global-options.js";
 import { excludeProject, exportData, getGoals, importData, purge, recordEvidence, setChangelogVersion, setGoals, setMute, setTopicMute, show, } from "./data-commands.js";
@@ -22,6 +23,7 @@ const COMMANDS = {
         "topic",
         "claim",
     ]),
+    "record-batch": spec("record-batch --topic <id> --events <channel:result,...> [--pass <pass|fail>] [--claim <level>]", ["topic", "events", "pass", "claim"]),
     introduce: spec("introduce --topic <id>", ["topic"]),
     "record-pass": spec("record-pass --topic <id> --result <pass|fail>", [
         "topic",
@@ -75,6 +77,8 @@ function dispatch(name, argv, env) {
             return recordEvidence(args, env);
         case "recompute":
             return recompute(args, env);
+        case "record-batch":
+            return recordBatch(args, env);
         case "introduce":
             return introduce(args, env);
         case "record-pass":
