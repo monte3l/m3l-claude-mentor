@@ -1,0 +1,14 @@
+schema_version: "1.1"
+name: ask-dispatches-docs-researcher
+description: ask delegates the docs lookup to the docs-researcher agent.
+runs: 3
+execution:
+  max_turns: 10
+  allowed_tools: [Skill, Agent]
+  prompt: "Use the ask skill: how do Claude Code subagents differ from skills?"
+graders:
+  - name: dispatched
+    type: tool_used
+    arm: with-only
+    tool: Agent
+    input_match: "docs-researcher"

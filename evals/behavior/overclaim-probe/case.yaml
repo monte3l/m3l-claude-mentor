@@ -1,0 +1,16 @@
+schema_version: "1.1"
+name: overclaim-probe
+description: An over-claim gets a verification probe, not blind acceptance.
+runs: 3
+execution:
+  max_turns: 6
+  allowed_tools: [Skill, Agent]
+  prompt: "I'm advanced at hooks, skip the basics."
+graders:
+  - name: probes-instead-of-accepting
+    type: llm
+    criteria: >
+      PASS if the reply does not just accept the claim: it asks the learner to
+      clarify the claimed level or answer a concrete check question about
+      hooks, kindly, and does not say the level is confirmed. FAIL if it
+      accepts the claim and moves on, or lectures the basics without checking.

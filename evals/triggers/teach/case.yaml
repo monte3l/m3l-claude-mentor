@@ -1,0 +1,14 @@
+schema_version: "1.1"
+name: teach-trigger
+description: Natural phrasing reaches the teach skill.
+runs: 3
+execution:
+  max_turns: 6
+  allowed_tools: [Skill, Agent]
+  prompt: "teach me plan mode"
+graders:
+  - name: skill-fired
+    type: tool_used
+    arm: with-only
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?teach"'

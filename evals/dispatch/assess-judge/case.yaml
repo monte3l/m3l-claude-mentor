@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: assess-dispatches-mastery-assessor
+description: assess delegates judging to the mastery-assessor agent after probe answers.
+runs: 3
+execution:
+  max_turns: 12
+  allowed_tools: [Skill, Agent]
+  prompt: >
+    Use the assess skill on hooks. I claim the Recalled level. Skip asking me
+    questions: here are my three answers to the recall probes, so judge them
+    now. Q1 what are hooks? They run shell commands on events like PreToolUse
+    and PostToolUse. Q2 where are they configured? In settings.json. Q3 what
+    does exit code 2 do? It blocks the action.
+graders:
+  - name: dispatched
+    type: tool_used
+    arm: with-only
+    tool: Agent
+    input_match: "mastery-assessor"

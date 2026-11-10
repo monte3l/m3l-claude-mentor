@@ -112,6 +112,24 @@ It only lets the web fetch tool read pages on `code.claude.com`. The agent is
 told to fetch nothing else, but the domain prompt is the real guard: if a
 lookup ever asks to fetch some other domain, deny it.
 
+## Evals
+
+`evals/` holds `claude plugin eval` cases (Claude Code 2.1.269 or later). They
+call a real model, so each run costs money (about $0.20 per case run). Run
+them locally, with a cost cap:
+
+```bash
+claude plugin eval . --trust-plugin --ablation none --max-cost-usd 5
+```
+
+Cases cover skill triggers for natural phrasing, the over-claim probe, and
+agent dispatch by `ask` and `assess`. The skill and agent graders are
+`with-only` indicators, so they only score with `--ablation none`. Not yet
+covered: the tip rate limit and the mastered-topic silence, because the eval
+docs do not say how to seed `CLAUDE_PLUGIN_DATA`. CI wiring is deferred (it
+needs pinned `--model` and `--judge-model` and a credential). Results go to
+`evals/results/`, which is git-ignored.
+
 ## Notable files
 
 - `.github/dependabot.yml` — weekly Dependabot updates for the GitHub Actions
