@@ -1,61 +1,97 @@
 # m3l-claude-mentor
 
-Bootstrapped by [m3l-groundwork](https://github.com/monte3l/m3l-groundwork) —
-a deterministic TypeScript + Claude Code project bootstrapper.
-
-## What you just got
-
-A TypeScript project wired up with a strict compiler configuration, ESLint,
-Prettier, Vitest (with a coverage gate), and a Claude Code harness under
-`.claude/` — agents, skills, hooks, and rules that shape how Claude Code
-works in this repository. All of it is deliberately generic: a correct,
-working starting point for any TypeScript project, not yet specific to what
-m3l-claude-mentor actually does.
-
-## Getting started
-
-```bash
-pnpm install
-pnpm verify
-```
-
-`pnpm verify` runs the same checks CI runs, in one command, so you can catch
-a failure locally before pushing. In order: format check, lint, the Claude
-Code harness grader, the TypeScript toolchain grader, knip (unused code and
-dependencies), typecheck, build, tests with coverage, a package-exports check,
-and a Node version pin check. See `CLAUDE.md` for the full command reference and this
-project's conventions.
-
-## Using the plugin
+[![CI](https://github.com/monte3l/m3l-claude-mentor/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/monte3l/m3l-claude-mentor/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/monte3l/m3l-claude-mentor/badge)](https://securityscorecards.dev/viewer/?uri=github.com/monte3l/m3l-claude-mentor)
+[![REUSE](https://github.com/monte3l/m3l-claude-mentor/actions/workflows/reuse.yml/badge.svg?branch=main)](https://github.com/monte3l/m3l-claude-mentor/actions/workflows/reuse.yml)
 
 m3l-claude-mentor is a Claude Code plugin that mentors one learner on Claude
-and Claude Code. To try it from a checkout, build once and load it from the
-directory:
+and Claude Code. It keeps a private map of what you know, adds at most one short
+tip when it fits what you are doing, and teaches, quizzes and answers questions
+on request. It stays quiet on topics you have already shown you know.
 
-```bash
-pnpm install && pnpm build
-claude --plugin-dir /path/to/m3l-claude-mentor
-```
+## Who is this for
 
-- **Ambient tips.** Hooks add at most one short `💡 Mentor tip:` line to an
-  answer, only when it relates to what you are doing and to a topic you have
-  not mastered yet. Say "stop tips" or "resume tips" at any time.
-- **Skills**, namespaced `/m3l-claude-mentor:<name>`: `teach`, `ask`, `quiz`,
-  `whats-new`, `assess` and `profile` (goals, mutes, project exclusions,
-  catalog overrides, export, import and deletion of everything stored).
-- **Agents.** `docs-researcher` fetches the official docs and the changelog
-  in its own context (the `ask`, `whats-new` and `teach` skills use it), and
-  `mastery-assessor` judges your answers when you ask the mentor to verify a
-  skill you claim (the `assess` skill uses it). Both are read-only.
-- **Output style (opt-in).** `/output-style m3l-claude-mentor:mentor` switches
-  to a clear, encouraging teaching voice that keeps Claude Code's normal coding
-  behaviour. It is never applied automatically.
-- **Settings.** The tip dial and the usage-observation switch are plugin
-  options in `/config`. State lives in the plugin data directory, outside your
-  projects, and only feature-usage signals are stored, never conversation
-  content.
+- Someone **learning Claude Code while using it** who wants help that arrives
+  inside their real work, not in a separate course.
+- Someone who **already knows parts of it** and wants the mentor to skip those,
+  and to check a claim kindly instead of taking it on trust.
+- Someone who wants to **keep up with what changes** in Claude Code, filtered to
+  their own goals.
 
-### Permissions
+## Quickstart
+
+You need Claude Code and Node (see [Requirements](#requirements)). The plugin
+is not in the monte3l catalog yet, so run it from a checkout:
+
+1. Build it once:
+
+   ```bash
+   pnpm install && pnpm build
+   ```
+
+2. Start Claude Code with the plugin loaded:
+
+   ```bash
+   claude --plugin-dir /path/to/m3l-claude-mentor
+   ```
+
+3. Ask for a lesson, for example `/m3l-claude-mentor:teach hooks`. The mentor
+   runs a short lesson, then records what you showed it. After a few prompts
+   about a topic you have not mastered, you may see one `💡 Mentor tip:` line.
+
+To go deeper, see [Skills](#skills) and [Settings](#settings).
+
+## How it works
+
+The plugin has four parts. **Hooks** are the deterministic part: they load your
+profile at session start, decide whether a tip is due, and note which features
+you use. **Skills** are the on-demand part: lessons, quizzes, lookups and
+verification. **Agents** do isolated work: one fetches the official docs, one
+judges your answers. A small CLI, `dist/cli/mentor-state.js`, is the only way
+skills read or write your state, so Markdown never edits the data files.
+
+Each topic has a level, from Unseen up to Fluent, computed per competency
+dimension from your own evidence: quiz answers, explain-back answers, observed
+use and self-reports. A self-report never counts for more than Claimed. A tip
+needs a topic you have not mastered, that relates to the current task, and a
+quiet gap since the last tip. The full design is in [`DESIGN.md`](DESIGN.md).
+
+State lives in the plugin data directory, outside your projects. Only
+feature-usage signals are stored, such as "created a skill", never conversation
+content. The hooks never block your work: if one fails, it exits with a single
+stderr line.
+
+The `docs-researcher` agent uses Claude Code's web fetch tool on
+`code.claude.com` only, and `mastery-assessor` can only read files you name.
+Both are read-only. The opt-in output style
+`/output-style m3l-claude-mentor:mentor` gives a clear, encouraging teaching
+voice and keeps Claude Code's normal coding behaviour. It is never applied
+automatically.
+
+## Skills
+
+Skills are namespaced `/m3l-claude-mentor:<name>`. Say "stop tips" or "resume
+tips" at any time, in plain words.
+
+| Skill       | Use it to                                                                                                            |
+| ----------- | -------------------------------------------------------------------------------------------------------------------- |
+| `teach`     | Learn a topic in a short lesson, in a style matched to the topic                                                     |
+| `ask`       | Get a reference answer sourced from the live docs, with a link                                                       |
+| `quiz`      | Practise recall on what is due for review                                                                            |
+| `whats-new` | See the changelog digest since your last session, filtered to your goals                                             |
+| `assess`    | Have a claimed level checked with a verification probe                                                               |
+| `profile`   | See or change goals, mutes, project exclusions and catalog overrides, and export, import or delete everything stored |
+
+## Settings
+
+Both options are plugin options in `/config`.
+
+| Option               | Default | Meaning                                                                                          |
+| -------------------- | ------- | ------------------------------------------------------------------------------------------------ |
+| `dial`               | 2       | Tip frequency from 0 (off) to 5 (most frequent). At 2 the minimum gap between tips is 30 minutes |
+| `transcriptAnalysis` | true    | Let the mentor note which features you use (feature names only, stored locally)                  |
+
+## Permissions
 
 A skill can pre-approve its own commands only for the turn in which you invoke
 it. In a lesson or quiz, the mentor saves results after your next message, so
@@ -112,49 +148,56 @@ It only lets the web fetch tool read pages on `code.claude.com`. The agent is
 told to fetch nothing else, but the domain prompt is the real guard: if a
 lookup ever asks to fetch some other domain, deny it.
 
-## Evals
+## Requirements
 
-`evals/` holds `claude plugin eval` cases (Claude Code 2.1.269 or later). They
-call a real model, so each run costs money (about $0.20 per case run). Run
-them locally, with a cost cap:
+- **Claude Code**, a version that supports plugins with `userConfig`. It was
+  developed against 2.1.322. `claude plugin eval` needs 2.1.269 or newer.
+- **Node** on your `PATH`, because the hooks and the CLI run as
+  `node dist/...`. `.node-version` (24) is the authority for development, and
+  `engines` in `package.json` says `>=24`.
+- **pnpm**, only to build from a checkout. `dist/` is committed, so a plain
+  clone already runs.
+
+## Working on this repo
+
+```bash
+pnpm install   # dependencies and the lefthook git hooks
+pnpm verify    # every gate CI runs: format, lint, harness, toolchain, knip,
+               # typecheck, build, tests with coverage, node pin, dist-fresh,
+               # version-sync, file budget
+```
+
+The evals call a real model, so each case run costs about $0.20. Run them
+locally, with a cost cap. CI does not run them:
 
 ```bash
 claude plugin eval . --trust-plugin --ablation none --max-cost-usd 5
 ```
 
-Cases cover skill triggers for natural phrasing, the over-claim probe, and
-agent dispatch by `ask` and `assess`. The skill and agent graders are
-`with-only` indicators, so they only score with `--ablation none`. Not yet
-covered: the tip rate limit and the mastered-topic silence, because the eval
-docs do not say how to seed `CLAUDE_PLUGIN_DATA`. CI wiring is deferred (it
-needs pinned `--model` and `--judge-model` and a credential). Results go to
+The seven cases in `evals/` cover skill triggers for natural phrasing, the
+over-claim probe, and agent dispatch by `ask` and `assess`. The skill and agent
+graders are `with-only` indicators, so they only score with `--ablation none`.
+The tip rate limit and the mastered-topic silence are not covered yet, because
+the eval docs do not say how to seed `CLAUDE_PLUGIN_DATA`. Results go to
 `evals/results/`, which is git-ignored.
 
-## Notable files
+Commits are Conventional Commits, signed, with a `Signed-off-by` trailer
+(`git commit -s`). See [`CLAUDE.md`](CLAUDE.md) for the conventions and the
+agent workflow. The code of conduct, support and contributing guide are the
+[organization defaults](https://github.com/monte3l/.github).
 
-- `.github/dependabot.yml` — weekly Dependabot updates for the GitHub Actions
-  pinned in `.github/workflows/` (npm updates are left off by default).
-- `pnpm-workspace.yaml` — pnpm's install-script approval list (`allowBuilds`),
-  which pnpm 10+ reads from here rather than from `package.json`.
-- `bin/strip-claude-trailers.mjs` — run by the `commit-msg` hook in
-  `lefthook.yml` before commit linting; strips harness-injected `Claude-*`
-  trailers and leaves `Co-Authored-By:` alone.
+### Project docs
 
-## Tailor it to your project
+- [`DESIGN.md`](DESIGN.md) -- the design spec: mastery model, ambient engine,
+  state and privacy, evaluation, and the decisions behind them.
+- [`CLAUDE.md`](CLAUDE.md) -- the commands, conventions and agent operating
+  model, written for Claude Code.
+- [`SECURITY.md`](SECURITY.md) -- reporting a vulnerability.
+- [`docs/research/`](docs/research) -- the living trackers for TypeScript and
+  Claude Code harness guidance.
+- [Glossary](https://github.com/monte3l/m3l-groundwork/blob/main/docs/glossary.md)
+  -- terms used in `CLAUDE.md` and the `.claude/` harness.
 
-This baseline is frozen at the moment it was generated, and deliberately
-generic until you adapt it. To tailor it to m3l-claude-mentor:
+## License
 
-1. Open this repository in [Claude Code](https://claude.com/claude-code).
-2. Run the `/customize` slash command.
-3. Answer a short interview (project kind, runtime target, test strictness,
-   CI depth). Claude Code then tailors the baseline to your answers and
-   runs a live guidance pass against current official TypeScript and
-   Anthropic documentation, so the result reflects up-to-date recommended
-   practice rather than what was true when this baseline was generated.
-
-## Glossary
-
-Run into an unfamiliar term in `CLAUDE.md`, this README, or the `.claude/`
-harness? See the upstream
-[glossary](https://github.com/monte3l/m3l-groundwork/blob/main/docs/glossary.md).
+[MIT](LICENSE).
