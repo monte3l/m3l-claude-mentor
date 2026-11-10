@@ -134,6 +134,21 @@ export declare function defaultState(now: number): MentorState;
  */
 export declare function parseSegmentState(value: unknown): Parsed<SegmentState>;
 /**
+ * Whether `value` is a well-formed changelog version, the rule
+ * `lastChangelogVersion` follows: a string of 1 to 64 characters of ASCII
+ * letters, digits, `.`, `+` or `-`.
+ *
+ * @param value - Untrusted input.
+ *
+ * @example
+ * ```ts
+ * import { isChangelogVersion } from "./state-schema.js";
+ * isChangelogVersion("1.2.3-rc.1"); // true
+ * isChangelogVersion("1.2 3"); // false
+ * ```
+ */
+export declare function isChangelogVersion(value: unknown): value is string;
+/**
  * Validates a persisted {@link MentorState}. `schemaVersion` must be exactly
  * `1`; any other value fails with "unsupported schemaVersion", so a file
  * from a newer release is rejected rather than misread. Lists are returned

@@ -20,8 +20,9 @@ function withTopic(profile, topic, value) {
 }
 /**
  * `get-profile`: the stored profile merged with the state's mute and
- * exclusion settings; topics sorted by id. The merged catalog is loaded so
- * that a `catalog.json` that no longer merges is reported.
+ * exclusion settings and last changelog version; topics sorted by id. The
+ * merged catalog is loaded so that a `catalog.json` that no longer merges
+ * is reported.
  *
  * @example
  * ```ts
@@ -51,6 +52,7 @@ export async function getProfile(env) {
         muted: state.muted,
         mutedTopics: state.mutedTopics,
         excludedProjects: state.excludedProjects,
+        lastChangelogVersion: state.lastChangelogVersion,
     };
 }
 function optionalClaim(args) {

@@ -291,6 +291,7 @@ describe("get-profile", () => {
       muted: false,
       mutedTopics: [],
       excludedProjects: [],
+      lastChangelogVersion: null,
     });
   });
 

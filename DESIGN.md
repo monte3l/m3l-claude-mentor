@@ -92,11 +92,11 @@ Rules:
 
 **What the weights do, and the defaults chosen at implementation.** Levels are decided per dimension, as section 4.1 says: each channel scores its own dimension, and a dimension counts as shown when its score reaches 0.5. The 0.40/0.30/0.20/0.10 weights do not set a level. They only combine the four channel scores into one overall topic score, used to rank which topic to teach or review next, and they cap what self-report can contribute to that score. The interviews did not specify the following numbers; they were chosen when the scoring was built and are the shipped defaults, safe to change while no learner profile holds real data:
 
-| Parameter                    | Default | Effect                                                                                         |
-| ---------------------------- | ------- | ---------------------------------------------------------------------------------------------- |
-| Negative evidence multiplier | 1.5     | A wrong answer counts 1.5 times as much as a right one in the same channel                     |
-| Recency half-life            | 30 days | Evidence loses half its weight every 30 days, and old events also count less toward confidence |
-| Dimension satisfied at score | 0.5     | One fresh good answer scores 1/3, two score 0.5, so two fresh good answers are needed          |
+| Parameter                    | Default | Effect                                                                                                                                                                                                                       |
+| ---------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Negative evidence multiplier | 1.5     | A wrong answer counts 1.5 times as much as a right one in the same channel                                                                                                                                                   |
+| Recency half-life            | 30 days | Evidence loses half its weight every 30 days, and old events also count less toward confidence                                                                                                                               |
+| Dimension satisfied at score | 0.5     | One good answer scores 1/3 and two score exactly 0.5 only before any recency decay; two answers recorded seconds before a recompute fall just under, so three good answers are needed in practice (the skills ask for three) |
 
 These values decide when the mentor stays quiet on a topic and when it quizzes again, so they shape the whole mentor. The functions take them as options today; wiring them to catalog overrides (section 13, item 3) is not done yet.
 
@@ -144,14 +144,14 @@ m3l-claude-mentor/
 
 Hook events (command hooks only):
 
-| Event                                   | Job                                                                       |
-| --------------------------------------- | ------------------------------------------------------------------------- |
-| `SessionStart` (startup, resume, clear) | Load profile summary, due reviews, digest flag via `additionalContext`    |
-| `SessionStart` (compact)                | Re-inject learner state after compaction                                  |
-| `UserPromptSubmit`                      | Detect signals; run the segment gate; inject style hint and tip directive |
-| `PostToolUse`                           | Extract feature-usage signals; append observed-usage evidence             |
-| `Stop`                                  | Mark segment end only; never returns context or a decision                |
-| `PostCompact`                           | Update segment state only (it cannot inject context)                      |
+| Event                                   | Job                                                                             |
+| --------------------------------------- | ------------------------------------------------------------------------------- |
+| `SessionStart` (startup, resume, clear) | Load profile summary, due reviews, digest flag via `additionalContext`          |
+| `SessionStart` (compact)                | Re-inject learner state after compaction                                        |
+| `UserPromptSubmit`                      | Detect signals; run the segment gate; inject style hint and tip directive       |
+| `PostToolUse`                           | Extract feature-usage signals; append observed-usage evidence                   |
+| `Stop`                                  | Record activity only (no segment boundary); never returns context or a decision |
+| `PostCompact`                           | Update segment state only (it cannot inject context)                            |
 
 Notes:
 
@@ -164,7 +164,7 @@ Notes:
 
 ## 6. Ambient engine
 
-- **Segment** = a stretch of work between natural breaks (task completion, topic change, or a time gap). Limit: **1 tip per segment**.
+- **Segment** = a stretch of work between natural breaks: a topic change or an idle gap (30 minutes with no learner activity). Limit: **1 tip per segment**. Claude Code gives no reliable "task complete" signal and `Stop` fires after every turn, so task completion is not detected; `Stop` only records activity, so a long agent turn is not mistaken for idleness.
 - A tip is only emitted if: it relates to the current task, the topic is below target mastery, the learner's dial permits, and the session is not in a "busy" state.
 - **Delivery (hybrid):** a command hook makes the deterministic decision (rate limit, dial, busy state, topic). The `UserPromptSubmit` hook then injects `additionalContext` asking the model to add one prefixed tip line after its answer. Compliance is soft; evals measure it.
 - Format: one or two lines, prefixed distinctly so it can be ignored or silenced; never blocks or alters the task result.

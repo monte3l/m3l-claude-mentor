@@ -239,15 +239,36 @@ describe("corrupt user catalog.json", () => {
     return segmentId();
   }
 
-  test("Stop still advances the segment", () => {
-    const before = seedAndCorrupt();
+  test("Stop runs silently and keeps the segment and its emitted tip", () => {
+    const dial = { CLAUDE_PLUGIN_OPTION_DIAL: "2" };
+    const seed = runDist(PROMPT, {
+      input: payload({ prompt: "how do I use plan mode" }),
+      dataDir: sb.dir,
+      env: dial,
+    });
+    expect(seed.stdout).toContain("Mentor tip due");
+    writeFileSync(join(sb.dir, "catalog.json"), "{corrupt");
+    const seg = () => {
+      const { segmentId, tipsEmitted } = (
+        JSON.parse(readFileSync(join(sb.dir, "state.json"), "utf8")) as {
+          segment: { segmentId: number; tipsEmitted: number };
+        }
+      ).segment;
+      return { segmentId, tipsEmitted };
+    };
+    const before = seg();
+    expect(before.tipsEmitted).toBe(1);
+    const activity = lastActivityAt();
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 25);
     const r = runDist(STOP, {
       input: payload({ cwd: sb.root }),
       dataDir: sb.dir,
+      env: dial,
     });
     expect(r.status).toBe(0);
     expect(r.stdout).toBe("");
-    expect(segmentId()).toBe(before + 1);
+    expect(lastActivityAt()).toBeGreaterThan(activity);
+    expect(seg()).toEqual(before);
   });
 
   test("PostCompact runs silently and records activity", () => {

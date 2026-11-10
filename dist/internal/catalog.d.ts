@@ -102,9 +102,13 @@ export declare function mergeCatalog(bundled: readonly CatalogEntry[], user: Use
  * Matching is case-insensitive and literal; a keyword must be bounded on both
  * sides by a character that is not a Unicode letter or digit (`_` counts as a
  * boundary) or the string edge, so `plan` matches "a plan." but not
- * "explanation" or "planéte". Boundaries are tested one UTF-16 code unit at a
- * time, so astral-plane letters (outside the BMP) are treated as boundaries.
- * Each entry scores its count of DISTINCT matching keywords; zero scorers are
+ * "explanation" or "planéte". A keyword starting with `/` (a slash command)
+ * has a stricter opening boundary: the `/` must start the text or follow
+ * whitespace or one of `( [ { ' "` or a backtick, so `/init` matches "use
+ * /init" but not "./init", "~/init" or "src/init"; its closing boundary is
+ * the usual one. Boundaries are tested one UTF-16 code unit at a time, so
+ * astral-plane letters (outside the BMP) are treated as boundaries. Each
+ * entry scores its count of DISTINCT matching keywords; zero scorers are
  * excluded, ties keep catalog order. Only the first 20000 chars of `text` are
  * examined: the cut may split a word, and lowercasing can make the scanned
  * text marginally longer than the cap.
