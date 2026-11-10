@@ -98,7 +98,7 @@ Rules:
 | Recency half-life            | 30 days | Evidence loses half its weight every 30 days, and old events also count less toward confidence                                                                                                                               |
 | Dimension satisfied at score | 0.5     | One good answer scores 1/3 and two score exactly 0.5 only before any recency decay; two answers recorded seconds before a recompute fall just under, so three good answers are needed in practice (the skills ask for three) |
 
-These values decide when the mentor stays quiet on a topic and when it quizzes again, so they shape the whole mentor. The functions take them as options today; wiring them to catalog overrides (section 13, item 3) is not done yet.
+These values decide when the mentor stays quiet on a topic and when it quizzes again, so they shape the whole mentor. They are function options, and the CLI `recompute` and `record-batch` commands and the SessionStart recompute read them from the catalog overrides (section 13, item 3).
 
 ### 4.4 Self-report handling (challenge, never trust blindly)
 
@@ -134,8 +134,8 @@ m3l-claude-mentor/
     profile/                         # view/edit goals, catalog, mutes, export/import, purge
     assess/                          # verification probes, explain-back judging
   agents/
-    mastery-assessor.md              # read-only: scores evidence, proposes level changes
-    docs-researcher.md               # fetches official docs and changelog; isolated context
+    mastery-assessor.md              # read-only (Read, Grep, Glob): judges probe answers, returns JSON verdicts
+    docs-researcher.md               # WebFetch only: fetches official docs and changelog; isolated context
   hooks/hooks.json                   # command hooks running dist/hooks/*.js
   dist/                              # committed build output (hooks and CLI run from here)
   data/topic-catalog.json            # default topics, types, dependencies
@@ -160,6 +160,9 @@ Notes:
 - `Stop` `additionalContext` forces the conversation to continue, and `PreCompact`/`PostCompact` output cannot reach the model, so tips are injected on `UserPromptSubmit` and context is restored with `SessionStart` matcher `compact`.
 - Skills are namespaced by plugin: `/m3l-claude-mentor:teach`, not `/mentor teach`. State access from skills goes through a small CLI (`dist/cli/mentor-state.js`), so Markdown never hand-edits JSON.
 - Plugin agents ignore `hooks`, `mcpServers` and `permissionMode` frontmatter; hooks ship at plugin level.
+- The CLI commands are `show`, `get-profile`, `record-evidence`, `record-batch`, `recompute`, `introduce`, `record-pass`, `set-mute`, `set-topic-mute`, `exclude-project`, `get-goals`, `set-goals`, `topics`, `set-topic-override`, `set-changelog-version`, `export`, `import` and `purge`. A leading `--data-dir <absolute path>` beats the environment. `record-batch` takes 1 to 10 events, validates before the first write and saves once, so a lesson or quiz needs one save per answered group.
+- A skill's `allowed-tools` pre-approval lasts only for the turn the learner invokes it, and a plugin cannot ship permission rules. The README therefore documents a one-time user rule for the CLI and a narrower, still unverified, rule set. The `docs-researcher` agent prompts per domain for `WebFetch`, which the README also covers.
+- Skills dispatch the agents by the scoped name `m3l-claude-mentor:<agent>`, with a self-contained prompt because a subagent sees no conversation. The `assess` skill rebuilds the `record-batch` tokens itself from the verdicts and never takes a token string from the agent. Both dispatches were confirmed live by the evals.
 - Hook event names and payload fields must be re-verified against current docs at build time.
 
 ## 6. Ambient engine
@@ -177,6 +180,7 @@ Notes:
 - `/m3l-claude-mentor:ask <question>`: Reference style, answer sourced from live docs with a link.
 - `/m3l-claude-mentor:quiz`: spaced Recall quiz from due items.
 - `/m3l-claude-mentor:whats-new`: changelog digest filtered to the learner's goals and mastery map.
+- `/m3l-claude-mentor:assess <topic>`: a verification probe for a claimed level, judged by the `mastery-assessor` agent. Applied and Fluent can only be refuted by a probe, never confirmed.
 - `/m3l-claude-mentor:profile`: goals, catalog, mutes, export/import, show-and-delete.
 
 ## 8. Customization
@@ -214,7 +218,9 @@ Transcript reading (chosen by the user) is a sensitive capability. Proposed safe
 
 ## 11. Evaluation
 
-- Plugin evals via `claude plugin eval` (cases in `evals/<case>/prompt.md` with graders; `history_file` replays multi-turn context) to check that behaviors fire (rate limit respected, probe issued on over-claim, mastered topics silent). By default each case also runs without the plugin, which gives the with/without comparison.
+- Plugin evals via `claude plugin eval` (Claude Code 2.1.269 or later). Cases live in `evals/<group>/<case>/case.yaml` with inline graders. By default each case also runs without the plugin, but the skill and agent graders are `with-only` indicators, so those cases score only with `--ablation none`.
+- Covered now (7 cases, all 3 of 3 on the last live run, about $3.50 in total): skill triggers for natural phrasing (quiz, teach, assess, whats-new), a verification probe on an over-claim (an `llm` grader), and agent dispatch by `ask` and `assess`.
+- Deferred: the tip rate limit and mastered-topic silence cases, because the eval docs do not say how to seed `CLAUDE_PLUGIN_DATA` or pass `userConfig` to hooks; and CI wiring, which needs a pinned `--model` and `--judge-model` and a credential. Evals call a real model, so they run locally under `--max-cost-usd`.
 - Learner-facing metrics: quiz retention over time, calibration score trend, tips dismissed vs. acted on.
 - Hypothesis to test: ambient plus Socratic teaching improves retention compared with Reference-only. Anthropic's study did not cover agentic use.
 
@@ -248,7 +254,15 @@ Confirmed by the user after checking this spec against current official docs:
 9. **Tips:** hybrid delivery (hook decides, model words the tip on `UserPromptSubmit`).
 10. **Hook build:** commit built `dist/`; a verify step fails when it is stale.
 11. **Controls:** `userConfig` for `dial` and `transcriptAnalysis`; `state.json` for mutes.
+12. **Recompute:** the SessionStart recompute is raise-only; only the explicit `recompute` command lowers a level.
+13. **Segments:** a segment ends on a topic change or a 30-minute idle gap. `Stop` and `PostCompact` only record activity.
+14. **Topic matching:** no generic single-word keywords, slash keywords match only at a word start, and model keywords are Claude-specific.
+15. **Confirming a level:** three good events are needed in practice (see section 4.3).
 
 ## 15. Open questions
 
-None blocking. Items 5-7 above are unconfirmed defaults. Open item: scoring constants (weights, half-life, negative multiplier, threshold) are function options but are not yet read from catalog overrides, which section 13 item 3 calls for.
+None blocking. Items 5-7 above are unconfirmed defaults. Still open:
+
+- Not yet verified live: the narrower permission rules in the README, `PostToolUse` recording in a tool-using session, and dial 0 in a live session.
+- Evals for the tip rate limit and mastered-topic silence, and CI wiring for the evals (section 11).
+- Known limits: concurrent hooks and CLI calls are last-writer-wins (no locking), the evidence read uses a 2 MiB tail window, and project exclusion is lexical (no symlink or case folding).
