@@ -74,4 +74,64 @@ describe("mentor-state CLI entry", () => {
     expect(r.stdout).toBe("");
     expect(r.stderr).toContain("DATA_DIR_UNSET");
   });
+
+  describe("--data-dir", () => {
+    test("works with CLAUDE_PLUGIN_DATA unset", () => {
+      const set = runDist(CLI, {
+        args: ["--data-dir", sb.dir, "set-mute", "on"],
+        dataDir: null,
+      });
+      expect(set.status).toBe(0);
+      const got = runDist(CLI, {
+        args: ["--data-dir", sb.dir, "get-profile"],
+        dataDir: null,
+      });
+      expect(JSON.parse(got.stdout)).toMatchObject({ muted: true });
+    });
+
+    test("the flag beats CLAUDE_PLUGIN_DATA", () => {
+      const other = join(sb.root, "other");
+      const set = runDist(CLI, {
+        args: ["--data-dir", sb.dir, "set-mute", "on"],
+        dataDir: other,
+      });
+      expect(set.status).toBe(0);
+      // the flag's directory holds the change; the env directory does not
+      const viaFlag = runDist(CLI, {
+        args: ["--data-dir", sb.dir, "get-profile"],
+        dataDir: other,
+      });
+      expect(JSON.parse(viaFlag.stdout)).toMatchObject({ muted: true });
+      const viaEnv = runDist(CLI, { args: ["get-profile"], dataDir: other });
+      expect(JSON.parse(viaEnv.stdout)).toMatchObject({ muted: false });
+    });
+
+    test("a relative path exits 1 with DATA_DIR_INVALID and is not echoed", () => {
+      const r = runDist(CLI, {
+        args: ["--data-dir", "secret-relative-xyzzy", "show"],
+        dataDir: sb.dir,
+      });
+      expect(r.status).toBe(1);
+      expect(r.stdout).toBe("");
+      expect(r.stderr).toContain("DATA_DIR_INVALID");
+      expect(r.stderr).not.toContain("xyzzy");
+    });
+
+    test("a missing value exits 2 with the usage line", () => {
+      const r = runDist(CLI, { args: ["--data-dir"], dataDir: sb.dir });
+      expect(r.status).toBe(2);
+      expect(r.stdout).toBe("");
+      expect(r.stderr).toContain("usage: mentor-state [--data-dir");
+    });
+
+    test("--data-dir after the command is not consumed (usage error)", () => {
+      const r = runDist(CLI, {
+        args: ["show", "--data-dir", sb.dir],
+        dataDir: sb.dir,
+      });
+      expect(r.status).toBe(2);
+      expect(r.stdout).toBe("");
+      expect(r.stderr).toContain("usage");
+    });
+  });
 });

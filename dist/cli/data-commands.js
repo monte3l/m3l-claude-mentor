@@ -2,6 +2,7 @@ import { MentorStateError } from "../internal/errors.js";
 import { exportBundleToFile, importBundleFromFile, } from "../internal/export.js";
 import { describeData, purgeData, } from "../internal/purge.js";
 import { CHANNELS, parseEvidence } from "../internal/schema.js";
+import { isChangelogVersion, } from "../internal/state-schema.js";
 import { appendEvidence, loadGoals, loadState, saveGoals, saveState, } from "../internal/store.js";
 import { CliUsageError, requireAbsolutePath, requireOneOf, requireTopicId, requireValue, } from "./args.js";
 import { loadMergedCatalog, requireCatalogEntry, } from "./env.js";
@@ -163,6 +164,32 @@ export async function setGoals(args, env) {
     const text = requireValue(args, "text");
     await saveGoals(env.dir, text);
     return { bytes: Buffer.byteLength(text, "utf8") };
+}
+/**
+ * `set-changelog-version --version <v>`: records the last changelog version
+ * the learner was shown (1 to 64 ASCII letters, digits, `.`, `+` or `-`).
+ *
+ * Known limitation: the update is a read-modify-write of the state with no
+ * lock, so two concurrent writers race and the last one wins.
+ *
+ * @throws CliUsageError when `--version` is missing or malformed (checked
+ * before the state is read or written).
+ *
+ * @example
+ * ```ts
+ * import { setChangelogVersion } from "./data-commands.js";
+ * await setChangelogVersion(args, env); // { lastChangelogVersion: "1.2.3" }
+ * ```
+ */
+export async function setChangelogVersion(args, env) {
+    const version = requireValue(args, "version");
+    if (!isChangelogVersion(version))
+        throw new CliUsageError();
+    await updateState(env, (state) => ({
+        ...state,
+        lastChangelogVersion: version,
+    }));
+    return { lastChangelogVersion: version };
 }
 /**
  * `export --to <absolute path>`: writes an export bundle.

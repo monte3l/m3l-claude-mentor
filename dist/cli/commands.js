@@ -1,7 +1,9 @@
 import { MentorStateError } from "../internal/errors.js";
 import { parseSessionId } from "../internal/schema.js";
 import { CliUsageError, parseArgs } from "./args.js";
-import { excludeProject, exportData, getGoals, importData, purge, recordEvidence, setGoals, setMute, setTopicMute, show, } from "./data-commands.js";
+import { setTopicOverride, topics } from "./catalog-commands.js";
+import { GLOBAL_USAGE } from "./global-options.js";
+import { excludeProject, exportData, getGoals, importData, purge, recordEvidence, setChangelogVersion, setGoals, setMute, setTopicMute, show, } from "./data-commands.js";
 import { getProfile, introduce, recompute, recordPass, } from "./profile-commands.js";
 const ON_OFF = ["on", "off"];
 function spec(usage, valueFlags = [], options = {}) {
@@ -37,8 +39,13 @@ const COMMANDS = {
         booleanFlags: ["replace"],
     }),
     purge: spec("purge --confirm", [], { booleanFlags: ["confirm"] }),
+    topics: spec("topics"),
+    "set-topic-override": spec("set-topic-override --topic <id> [--enabled <true|false>] [--target <level>] [--style <style>] | --topic <id> --reset", ["topic", "enabled", "target", "style"], { booleanFlags: ["reset"] }),
+    "set-changelog-version": spec("set-changelog-version --version <version>", [
+        "version",
+    ]),
 };
-const GENERAL_USAGE = `mentor-state <command> [arguments]; commands: ${Object.keys(COMMANDS).join(", ")}`;
+const GENERAL_USAGE = `${GLOBAL_USAGE}; commands: ${Object.keys(COMMANDS).join(", ")}`;
 function isCommandName(value) {
     return value !== undefined && Object.hasOwn(COMMANDS, value);
 }
@@ -88,6 +95,12 @@ function dispatch(name, argv, env) {
             return importData(args, env);
         case "purge":
             return purge(args, env);
+        case "topics":
+            return topics(env);
+        case "set-topic-override":
+            return setTopicOverride(args, env);
+        case "set-changelog-version":
+            return setChangelogVersion(args, env);
     }
 }
 function oneLine(text) {

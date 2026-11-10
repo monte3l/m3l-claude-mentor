@@ -99,6 +99,25 @@ export declare function setGoals(args: ParsedArgs, env: CommandEnv): Promise<{
     readonly bytes: number;
 }>;
 /**
+ * `set-changelog-version --version <v>`: records the last changelog version
+ * the learner was shown (1 to 64 ASCII letters, digits, `.`, `+` or `-`).
+ *
+ * Known limitation: the update is a read-modify-write of the state with no
+ * lock, so two concurrent writers race and the last one wins.
+ *
+ * @throws CliUsageError when `--version` is missing or malformed (checked
+ * before the state is read or written).
+ *
+ * @example
+ * ```ts
+ * import { setChangelogVersion } from "./data-commands.js";
+ * await setChangelogVersion(args, env); // { lastChangelogVersion: "1.2.3" }
+ * ```
+ */
+export declare function setChangelogVersion(args: ParsedArgs, env: CommandEnv): Promise<{
+    readonly lastChangelogVersion: string;
+}>;
+/**
  * `export --to <absolute path>`: writes an export bundle.
  *
  * @throws CliUsageError for a missing or non-absolute path.

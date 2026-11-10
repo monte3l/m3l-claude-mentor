@@ -1,6 +1,8 @@
 import { MentorStateError } from "../internal/errors.js";
 import { parseSessionId, type CatalogEntry } from "../internal/schema.js";
 import { CliUsageError, parseArgs, type CommandSpec } from "./args.js";
+import { setTopicOverride, topics } from "./catalog-commands.js";
+import { GLOBAL_USAGE } from "./global-options.js";
 import {
   excludeProject,
   exportData,
@@ -8,6 +10,7 @@ import {
   importData,
   purge,
   recordEvidence,
+  setChangelogVersion,
   setGoals,
   setMute,
   setTopicMute,
@@ -71,11 +74,20 @@ const COMMANDS = {
     booleanFlags: ["replace"],
   }),
   purge: spec("purge --confirm", [], { booleanFlags: ["confirm"] }),
+  topics: spec("topics"),
+  "set-topic-override": spec(
+    "set-topic-override --topic <id> [--enabled <true|false>] [--target <level>] [--style <style>] | --topic <id> --reset",
+    ["topic", "enabled", "target", "style"],
+    { booleanFlags: ["reset"] },
+  ),
+  "set-changelog-version": spec("set-changelog-version --version <version>", [
+    "version",
+  ]),
 } as const satisfies Readonly<Record<string, CommandSpec>>;
 
 type CommandName = keyof typeof COMMANDS;
 
-const GENERAL_USAGE = `mentor-state <command> [arguments]; commands: ${Object.keys(COMMANDS).join(", ")}`;
+const GENERAL_USAGE = `${GLOBAL_USAGE}; commands: ${Object.keys(COMMANDS).join(", ")}`;
 
 function isCommandName(value: string | undefined): value is CommandName {
   return value !== undefined && Object.hasOwn(COMMANDS, value);
@@ -178,6 +190,12 @@ function dispatch(
       return importData(args, env);
     case "purge":
       return purge(args, env);
+    case "topics":
+      return topics(env);
+    case "set-topic-override":
+      return setTopicOverride(args, env);
+    case "set-changelog-version":
+      return setChangelogVersion(args, env);
   }
 }
 

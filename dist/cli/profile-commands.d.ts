@@ -39,11 +39,14 @@ export interface ProfileView {
     readonly muted: boolean;
     readonly mutedTopics: readonly string[];
     readonly excludedProjects: readonly string[];
+    /** The last changelog version shown, or `null` when none was recorded. */
+    readonly lastChangelogVersion: string | null;
 }
 /**
  * `get-profile`: the stored profile merged with the state's mute and
- * exclusion settings; topics sorted by id. The merged catalog is loaded so
- * that a `catalog.json` that no longer merges is reported.
+ * exclusion settings and last changelog version; topics sorted by id. The
+ * merged catalog is loaded so that a `catalog.json` that no longer merges
+ * is reported.
  *
  * @example
  * ```ts

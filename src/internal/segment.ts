@@ -338,6 +338,35 @@ export function advanceSegment(
 }
 
 /**
+ * Records activity at `now` WITHOUT boundary detection: no idle-gap,
+ * topic-change or task-complete rule runs, so the segment, its tip quota and
+ * its topic are kept. Only `lastActivityAt` moves, and only forward
+ * (`max(lastActivityAt, now)`), so `startedAt <= lastActivityAt` still holds.
+ * Use it for events that are not learner activity (a finished turn, a
+ * compaction); a new segment then starts only on the next real activity
+ * event fed to {@link advanceSegment}. The input state is never mutated.
+ *
+ * @param state - The current segment state, from the store parser or from
+ * this module's functions.
+ * @param now - The event time in milliseconds; finite and non-negative.
+ * @returns `state` itself when `now <= state.lastActivityAt`, else a copy
+ * with only `lastActivityAt` set to `now`.
+ * @throws RangeError when `now` is non-finite or negative.
+ *
+ * @example
+ * ```ts
+ * import { newSegment, touchActivity } from "./segment.js";
+ * touchActivity(newSegment(0), 5_000).lastActivityAt; // 5_000
+ * ```
+ */
+export function touchActivity(state: SegmentState, now: number): SegmentState {
+  checkTimestamp("now", now);
+  return now <= state.lastActivityAt
+    ? state
+    : { ...state, lastActivityAt: now };
+}
+
+/**
  * Records that a tip was emitted at `now`: increments `tipsEmitted` and sets
  * `lastTipAt`, leaving `lastActivityAt` unchanged. A `now` earlier than
  * `lastActivityAt` is accepted as given. The input state is never mutated.

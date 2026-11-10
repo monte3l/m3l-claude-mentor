@@ -195,6 +195,25 @@ export function parseSegmentState(value) {
     });
 }
 /**
+ * Whether `value` is a well-formed changelog version, the rule
+ * `lastChangelogVersion` follows: a string of 1 to 64 characters of ASCII
+ * letters, digits, `.`, `+` or `-`.
+ *
+ * @param value - Untrusted input.
+ *
+ * @example
+ * ```ts
+ * import { isChangelogVersion } from "./state-schema.js";
+ * isChangelogVersion("1.2.3-rc.1"); // true
+ * isChangelogVersion("1.2 3"); // false
+ * ```
+ */
+export function isChangelogVersion(value) {
+    return (typeof value === "string" &&
+        value.length <= MAX_VERSION_LENGTH &&
+        VERSION_PATTERN.test(value));
+}
+/**
  * Validates a persisted {@link MentorState}. `schemaVersion` must be exactly
  * `1`; any other value fails with "unsupported schemaVersion", so a file
  * from a newer release is rejected rather than misread. Lists are returned
@@ -228,10 +247,7 @@ export function parseState(value) {
     if (!excludedProjects.ok)
         return fail(`state ${excludedProjects.reason}`);
     const version = ownField(record, "lastChangelogVersion");
-    if (version !== null &&
-        (typeof version !== "string" ||
-            version.length > MAX_VERSION_LENGTH ||
-            !VERSION_PATTERN.test(version))) {
+    if (version !== null && !isChangelogVersion(version)) {
         return fail(`state lastChangelogVersion must be null or 1 to ${String(MAX_VERSION_LENGTH)} characters of letters, digits, ., + or -`);
     }
     const segment = parseSegmentState(ownField(record, "segment"));

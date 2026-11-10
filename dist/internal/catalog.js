@@ -267,10 +267,32 @@ const WORD_CHAR = /^[\p{L}\p{N}]$/u;
 function isWordChar(char) {
     return char !== undefined && WORD_CHAR.test(char);
 }
-/** Whether `keyword` occurs in `text` bounded by non-word chars or edges. */
+/** Characters after which a `/`-led keyword (a slash command) may start. */
+const SLASH_OPENERS = new Set([
+    "(",
+    "[",
+    "{",
+    "'",
+    '"',
+    "`",
+]);
+const WHITESPACE = /^\s$/u;
+/**
+ * Whether `char` (the one before a match) opens the match: for a keyword
+ * starting with `/`, only the text start, whitespace or an opener, so a path
+ * such as `src/init` or `./init` is not a slash command; for any other
+ * keyword, anything but a letter or digit.
+ */
+function opensMatch(char, keyword) {
+    if (!keyword.startsWith("/"))
+        return !isWordChar(char);
+    return char === undefined || WHITESPACE.test(char) || SLASH_OPENERS.has(char);
+}
+/** Whether `keyword` occurs in `text` with an opening and closing boundary. */
 function containsWord(text, keyword) {
     for (let at = text.indexOf(keyword); at !== -1; at = text.indexOf(keyword, at + 1)) {
-        if (!isWordChar(text[at - 1]) && !isWordChar(text[at + keyword.length])) {
+        if (opensMatch(text[at - 1], keyword) &&
+            !isWordChar(text[at + keyword.length])) {
             return true;
         }
     }
@@ -282,9 +304,13 @@ function containsWord(text, keyword) {
  * Matching is case-insensitive and literal; a keyword must be bounded on both
  * sides by a character that is not a Unicode letter or digit (`_` counts as a
  * boundary) or the string edge, so `plan` matches "a plan." but not
- * "explanation" or "planéte". Boundaries are tested one UTF-16 code unit at a
- * time, so astral-plane letters (outside the BMP) are treated as boundaries.
- * Each entry scores its count of DISTINCT matching keywords; zero scorers are
+ * "explanation" or "planéte". A keyword starting with `/` (a slash command)
+ * has a stricter opening boundary: the `/` must start the text or follow
+ * whitespace or one of `( [ { ' "` or a backtick, so `/init` matches "use
+ * /init" but not "./init", "~/init" or "src/init"; its closing boundary is
+ * the usual one. Boundaries are tested one UTF-16 code unit at a time, so
+ * astral-plane letters (outside the BMP) are treated as boundaries. Each
+ * entry scores its count of DISTINCT matching keywords; zero scorers are
  * excluded, ties keep catalog order. Only the first 20000 chars of `text` are
  * examined: the cut may split a word, and lowercasing can make the scanned
  * text marginally longer than the cap.

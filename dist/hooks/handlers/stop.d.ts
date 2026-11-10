@@ -1,8 +1,10 @@
 import type { HookHandler } from "../runtime.js";
 /**
- * Handles `Stop`: advances the segment with a task-complete event and saves
- * the state. Always resolves `null`: no context, no decision, no
- * `continue`. An invalid `session_id` makes it a no-op that touches nothing.
+ * Handles `Stop`: moves the segment's `lastActivityAt` forward to now with
+ * {@link touchActivity} (no boundary detection, so the segment, its tip
+ * quota and its topic are kept even after a long turn) and saves the state.
+ * Always resolves `null`: no context, no decision, no `continue`. An invalid
+ * `session_id` makes it a no-op that touches nothing.
  *
  * @example
  * ```ts
