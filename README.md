@@ -26,6 +26,68 @@ dependencies), typecheck, build, tests with coverage, a package-exports check,
 and a Node version pin check. See `CLAUDE.md` for the full command reference and this
 project's conventions.
 
+## Using the plugin
+
+m3l-claude-mentor is a Claude Code plugin that mentors one learner on Claude
+and Claude Code. To try it from a checkout, build once and load it from the
+directory:
+
+```bash
+pnpm install && pnpm build
+claude --plugin-dir /path/to/m3l-claude-mentor
+```
+
+- **Ambient tips.** Hooks add at most one short `💡 Mentor tip:` line to an
+  answer, only when it relates to what you are doing and to a topic you have
+  not mastered yet. Say "stop tips" or "resume tips" at any time.
+- **Skills**, namespaced `/m3l-claude-mentor:<name>`: `teach`, `ask`, `quiz`,
+  `whats-new`, `assess` and `profile` (goals, mutes, project exclusions,
+  catalog overrides, export, import and deletion of everything stored).
+- **Settings.** The tip dial and the usage-observation switch are plugin
+  options in `/config`. State lives in the plugin data directory, outside your
+  projects, and only feature-usage signals are stored, never conversation
+  content.
+
+### Permissions
+
+A skill can pre-approve its own commands only for the turn in which you invoke
+it. In a lesson or quiz, the mentor saves results after your next message, so
+Claude Code may ask you to approve those saves. Approving them one by one is
+fine. To stop the prompts, add this rule once to your user settings
+(`~/.claude/settings.json`, or through `/permissions`):
+
+```json
+{
+  "permissions": {
+    "allow": ["Bash(node */dist/cli/mentor-state.js *)"]
+  }
+}
+```
+
+The rule allows only `node` running a file named `mentor-state.js` under a
+`dist/cli/` directory, which is how the plugin saves your learning state. It
+does not allow other commands. It does also cover the plugin's delete and
+import commands, so for those the `profile` skill's own confirmation question
+is then the only guard; remove the rule at any time. To keep native prompts on
+delete, import and export, allow only the day-to-day commands instead (these
+narrower rules are not yet verified in a live session, and an unmatched
+command simply prompts as before):
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(node */dist/cli/mentor-state.js --data-dir * show)",
+      "Bash(node */dist/cli/mentor-state.js --data-dir * get-profile)",
+      "Bash(node */dist/cli/mentor-state.js --data-dir * topics)",
+      "Bash(node */dist/cli/mentor-state.js --data-dir * get-goals)",
+      "Bash(node */dist/cli/mentor-state.js --data-dir * introduce *)",
+      "Bash(node */dist/cli/mentor-state.js --data-dir * record-batch *)"
+    ]
+  }
+}
+```
+
 ## Notable files
 
 - `.github/dependabot.yml` — weekly Dependabot updates for the GitHub Actions

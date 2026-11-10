@@ -15,6 +15,8 @@ import {
   cliCommands,
   parseFrontmatter,
   readSkill,
+  sectionOf,
+  usedCommands,
   skillMarkdownFiles,
 } from "./helpers.js";
 
@@ -396,7 +398,68 @@ describe("required phrases", () => {
     expect(readSkill("quiz")).toContain("2 of 3");
   });
 
-  test("teach records the pass with record-pass", () => {
-    expect(readSkill("teach")).toContain("record-pass");
+  test("teach starts spaced review through record-batch --pass", () => {
+    expect(readSkill("teach")).toContain("--pass");
+  });
+});
+
+describe("batch recording and profile additions", () => {
+  const BATCH_SKILLS = ["quiz", "teach", "assess"];
+  const SEPARATE = ["record-evidence", "record-pass", "recompute"];
+  const allUsed = (name: string): string[] =>
+    skillMarkdownFiles(name).flatMap((f) => usedCommands(f.body));
+
+  test.each(BATCH_SKILLS)("%s: records with record-batch", (name) => {
+    expect(readSkill(name)).toContain("record-batch");
+    expect(allUsed(name)).toContain("record-batch");
+  });
+
+  test.each(BATCH_SKILLS)(
+    "%s: no bash line uses the separate recording commands",
+    (name) => {
+      expect(allUsed(name).filter((c) => SEPARATE.includes(c))).toEqual([]);
+    },
+  );
+
+  test("profile Show step runs get-goals", () => {
+    const show = sectionOf(parseFrontmatter(readSkill("profile")).body, "Show");
+    expect(show).toBeDefined();
+    expect(usedCommands(show ?? "")).toContain("get-goals");
+  });
+
+  test("profile documents the permission rule and never edits settings", () => {
+    const text = readSkill("profile");
+    expect(text).toContain("Bash(node */dist/cli/mentor-state.js *)");
+    expect(text).toMatch(/permissions/i);
+    expect(text.toLowerCase()).toContain("never edit");
+  });
+
+  test("sectionOf slices between level-two headings", () => {
+    const body = "## A\none\n## B\ntwo\n## C\nthree";
+    expect(sectionOf(body, "B")).toBe("two");
+    expect(sectionOf(body, "C")).toBe("three");
+    expect(sectionOf(body, "Z")).toBeUndefined();
+  });
+
+  test("usedCommands lists only standard invocation commands", () => {
+    const body = fence(CLI("record-batch --topic x"), "echo hi", CLI("show"));
+    expect(usedCommands(body)).toEqual(["record-batch", "show"]);
+  });
+
+  test("a body using a separate recording command is caught by the filter", () => {
+    const body = fence(
+      CLI("record-pass --topic x"),
+      CLI("record-batch --topic x"),
+    );
+    expect(usedCommands(body).filter((c) => SEPARATE.includes(c))).toEqual([
+      "record-pass",
+    ]);
+  });
+
+  test("a Show section without get-goals is caught", () => {
+    const body = `## Show\n${fence(CLI("show"))}\n## Goals\n${fence(CLI("get-goals"))}`;
+    expect(usedCommands(sectionOf(body, "Show") ?? "")).not.toContain(
+      "get-goals",
+    );
   });
 });

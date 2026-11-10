@@ -42,7 +42,7 @@ node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_D
 4. **Fast-moving topics** (`type` is `fast-moving`): fetch live docs starting from
    `https://code.claude.com/docs/llms.txt`, summarise briefly with a link, never teach
    from memory, and skip the remaining steps (no introduce, no checks, no
-   record-evidence, no record-pass, no recompute); the level is capped there.
+   record-batch); the level is capped there.
 5. **Mark introduced:**
 
 ```bash
@@ -51,27 +51,20 @@ node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_D
 
 6. **Teach** in the chosen style: a few short turns, grounded in the learner's own
    workspace when a live example helps.
-7. **Check and record**, by style:
+7. **Check**, by style (all steps record through ONE call afterwards):
    - `socratic` or `explain-demo`: an explain-back check (own words or a why-question)
-     is one probe. Judge it, give kind concrete feedback, then record one event:
-   - `recall-quiz`: ask up to three short recall questions and record one event per
-     question on the `quiz` channel instead; pass criterion is at least 2 of 3 right.
+     is one probe. Judge it and give kind, concrete feedback. Event: `explain-back`.
+   - `recall-quiz`: ask up to three short recall questions; one `quiz` event per
+     question; pass criterion is at least 2 of 3 right.
    - `reference`: record nothing.
+8. **Record once**, after the check, and skip this step entirely for `reference` style,
+   when the learner says "just tell me", for fast-moving topics, and whenever no check
+   question was answered (`record-batch` needs 1-10 events; never invent an event). Add `--pass pass` only after a lesson whose check
+   was positive (starts spaced review); omit `--pass` otherwise. Report the returned
+   level in plain words.
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} record-evidence --topic <id> --channel <explain-back|quiz> --result <positive|negative>
-```
-
-8. **Start spaced review** after a lesson whose check was positive:
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} record-pass --topic <id> --result pass
-```
-
-9. **Recompute** and report the returned level in plain words:
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} recompute --topic <id>
+node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} record-batch --topic <id> --events '<explain-back|quiz>:<positive|negative>' --pass pass
 ```
 
 One event is weak evidence, so a single lesson rarely raises a level; levels change after

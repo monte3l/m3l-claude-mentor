@@ -244,3 +244,21 @@ export function checkAllowedTools(
   }
   return problems;
 }
+
+/** The text under a `## <heading>` line up to the next `## ` heading (or the end). */
+export function sectionOf(body: string, heading: string): string | undefined {
+  const lines = body.split("\n");
+  const start = lines.findIndex((l) => l.trim() === `## ${heading}`);
+  if (start === -1) return undefined;
+  const rest = lines.slice(start + 1);
+  const end = rest.findIndex((l) => /^## /.test(l));
+  return (end === -1 ? rest : rest.slice(0, end)).join("\n");
+}
+
+/** Names of the CLI commands used on bash lines (token after the `--data-dir` pair). */
+export function usedCommands(body: string): string[] {
+  return bashLines(body).flatMap((line) => {
+    const m = STANDARD.exec(line);
+    return m ? [m[1] ?? ""] : [];
+  });
+}

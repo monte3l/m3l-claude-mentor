@@ -40,31 +40,25 @@ Resolve the topic id and `type` from `topics`; ask the learner to pick when ambi
    - Applied or Fluent: apply evidence only comes from OBSERVED usage, so no probe can
      confirm it. Run an explain-back or recall probe anyway; it can only refute. The best
      outcome is `unverified`. Ask the learner to show real usage in their work.
-4. **Judge and record one event per probe answered**, using the matching channel:
+4. **Judge each probe answer**, one event per answer on the matching channel (`quiz` or
+   `explain-back`). Confirmation needs three or more positive probe events on the
+   matching channel (stored earlier events also count). Fewer positives give
+   `unverified`, not `confirmed`; say more probing or evidence is needed, never imply
+   failure.
+5. **Record ONCE, only after the probes were answered** (an abandoned probe records
+   nothing). Put the probe events first, then `self-report:positive` last, with the
+   claimed level:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} record-evidence --topic <id> --channel <quiz|explain-back> --result <positive|negative>
+node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} record-batch --topic <id> --events '<quiz|explain-back>:<positive|negative>,self-report:positive' --claim <Level>
 ```
 
-5. **Record the claim only AFTER the probe was answered.** An abandoned probe records
-   nothing.
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} record-evidence --topic <id> --channel self-report --result positive
-```
-
-6. **Recompute** with the claimed level:
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} recompute --topic <id> --claim <Level>
-```
-
-Confirmation needs three or more positive probe events on the matching channel
-(stored earlier events also count). Fewer positives give `unverified`, not
-`confirmed`; say more probing or evidence is needed, never imply failure. 7. **Report** the outcome (confirmed, refuted or unverified) from the output, kindly
-and concretely. For refuted, name what was solid and the one gap, and offer
-`/m3l-claude-mentor:teach <id>`. For unverified, say what would confirm it. 8. **Under-claiming.** When the output carries the `underclaim` diagnosis, the higher
-level is already saved; tell the learner and ask them conversationally to confirm.
+6. **Read the output** (`level`, `previousLevel`, `claim`, `diagnoses`) for the outcome.
+7. **Report** the outcome (confirmed, refuted or unverified) from the output, kindly
+   and concretely. For refuted, name what was solid and the one gap, and offer
+   `/m3l-claude-mentor:teach <id>`. For unverified, say what would confirm it.
+8. **Under-claiming.** When the output carries the `underclaim` diagnosis, the higher
+   level is already saved; tell the learner and ask them conversationally to confirm.
 
 ## Rules
 
