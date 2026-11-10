@@ -9,7 +9,11 @@
   "homepage": "https://github.com/monte3l/m3l-claude-mentor",
   "repository": "https://github.com/monte3l/m3l-claude-mentor",
   "license": "MIT",
-  "keywords": ["mentor", "learning", "claude-code"],
+  "keywords": [
+    "mentor",
+    "learning",
+    "claude-code"
+  ],
   "userConfig": {
     "dial": {
       "type": "number",
