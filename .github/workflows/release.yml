@@ -1,0 +1,71 @@
+name: Release
+
+# Releases this repository from its Conventional Commits. Merging to the
+# default branch opens or updates one release pull request (version bump and
+# changelog). Merging that pull request tags the commit and creates a DRAFT
+# release, a repository-specific job may attach assets to it, and `finalize`
+# attests and publishes it.
+#
+# The two shared workflows are pinned to a full commit SHA like any action:
+# Dependabot's `github-actions` entry keeps the pin current. Everything
+# specific to this repository (an npm publish, a tarball) is a job between
+# `prepare` and `finalize`, never a change to the shared workflows.
+#
+# Adopting:
+#   1. Copy a starter from blueprint/files/release-please/ to
+#      `release-please-config.json` and `.release-please-manifest.json`.
+#   2. The organization secrets RELEASE_APP_CLIENT_ID and
+#      RELEASE_APP_PRIVATE_KEY must be shared with this repository.
+#   3. Set `notify` to the repositories that consume this one's releases
+#      (for example `["m3l-plugins"]`), or leave it empty.
+#
+# The two App secrets are passed by name, never `secrets: inherit`: inheriting
+# would hand the shared workflows every secret this repository can read (a docs
+# site holds a Cloudflare token), and a later change to them could use it.
+#
+# A package published to npm registers THIS file's name (`release.yml`) as its
+# trusted publisher: npm checks the calling workflow, not the shared one.
+on:
+  push:
+    branches: [main]
+  # A run that fails at startup (an Actions policy blocking an action, for
+  # example) cannot be re-run, and nothing else would start a new one before
+  # the next push. `prepare` below refuses any ref but the default branch.
+  workflow_dispatch:
+
+permissions: {}
+
+# Two pushes must not race over one release pull request. A pending run is
+# replaced by a newer one, which is safe: release-please reads the whole history.
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Prepare
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    permissions:
+      contents: read
+    uses: monte3l/.github/.github/workflows/release-prepare.yml@57aa2f2582d638e066e1eb8af2795438ca5ae778 # release-baseline
+    secrets:
+      RELEASE_APP_CLIENT_ID: ${{ secrets.RELEASE_APP_CLIENT_ID }}
+      RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
+  finalize:
+    name: Finalize
+    needs: [prepare]
+    if: needs.prepare.outputs.releases_created == 'true'
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    uses: monte3l/.github/.github/workflows/release-finalize.yml@57aa2f2582d638e066e1eb8af2795438ca5ae778 # release-baseline
+    with:
+      tag: ${{ needs.prepare.outputs.tag_name }}
+      # Empty until the plugin is listed in monte3l/m3l-plugins; then set to
+      # '["m3l-plugins"]' so that catalogue opens its pin pull request.
+      notify: "[]"
+    secrets:
+      RELEASE_APP_CLIENT_ID: ${{ secrets.RELEASE_APP_CLIENT_ID }}
+      RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "signoff": "monte3l-release[bot] <333264726+monte3l-release[bot]@users.noreply.github.com>",
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "package-name": "m3l-claude-mentor",
+      "component": "m3l-claude-mentor",
+      "include-component-in-tag": true,
+      "tag-separator": "--",
+      "draft": true,
+      "force-tag-creation": true,
+      "extra-files": [
+        {
+          "type": "json",
+          "path": ".claude-plugin/plugin.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "package.json",
+          "jsonpath": "$.version"
+        }
+      ]
+    }
+  }
+}
