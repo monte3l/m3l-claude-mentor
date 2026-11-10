@@ -198,6 +198,25 @@ agent workflow. The code of conduct, support and contributing guide are the
 - [Glossary](https://github.com/monte3l/m3l-groundwork/blob/main/docs/glossary.md)
   -- terms used in `CLAUDE.md` and the `.claude/` harness.
 
+## Versioning policy
+
+Releases follow [Semantic Versioning](https://semver.org). While the version is
+below 1.0.0, a minor release may change any of the contract below. The public
+contract is the skill names (`/m3l-claude-mentor:<name>`), the plugin options
+`dial` and `transcriptAnalysis`, and the format `export` writes and `import`
+reads. The hook internals, the `mentor-state` CLI, the evals and the topic
+catalogue are not part of it.
+
+| Bump  | When                                                                                        |
+| ----- | ------------------------------------------------------------------------------------------- |
+| Major | A skill or option is removed or renamed, or an export from the previous major cannot import |
+| Minor | A new skill, option or topic, with existing ones unchanged                                  |
+| Patch | A fix, or a docs or CI change, with no change to the contract                               |
+
+Release-please opens one release pull request from the Conventional Commits.
+Merging it tags `m3l-claude-mentor--vX.Y.Z` and publishes a GitHub release, and
+`CHANGELOG.md` lists what changed.
+
 ## License
 
 [MIT](LICENSE).
