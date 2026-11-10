@@ -184,7 +184,7 @@ export function checkDocsSourcing(
   needs: readonly string[],
 ): string[] {
   const missing = needs
-    .filter((needle) => !body.includes(needle))
+    .filter((needle) => !hasPhrase(body, needle))
     .map((n) => `missing ${n}`);
   if (!/\blink\b/i.test(body))
     missing.push("missing instruction to give a link");
@@ -261,4 +261,42 @@ export function usedCommands(body: string): string[] {
     const m = STANDARD.exec(line);
     return m ? [m[1] ?? ""] : [];
   });
+}
+
+/** Repo root, for agents/, output-styles/ and skills/ lookups. */
+export const ROOT = resolve(import.meta.dirname, "../..");
+
+/** Frontmatter keys found in a file that are not in `allowed`. */
+export function unknownKeys(
+  data: Readonly<Record<string, string>>,
+  allowed: readonly string[],
+): string[] {
+  return Object.keys(data).filter((k) => !allowed.includes(k));
+}
+
+/** Comma-separated tool list to entries (shared by agents and skills). */
+export function splitList(value: string | undefined): string[] {
+  return toolEntries(value);
+}
+
+/** The `##` headings of a markdown text, in order. */
+export function headings(text: string): string[] {
+  return text
+    .split("\n")
+    .filter((l) => l.startsWith("## "))
+    .map((l) => l.slice(3).trim());
+}
+
+/** Collapses every run of whitespace (newlines included) to a single space. */
+export function squash(text: string): string {
+  return text.replace(/\s+/g, " ");
+}
+
+/** Whitespace-insensitive phrase search; case-insensitive when `ci` is true. */
+export function hasPhrase(text: string, phrase: string, ci = false): boolean {
+  const hay = squash(text);
+  const needle = squash(phrase);
+  return ci
+    ? hay.toLowerCase().includes(needle.toLowerCase())
+    : hay.includes(needle);
 }
