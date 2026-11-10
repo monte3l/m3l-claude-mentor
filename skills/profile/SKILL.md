@@ -60,7 +60,11 @@ node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_D
 ```
 
 Show the current goals as a block, draft the new text with the learner, and save only
-what they approve.
+what they approve. When `get-goals` returns empty and the learner wants to set goals,
+offer the template in `references/goals-template.md` with the learner's agreement, fill
+it in WITH them section by section, and save the final text through `set-goals`. Before saving, drop the template's prompt lines and any `unfilled` sections. Never
+seed goals silently. If the multi-line `set-goals` command asks for approval, that is
+normal.
 
 ## Mutes and exclusions
 

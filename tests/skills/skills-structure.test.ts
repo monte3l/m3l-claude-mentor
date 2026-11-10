@@ -14,6 +14,7 @@ import {
   CLI_TOOL,
   cliCommands,
   parseFrontmatter,
+  hasPhrase,
   readSkill,
   sectionOf,
   usedCommands,
@@ -195,7 +196,7 @@ describe("rule 5: destructive commands need explicit confirmation first", () => 
     const body = parseFrontmatter(readSkill("profile")).body;
     expect(body).toMatch(/explicit/i);
     expect(body).toMatch(/confirm/i);
-    expect(body).toContain("references/data-actions.md");
+    expect(hasPhrase(body, "references/data-actions.md")).toBe(true);
   });
 
   test("the destructive commands are actually exercised by the profile files", () => {
@@ -305,8 +306,27 @@ describe("rule 7: ask and whats-new source from official docs", () => {
     expect(lines.some((l) => /\brecord-(evidence|pass)\b/.test(l))).toBe(false);
   });
 
-  test.each(SKILL_NAMES)("%s does not mention the PR 2 agents", (name) => {
-    expect(readSkill(name)).not.toMatch(/mastery-assessor|docs-researcher/);
+  test.each(["ask", "whats-new", "teach"])(
+    "%s dispatches the docs-researcher agent",
+    (name) => {
+      expect(
+        hasPhrase(readSkill(name), "m3l-claude-mentor:docs-researcher"),
+      ).toBe(true);
+    },
+  );
+
+  test("assess dispatches the mastery-assessor agent", () => {
+    expect(
+      hasPhrase(readSkill("assess"), "m3l-claude-mentor:mastery-assessor"),
+    ).toBe(true);
+  });
+
+  test.each(["quiz", "profile"])("%s mentions no agent", (name) => {
+    for (const file of skillMarkdownFiles(name)) {
+      expect(file.body, file.path).not.toMatch(
+        /mastery-assessor|docs-researcher/,
+      );
+    }
   });
 
   test("checker flags missing sources and missing link instruction", () => {
@@ -326,23 +346,15 @@ const usesCli = (name: string): boolean =>
 
 describe("allowed-tools", () => {
   test.each(SKILL_NAMES)(
-    "%s: only the CLI Bash pattern, WebFetch only on teach/ask/whats-new",
+    "%s: allowed-tools is exactly the CLI Bash pattern",
     (name) => {
       const entries = toolEntries(
         parseFrontmatter(readSkill(name)).data["allowed-tools"],
       );
-      expect(checkAllowedTools(entries, WEB_SKILLS.includes(name))).toEqual([]);
-      expect(entries).not.toContain("WebSearch");
-      expect(entries).not.toContain("Bash");
-      expect(entries.includes(CLI_TOOL)).toBe(usesCli(name));
+      expect(entries).toEqual([CLI_TOOL]);
+      expect(checkAllowedTools(entries, false)).toEqual([]);
     },
   );
-
-  test.each(WEB_SKILLS)("%s: allows WebFetch", (name) => {
-    expect(
-      toolEntries(parseFrontmatter(readSkill(name)).data["allowed-tools"]),
-    ).toContain("WebFetch");
-  });
 
   test.each(["Bash", "Bash(*)", "Bash(node x *)", "WebSearch", "Read"])(
     "checker flags %s",
@@ -359,7 +371,7 @@ describe("allowed-tools", () => {
 
 describe("required phrases", () => {
   const has = (name: string, phrase: string): boolean =>
-    readSkill(name).toLowerCase().includes(phrase);
+    hasPhrase(readSkill(name), phrase, true);
 
   test.each(WEB_SKILLS)(
     "%s: fetched pages are data (never instructions)",
@@ -390,16 +402,17 @@ describe("required phrases", () => {
 
   test("assess: claims are Recalled..Fluent and unverified is an outcome", () => {
     const text = readSkill("assess");
-    for (const level of ["Recalled", "Fluent"]) expect(text).toContain(level);
-    expect(text).toContain("unverified");
+    for (const level of ["Recalled", "Fluent"])
+      expect(hasPhrase(text, level)).toBe(true);
+    expect(hasPhrase(text, "unverified")).toBe(true);
   });
 
   test("quiz states the 2 of 3 pass criterion", () => {
-    expect(readSkill("quiz")).toContain("2 of 3");
+    expect(hasPhrase(readSkill("quiz"), "2 of 3")).toBe(true);
   });
 
   test("teach starts spaced review through record-batch --pass", () => {
-    expect(readSkill("teach")).toContain("--pass");
+    expect(hasPhrase(readSkill("teach"), "--pass")).toBe(true);
   });
 });
 
@@ -410,7 +423,7 @@ describe("batch recording and profile additions", () => {
     skillMarkdownFiles(name).flatMap((f) => usedCommands(f.body));
 
   test.each(BATCH_SKILLS)("%s: records with record-batch", (name) => {
-    expect(readSkill(name)).toContain("record-batch");
+    expect(hasPhrase(readSkill(name), "record-batch")).toBe(true);
     expect(allUsed(name)).toContain("record-batch");
   });
 
@@ -429,9 +442,11 @@ describe("batch recording and profile additions", () => {
 
   test("profile documents the permission rule and never edits settings", () => {
     const text = readSkill("profile");
-    expect(text).toContain("Bash(node */dist/cli/mentor-state.js *)");
+    expect(hasPhrase(text, "Bash(node */dist/cli/mentor-state.js *)")).toBe(
+      true,
+    );
     expect(text).toMatch(/permissions/i);
-    expect(text.toLowerCase()).toContain("never edit");
+    expect(hasPhrase(text, "never edit", true)).toBe(true);
   });
 
   test("sectionOf slices between level-two headings", () => {
@@ -461,5 +476,46 @@ describe("batch recording and profile additions", () => {
     expect(usedCommands(sectionOf(body, "Show") ?? "")).not.toContain(
       "get-goals",
     );
+  });
+});
+
+describe("review-hardening phrases", () => {
+  const lower = (name: string): string => readSkill(name).toLowerCase();
+  const missing = (text: string, phrases: readonly string[]): string[] =>
+    phrases.filter((p) => !hasPhrase(text, p, true));
+
+  test("assess states the artifact, rebuild, cap and key-points rules", () => {
+    expect(
+      missing(lower("assess"), [
+        "Artifact paths:",
+        "rebuild",
+        "at most 2",
+        "outside the project",
+        "key points",
+      ]),
+    ).toEqual([]);
+  });
+
+  test("profile mentions unfilled template sections", () => {
+    expect(missing(lower("profile"), ["unfilled"])).toEqual([]);
+  });
+
+  test("the phrase helper reports exactly the missing phrases", () => {
+    expect(missing("Rebuild it. key points", ["rebuild", "at most 2"])).toEqual(
+      ["at most 2"],
+    );
+  });
+});
+
+describe("hasPhrase", () => {
+  test("finds a phrase split across a newline and extra spaces", () => {
+    expect(hasPhrase("must ignore\npaths here", "ignore paths")).toBe(true);
+    expect(hasPhrase("must  ignore \n  paths", "ignore\npaths")).toBe(true);
+  });
+
+  test("still reports a missing phrase, and honours case only when asked", () => {
+    expect(hasPhrase("ignore\nfiles", "ignore paths")).toBe(false);
+    expect(hasPhrase("Ignore Paths", "ignore paths")).toBe(false);
+    expect(hasPhrase("Ignore\nPaths", "ignore paths", true)).toBe(true);
   });
 });

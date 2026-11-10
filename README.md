@@ -43,6 +43,13 @@ claude --plugin-dir /path/to/m3l-claude-mentor
 - **Skills**, namespaced `/m3l-claude-mentor:<name>`: `teach`, `ask`, `quiz`,
   `whats-new`, `assess` and `profile` (goals, mutes, project exclusions,
   catalog overrides, export, import and deletion of everything stored).
+- **Agents.** `docs-researcher` fetches the official docs and the changelog
+  in its own context (the `ask`, `whats-new` and `teach` skills use it), and
+  `mastery-assessor` judges your answers when you ask the mentor to verify a
+  skill you claim (the `assess` skill uses it). Both are read-only.
+- **Output style (opt-in).** `/output-style m3l-claude-mentor:mentor` switches
+  to a clear, encouraging teaching voice that keeps Claude Code's normal coding
+  behaviour. It is never applied automatically.
 - **Settings.** The tip dial and the usage-observation switch are plugin
   options in `/config`. State lives in the plugin data directory, outside your
   projects, and only feature-usage signals are stored, never conversation
@@ -87,6 +94,23 @@ command simply prompts as before):
   }
 }
 ```
+
+The `docs-researcher` agent fetches pages with Claude Code's web fetch tool.
+A plugin cannot ship permission rules, so the first lookup asks you to allow
+the docs domain. Choose "don't ask again for this domain" or add the rule
+yourself:
+
+```json
+{
+  "permissions": {
+    "allow": ["WebFetch(domain:code.claude.com)"]
+  }
+}
+```
+
+It only lets the web fetch tool read pages on `code.claude.com`. The agent is
+told to fetch nothing else, but the domain prompt is the real guard: if a
+lookup ever asks to fetch some other domain, deny it.
 
 ## Notable files
 
