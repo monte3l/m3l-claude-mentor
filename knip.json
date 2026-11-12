@@ -5,14 +5,17 @@
     "src/cli/mentor-state.ts",
     "tests/**/*.test.ts",
     "bin/*.mjs",
+    "scripts/*.mjs",
     ".claude/hooks/*.mjs"
   ],
   "project": [
     "src/**/*.ts",
     "tests/**/*.ts",
     "bin/**/*.mjs",
+    "scripts/**/*.mjs",
     ".claude/hooks/**/*.mjs"
   ],
   "ignoreExportsUsedInFile": true,
+  "ignoreBinaries": ["wrangler"],
   "ignoreDependencies": ["@commitlint/config-conventional", "@commitlint/types"]
 }
