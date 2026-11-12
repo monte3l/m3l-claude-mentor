@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "A Claude Code plugin that mentors one learner on Claude and Claude Code, adapting to their mastery level.",
+  "description": "A Claude Code plugin that mentors you on Claude and Claude Code, adapting to your mastery level",
   "packageManager": "pnpm@12.8.1",
   "engines": {
     "node": ">=24"
