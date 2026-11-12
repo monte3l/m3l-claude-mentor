@@ -12,11 +12,15 @@ interface Manifest {
 
 const raw = readFileSync(join(ROOT, ".claude-plugin", "plugin.json"), "utf8");
 const manifest = JSON.parse(raw) as Manifest;
+const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
+  version?: string;
+};
 
 describe(".claude-plugin/plugin.json", () => {
-  test("keeps its name and version", () => {
+  test("keeps its name and a semver version matching package.json", () => {
     expect(manifest.name).toBe("m3l-claude-mentor");
-    expect(manifest.version).toBe("0.1.0");
+    expect(manifest.version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(manifest.version).toBe(pkg.version);
   });
 
   test("declares the dial option", () => {
