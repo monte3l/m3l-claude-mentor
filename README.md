@@ -7,7 +7,8 @@
 m3l-claude-mentor is a Claude Code plugin that mentors one learner on Claude
 and Claude Code. It keeps a private map of what you know, adds at most one short
 tip when it fits what you are doing, and teaches, quizzes and answers questions
-on request. It stays quiet on topics you have already shown you know.
+on request. It stays quiet on topics you have already shown you know. The
+docs are at [claude-mentor.monte3l.com](https://claude-mentor.monte3l.com).
 
 ## Who is this for
 
@@ -20,22 +21,33 @@ on request. It stays quiet on topics you have already shown you know.
 
 ## Quickstart
 
-You need Claude Code and Node (see [Requirements](#requirements)). The plugin
-is not in the monte3l catalog yet, so run it from a checkout:
+You need Claude Code and Node (see [Requirements](#requirements)).
 
-1. Build it once:
-
-   ```bash
-   pnpm install && pnpm build
-   ```
-
-2. Start Claude Code with the plugin loaded:
+1. Install the plugin from the monte3l catalog. From your shell:
 
    ```bash
-   claude --plugin-dir /path/to/m3l-claude-mentor
+   claude plugin marketplace add monte3l/m3l-plugins
+   claude plugin install m3l-claude-mentor@monte3l
    ```
 
-3. Ask for a lesson, for example `/m3l-claude-mentor:teach hooks`. The mentor
+   Or inside a Claude Code session:
+
+   ```text
+   /plugin marketplace add monte3l/m3l-plugins
+   /plugin install m3l-claude-mentor@monte3l
+   ```
+
+   To add the marketplace and install in one step, use
+   `claude plugin install m3l-claude-mentor --marketplace monte3l/m3l-plugins`
+   (Claude Code 2.1.292 or newer) or
+   `/plugin install m3l-claude-mentor --marketplace monte3l/m3l-plugins`
+   (2.1.275 or newer).
+
+   The shell form installs at user scope unless you pass `--scope project` or
+   `--scope local`. The session form opens the plugin's details and asks you to
+   pick a scope.
+
+2. Ask for a lesson, for example `/m3l-claude-mentor:teach hooks`. The mentor
    runs a short lesson, then records what you showed it. After a few prompts
    about a topic you have not mastered, you may see one `💡 Mentor tip:` line.
 
@@ -90,6 +102,24 @@ Both options are plugin options in `/config`.
 | -------------------- | ------- | ------------------------------------------------------------------------------------------------ |
 | `dial`               | 2       | Tip frequency from 0 (off) to 5 (most frequent). At 2 the minimum gap between tips is 30 minutes |
 | `transcriptAnalysis` | true    | Let the mentor note which features you use (feature names only, stored locally)                  |
+
+## Manage the plugin
+
+| Task                           | From your shell                                                                                          | Inside a session                                                                             |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Update                         | `claude plugin update m3l-claude-mentor@monte3l`                                                         | `/plugin`, then **Installed**, the plugin, **Update now**                                    |
+| Update automatically           | Not available                                                                                            | `/plugin`, then **Marketplaces**, `monte3l`, **Enable auto-update**                          |
+| Turn off or on                 | `claude plugin disable m3l-claude-mentor@monte3l`, then `claude plugin enable m3l-claude-mentor@monte3l` | `/plugin disable m3l-claude-mentor@monte3l`, then `/plugin enable m3l-claude-mentor@monte3l` |
+| Uninstall                      | `claude plugin uninstall m3l-claude-mentor@monte3l`                                                      | `/plugin uninstall m3l-claude-mentor@monte3l`                                                |
+| Run a checkout for one session | `claude --plugin-dir /path/to/m3l-claude-mentor` (build it first with `pnpm install && pnpm build`)      | Not available                                                                                |
+| Run an older release           | Check out its tag, `m3l-claude-mentor--vX.Y.Z`, then use `--plugin-dir`                                  | Not available                                                                                |
+
+`monte3l` is not an official Anthropic marketplace, so Claude Code does not
+update its plugins automatically unless you turn auto-update on. Claude Code
+keeps you on the installed version until the plugin's `version` changes. After a
+change inside a session, run `/reload-plugins` to apply it. Uninstalling deletes
+your learning state in the plugin data directory unless you pass
+`--keep-data`; you can also export it first with the `profile` skill.
 
 ## Permissions
 
@@ -164,7 +194,13 @@ lookup ever asks to fetch some other domain, deny it.
 pnpm install   # dependencies and the lefthook git hooks
 pnpm verify    # every gate CI runs: format, lint, harness, toolchain, knip,
                # typecheck, build, tests with coverage, node pin, dist-fresh,
-               # version-sync, file budget
+               # version-sync, docs site, file budget
+```
+
+```bash
+node design/source/docs-kit/build.mjs --check      # docs site gate: links, page coverage, design checksums, doc-versus-code parity
+node design/source/docs-kit/build.mjs --out _site  # build the docs site locally
+node scripts/doc-parity.mjs                        # only the doc-versus-code parity checks
 ```
 
 The evals call a real model, so each case run costs about $0.20. Run them
@@ -188,11 +224,17 @@ agent workflow. The code of conduct, support and contributing guide are the
 
 ### Project docs
 
+- [Documentation site](https://claude-mentor.monte3l.com) -- these pages and
+  the skill and agent prompts, built from the repository's Markdown. A page is
+  on it only if it is listed in `docs.config.mjs`.
 - [`DESIGN.md`](DESIGN.md) -- the design spec: mastery model, ambient engine,
   state and privacy, evaluation, and the decisions behind them.
 - [`CLAUDE.md`](CLAUDE.md) -- the commands, conventions and agent operating
   model, written for Claude Code.
 - [`SECURITY.md`](SECURITY.md) -- reporting a vulnerability.
+- [`design/README.md`](design/README.md) -- the vendored m3l-design copy that
+  styles the docs site.
+- [`CHANGELOG.md`](CHANGELOG.md) -- what changed in each release.
 - [`docs/research/`](docs/research) -- the living trackers for TypeScript and
   Claude Code harness guidance.
 - [Glossary](https://github.com/monte3l/m3l-groundwork/blob/main/docs/glossary.md)
