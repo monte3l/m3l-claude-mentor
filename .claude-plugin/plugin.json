@@ -10,9 +10,11 @@
   "repository": "https://github.com/monte3l/m3l-claude-mentor",
   "license": "MIT",
   "keywords": [
-    "mentor",
+    "anthropic",
+    "claude-code",
+    "claude-code-plugin",
     "learning",
-    "claude-code"
+    "mentoring"
   ],
   "userConfig": {
     "dial": {
