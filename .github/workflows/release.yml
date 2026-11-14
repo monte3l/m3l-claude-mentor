@@ -63,9 +63,7 @@ jobs:
     uses: monte3l/.github/.github/workflows/release-finalize.yml@57aa2f2582d638e066e1eb8af2795438ca5ae778 # release-baseline
     with:
       tag: ${{ needs.prepare.outputs.tag_name }}
-      # Empty until the plugin is listed in monte3l/m3l-plugins; then set to
-      # '["m3l-plugins"]' so that catalogue opens its pin pull request.
-      notify: "[]"
+      notify: '["m3l-plugins"]'
     secrets:
       RELEASE_APP_CLIENT_ID: ${{ secrets.RELEASE_APP_CLIENT_ID }}
       RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}

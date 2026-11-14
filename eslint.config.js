@@ -27,6 +27,9 @@ export default defineConfig(
       // -- without this, `pnpm lint` from the main checkout also walks (and
       // can fail on) that copy's own in-progress state.
       ".claude/worktrees/**",
+      // The vendored m3l-design release (see design/README.md), copied verbatim
+      // and verified by design/SHA256SUMS: never linted or reformatted here.
+      "design/source/**",
     ],
   },
   js.configs.recommended,
@@ -101,7 +104,7 @@ export default defineConfig(
     ...configs.disableTypeChecked,
   },
   {
-    files: ["bin/**/*.mjs", ".claude/hooks/**/*.mjs"],
+    files: ["bin/**/*.mjs", "scripts/**/*.mjs", ".claude/hooks/**/*.mjs"],
     languageOptions: {
       globals: { ...globals.node },
     },

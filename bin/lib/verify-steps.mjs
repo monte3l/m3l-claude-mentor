@@ -94,6 +94,12 @@ export const CORE_STEPS = [
     name: "Check plugin.json and package.json versions agree",
     cmd: ["node", "bin/check-version-sync.mjs"],
   },
+  {
+    id: "docs",
+    group: "lint",
+    name: "Check the docs site (docs-kit)",
+    cmd: ["node", "design/source/docs-kit/build.mjs", "--check"],
+  },
 ];
 
 /** Reads and validates verify-steps.packs.json. Absence is fine (no packs installed). */
