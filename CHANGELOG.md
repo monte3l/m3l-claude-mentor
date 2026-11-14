@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0](https://github.com/monte3l/m3l-claude-mentor/compare/m3l-claude-mentor--v0.1.0...m3l-claude-mentor--v0.2.0) (2026-11-14)
+
+
+### Features
+
+* add the docs site at claude-mentor.monte3l.com ([b052818](https://github.com/monte3l/m3l-claude-mentor/commit/b052818891dfeeb3a26a7e3a055288fded0e0a73))
+
+
+### Bug Fixes
+
+* move deploy-tools to tools/deploy so Dependabot can update it ([96507b5](https://github.com/monte3l/m3l-claude-mentor/commit/96507b51f0f147902310f21898c6c2774977a7d9))
+
 ## 0.1.0 (2026-11-12)
 
 
