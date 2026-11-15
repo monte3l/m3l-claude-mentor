@@ -221,7 +221,7 @@ the eval docs do not say how to seed `CLAUDE_PLUGIN_DATA`. Results go to
 
 Commits are Conventional Commits, signed, with a `Signed-off-by` trailer
 (`git commit -s`). See [`CLAUDE.md`](CLAUDE.md) for the conventions and the
-agent workflow. The code of conduct, support and contributing guide are the
+agent workflow. The code of conduct and support are the
 [organization defaults](https://github.com/monte3l/.github).
 
 ### Project docs
@@ -233,6 +233,15 @@ agent workflow. The code of conduct, support and contributing guide are the
   state and privacy, evaluation, and the decisions behind them.
 - [`CLAUDE.md`](CLAUDE.md) -- the commands, conventions and agent operating
   model, written for Claude Code.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) -- how to report a bug, commit, open a
+  pull request and release.
+- [`docs/architecture.md`](docs/architecture.md) -- the actors, the data flow
+  and every external interface.
+- [`docs/assurance-case.md`](docs/assurance-case.md) -- the threat model and why
+  each threat is countered.
+- [`docs/GOVERNANCE.md`](docs/GOVERNANCE.md) -- who decides, who has access, and
+  the Gold criteria this project cannot meet.
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) -- what is planned and what is ruled out.
 - [`SECURITY.md`](SECURITY.md) -- reporting a vulnerability.
 - [`design/README.md`](design/README.md) -- the vendored m3l-design copy that
   styles the docs site.

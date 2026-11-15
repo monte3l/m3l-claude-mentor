@@ -69,6 +69,30 @@ export default {
       label: "Mentor output style",
     },
     {
+      src: "docs/architecture.md",
+      out: "architecture.html",
+      group: "Reference",
+      label: "Architecture",
+    },
+    {
+      src: "docs/GOVERNANCE.md",
+      out: "GOVERNANCE.html",
+      group: "Project",
+      label: "Governance",
+    },
+    {
+      src: "docs/ROADMAP.md",
+      out: "ROADMAP.html",
+      group: "Project",
+      label: "Roadmap",
+    },
+    {
+      src: "CONTRIBUTING.md",
+      out: "CONTRIBUTING.html",
+      group: "Project",
+      label: "Contributing",
+    },
+    {
       src: "DESIGN.md",
       out: "DESIGN.html",
       group: "Project",
@@ -79,6 +103,12 @@ export default {
       out: "design.html",
       group: "Project",
       label: "Design system",
+    },
+    {
+      src: "docs/assurance-case.md",
+      out: "assurance-case.html",
+      group: "Security",
+      label: "Assurance case",
     },
     {
       src: "SECURITY.md",
