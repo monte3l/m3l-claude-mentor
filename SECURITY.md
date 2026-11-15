@@ -11,16 +11,71 @@ open the repository's **Security** tab, then **Report a vulnerability**.
 Include the affected version, reproduction steps, and the impact you think it
 has.
 
-## What to expect
+## Supported versions
 
-| Step        | Target                                                                 |
-| ----------- | ---------------------------------------------------------------------- |
-| Acknowledge | Within 7 days                                                          |
-| Fix         | Within 60 days of confirming a medium-or-higher severity vulnerability |
-| Disclose    | A published GitHub security advisory, crediting you unless you decline |
+| Version                 | Supported |
+| ----------------------- | --------- |
+| Latest `0.x` release    | Yes       |
+| Latest commit on `main` | Yes       |
+| Anything else           | No        |
 
-These are targets for a small maintainer team, not a service-level agreement.
-The project is below 1.0.0: only the latest release and `main` are supported.
+This is a small-team project below 1.0.0. Only the latest release and the
+latest commit on `main` get a fix.
+
+### Scope and duration of support
+
+Support has no fixed length. Each release is supported until the next release is
+published, and from then on it gets no security update. A fix ships as a new
+release on the current line, never as a backport. When a `1.0.0` release
+appears, the last `0.x` release is supported for 90 days after it, and the
+release notes state the date. Someone on an unsupported version should update to
+the latest release.
+
+## Response process
+
+This is the coordinated disclosure policy. The security contact is the
+maintainer, reached through the advisory form above.
+
+| Step                                                              | Target                                                                                                                          |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Acknowledge the report                                            | Within 7 days                                                                                                                   |
+| Confirm or reject it, and say how severe it is                    | Within 14 days of the acknowledgment                                                                                            |
+| Ship a fix for a confirmed medium, high or critical vulnerability | Within 60 days of confirmation                                                                                                  |
+| Publish a GitHub security advisory                                | When the fix is released, or after 90 days from the report if the reporter and the maintainer agree there is no fix to wait for |
+
+Please keep the report private until the advisory is published. These are
+targets for a small maintainer team, not a service-level agreement. If a target
+slips, the maintainer says so in the advisory thread and gives a new date.
+
+## Credit
+
+The advisory credits the reporter by the name or handle they choose, unless they
+ask not to be named.
+
+## Published vulnerability data
+
+Every confirmed vulnerability gets a GitHub security advisory, with a CVE
+requested when it qualifies. The advisories for this repository are listed under
+its Security tab. None has been published so far.
+
+## Dependency and code-scanning findings
+
+| Tool                                        | What it checks                                                                                           | Threshold                                                                                                        |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Dependency Review (`dependency-review.yml`) | Dependencies a pull request adds or changes: known vulnerabilities and licenses                          | Fails the pull request on a `high` or `critical` vulnerability, or a license outside the allow list              |
+| Dependabot                                  | Pinned Actions, the development packages and the docs deploy tool in `tools/deploy/`                     | A bump arrives as a pull request after a cooldown. A security advisory it cannot resolve is fixed by an override |
+| CodeQL (default setup, extended suite)      | Static analysis of the JavaScript, the TypeScript and the workflows, on pushes, pull requests and weekly | A required check, so a finding blocks the merge                                                                  |
+| zizmor and actionlint                       | The workflows                                                                                            | Fail the `workflow-lint` check                                                                                   |
+
+**Remediation thresholds.** A `critical` or `high` finding in a dependency or in
+the code is fixed before the change that introduced it merges, or before the next
+release if it was already on `main`. A `medium` finding is fixed within 60 days.
+A `low` finding is fixed or dismissed with a recorded reason within 90 days. A
+license violation is fixed before merge, with no exception.
+
+**Before a release.** No release is cut with an open `critical` or `high`
+finding. A dismissed finding names its reason in the alert, and the accepted ones
+are listed below.
 
 ## Secrets and credentials
 
