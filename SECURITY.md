@@ -62,12 +62,12 @@ looks them up. `scorecard.yml` runs weekly and surfaces its findings as Code
 Scanning alerts. The ones below are dismissed as deliberate or time-based, not
 defects. Do not "fix" the first one into a standing bypass.
 
-| Check             | Score | Why it stays                                                                                                                                                                                                                                         |
-| ----------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch-Protection | 8     | The top tier asks for two approvals. The organization has two members, so a PR has one reviewer who is not its author, and requiring two would block every merge unless a standing bypass existed. The `main` ruleset has no bypass actor on purpose |
-| Maintained        | 0     | Scorecard scores any repository under 90 days old as 0. This one was created on 2026-11-04, so it resolves itself in early February 2027                                                                                                             |
+| Check             | Score | Why it stays                                                                                                                                                                                                                                                                                                                                                           |
+| ----------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch-Protection | 8     | The top tier asks for two approvals. The organization has two members, so a PR has one reviewer who is not its author, and requiring two would block every merge unless a standing bypass existed. The `main` ruleset has no bypass actor on purpose                                                                                                                   |
+| Maintained        | 0     | Scorecard scores any repository under 90 days old as 0. This one was created on 2026-11-04, so it resolves itself in early February 2027                                                                                                                                                                                                                               |
+| Fuzzing           | 0     | Not applicable. The inputs are JSON that Claude Code passes to the hooks on stdin, command-line arguments, the plugin's own local state files, and an export bundle the learner chooses to import. None comes from a network or an untrusted binary, and the parsers validate their input and reject or ignore what does not fit. Nothing is exposed to a remote party |
 
-Two other findings are open, not accepted: Fuzzing (the CLI's `import` and the
-hooks parse JSON input that stays on the local machine) and CII-Best-Practices
-(the repository is not registered for the OpenSSF badge yet). A later change
-either fixes them or adds them to this table with a reason.
+One other finding is open, not accepted: CII-Best-Practices (the repository is not
+registered for the OpenSSF badge yet). A later change either fixes it or adds it
+to this table with a reason.
