@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/monte3l/m3l-claude-mentor/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/monte3l/m3l-claude-mentor/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/monte3l/m3l-claude-mentor/badge)](https://securityscorecards.dev/viewer/?uri=github.com/monte3l/m3l-claude-mentor)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/16729/badge)](https://www.bestpractices.dev/projects/16729)
+[![OpenSSF Baseline](https://www.bestpractices.dev/projects/16729/baseline)](https://www.bestpractices.dev/projects/16729)
 [![REUSE](https://github.com/monte3l/m3l-claude-mentor/actions/workflows/reuse.yml/badge.svg?branch=main)](https://github.com/monte3l/m3l-claude-mentor/actions/workflows/reuse.yml)
 
 m3l-claude-mentor is a Claude Code plugin that mentors one learner on Claude
