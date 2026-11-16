@@ -4,7 +4,7 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/monte3l/m3l-claude-mentor/badge)](https://securityscorecards.dev/viewer/?uri=github.com/monte3l/m3l-claude-mentor)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/16729/badge)](https://www.bestpractices.dev/projects/16729)
 [![OpenSSF Baseline](https://www.bestpractices.dev/projects/16729/baseline)](https://www.bestpractices.dev/projects/16729)
-[![REUSE](https://github.com/monte3l/m3l-claude-mentor/actions/workflows/reuse.yml/badge.svg?branch=main)](https://github.com/monte3l/m3l-claude-mentor/actions/workflows/reuse.yml)
+[![REUSE status](https://api.reuse.software/badge/github.com/monte3l/m3l-claude-mentor)](https://api.reuse.software/info/github.com/monte3l/m3l-claude-mentor)
 
 m3l-claude-mentor is a Claude Code plugin that mentors one learner on Claude
 and Claude Code. It keeps a private map of what you know, adds at most one short
