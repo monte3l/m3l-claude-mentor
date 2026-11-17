@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.2.2](https://github.com/monte3l/m3l-claude-mentor/compare/m3l-claude-mentor--v0.2.1...m3l-claude-mentor--v0.2.2) (2026-11-17)
+
+
+### Bug Fixes
+
+* **build:** run the TypeScript directly and commit no build output ([7c35fe4](https://github.com/monte3l/m3l-claude-mentor/commit/7c35fe41b147c87b78cf01b99882719f2b89b2e7))
+* **build:** run the TypeScript directly and commit no build output ([014557d](https://github.com/monte3l/m3l-claude-mentor/commit/014557d1beb5b479005000e6d20e6a62848eb838))
+* keep hooks exiting 0 on a broken install or a closed pipe ([8c4d123](https://github.com/monte3l/m3l-claude-mentor/commit/8c4d12366e2931b90ece60636181c9ee63938103))
+* keep hooks exiting 0 on a broken install or a closed pipe ([3fe6b25](https://github.com/monte3l/m3l-claude-mentor/commit/3fe6b25452bf0fb6210f881aff31e7b62c478768))
+
 ## [0.2.1](https://github.com/monte3l/m3l-claude-mentor/compare/m3l-claude-mentor--v0.2.0...m3l-claude-mentor--v0.2.1) (2026-11-17)
 
 
