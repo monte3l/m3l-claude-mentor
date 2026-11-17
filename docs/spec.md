@@ -1,4 +1,4 @@
-# Claude Code Mentor Harness: Design Spec
+# Claude Code Mentor Harness: Specification
 
 Status: draft from interview rounds 1-4. Deliverable is this file, to be dropped into the new repository. Nothing here is built yet.
 
