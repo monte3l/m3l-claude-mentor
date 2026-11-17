@@ -2,7 +2,7 @@
 
 This page shows the actors and actions in the system and every external
 interface the released plugin has. The design and the reasons behind it are in
-[`DESIGN.md`](../DESIGN.md), and the conventions for working in the repository
+[`spec.md`](spec.md), and the conventions for working in the repository
 are in [`CLAUDE.md`](../CLAUDE.md). The threat analysis is in the
 [assurance case](assurance-case.md).
 
@@ -55,7 +55,7 @@ does not parse is ignored, and the hook exits 0.
 
 **Interface 4: the CLI.** `mentor-state` takes a leading
 `--data-dir <absolute path>` and one command. The commands are listed in
-[`DESIGN.md`](../DESIGN.md#5-plugin-architecture). It is an implementation detail
+[`spec.md`](spec.md#5-plugin-architecture). It is an implementation detail
 of the skills and not part of the contract.
 
 **Interface 5: the export format.** `export` writes a JSON bundle of the whole

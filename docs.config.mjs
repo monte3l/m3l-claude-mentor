@@ -93,10 +93,10 @@ export default {
       label: "Contributing",
     },
     {
-      src: "DESIGN.md",
-      out: "DESIGN.html",
+      src: "docs/spec.md",
+      out: "spec.html",
       group: "Project",
-      label: "Design spec",
+      label: "Specification",
     },
     {
       src: "design/README.md",
