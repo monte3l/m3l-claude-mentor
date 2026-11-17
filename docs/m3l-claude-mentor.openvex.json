@@ -1,0 +1,30 @@
+{
+  "@context": "https://openvex.dev/ns/v0.2.0",
+  "@id": "https://github.com/monte3l/m3l-claude-mentor/blob/main/docs/m3l-claude-mentor.openvex.json",
+  "author": "monte3l",
+  "role": "Project maintainers",
+  "timestamp": "2026-11-18T00:00:00Z",
+  "version": 1,
+  "statements": [
+    {
+      "vulnerability": {
+        "name": "GHSA-fc5q-39xc-vjpf",
+        "aliases": ["CVE-2026-112366"],
+        "description": "picomatch vulnerable to ReDoS through single-branch repeated extglobs"
+      },
+      "products": [
+        {
+          "@id": "pkg:github/monte3l/m3l-claude-mentor",
+          "subcomponents": [
+            {
+              "@id": "pkg:npm/picomatch@4.0.7"
+            }
+          ]
+        }
+      ],
+      "status": "not_affected",
+      "justification": "component_not_present",
+      "impact_statement": "picomatch 4.0.7 has no patched version. It is a transitive development dependency, reached through fdir and tinyglobby from typescript-eslint, eslint-plugin-import-x, eslint-plugin-tsdoc, knip, vite and vitest, all of which are devDependencies. The plugin declares no runtime dependency, its hooks and CLI import no package, and the release tarball is a git archive of this repository, which holds no node_modules. Nothing that ships, or that runs on a user's machine, loads picomatch."
+    }
+  ]
+}
