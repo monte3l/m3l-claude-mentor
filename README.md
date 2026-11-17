@@ -61,7 +61,7 @@ The plugin has four parts. **Hooks** are the deterministic part: they load your
 profile at session start, decide whether a tip is due, and note which features
 you use. **Skills** are the on-demand part: lessons, quizzes, lookups and
 verification. **Agents** do isolated work: one fetches the official docs, one
-judges your answers. A small CLI, `dist/cli/mentor-state.js`, is the only way
+judges your answers. A small CLI, `src/cli/mentor-state.ts`, is the only way
 skills read or write your state, so Markdown never edits the data files.
 
 Each topic has a level, from Unseen up to Fluent, computed per competency
@@ -113,7 +113,7 @@ Both options are plugin options in `/config`.
 | Update automatically           | Not available                                                                                            | `/plugin`, then **Marketplaces**, `monte3l`, **Enable auto-update**                          |
 | Turn off or on                 | `claude plugin disable m3l-claude-mentor@monte3l`, then `claude plugin enable m3l-claude-mentor@monte3l` | `/plugin disable m3l-claude-mentor@monte3l`, then `/plugin enable m3l-claude-mentor@monte3l` |
 | Uninstall                      | `claude plugin uninstall m3l-claude-mentor@monte3l`                                                      | `/plugin uninstall m3l-claude-mentor@monte3l`                                                |
-| Run a checkout for one session | `claude --plugin-dir /path/to/m3l-claude-mentor` (build it first with `pnpm install && pnpm build`)      | Not available                                                                                |
+| Run a checkout for one session | `claude --plugin-dir /path/to/m3l-claude-mentor` (nothing to build: it runs from the source)             | Not available                                                                                |
 | Run an older release           | Check out its tag, `m3l-claude-mentor--vX.Y.Z`, then use `--plugin-dir`                                  | Not available                                                                                |
 
 `monte3l` is not an official Anthropic marketplace, so Claude Code does not
@@ -134,13 +134,19 @@ fine. To stop the prompts, add this rule once to your user settings
 ```json
 {
   "permissions": {
-    "allow": ["Bash(node */dist/cli/mentor-state.js *)"]
+    "allow": ["Bash(node */src/cli/mentor-state.ts *)"]
   }
 }
 ```
 
-The rule allows only `node` running a file named `mentor-state.js` under a
-`dist/cli/` directory, which is how the plugin saves your learning state. It
+> [!NOTE]
+> If you added this rule for an earlier release, replace
+> `dist/cli/mentor-state.js` with `src/cli/mentor-state.ts`. The plugin no
+> longer ships a built `dist/` folder, so the old rule matches nothing and the
+> approval prompts come back until you change it.
+
+The rule allows only `node` running a file named `mentor-state.ts` under a
+`src/cli/` directory, which is how the plugin saves your learning state. It
 does not allow other commands. It does also cover the plugin's delete and
 import commands, so for those the `profile` skill's own confirmation question
 is then the only guard; remove the rule at any time. To keep native prompts on
@@ -152,12 +158,12 @@ command simply prompts as before):
 {
   "permissions": {
     "allow": [
-      "Bash(node */dist/cli/mentor-state.js --data-dir * show)",
-      "Bash(node */dist/cli/mentor-state.js --data-dir * get-profile)",
-      "Bash(node */dist/cli/mentor-state.js --data-dir * topics)",
-      "Bash(node */dist/cli/mentor-state.js --data-dir * get-goals)",
-      "Bash(node */dist/cli/mentor-state.js --data-dir * introduce *)",
-      "Bash(node */dist/cli/mentor-state.js --data-dir * record-batch *)"
+      "Bash(node */src/cli/mentor-state.ts --data-dir * show)",
+      "Bash(node */src/cli/mentor-state.ts --data-dir * get-profile)",
+      "Bash(node */src/cli/mentor-state.ts --data-dir * topics)",
+      "Bash(node */src/cli/mentor-state.ts --data-dir * get-goals)",
+      "Bash(node */src/cli/mentor-state.ts --data-dir * introduce *)",
+      "Bash(node */src/cli/mentor-state.ts --data-dir * record-batch *)"
     ]
   }
 }
@@ -184,18 +190,20 @@ lookup ever asks to fetch some other domain, deny it.
 
 - **Claude Code**, a version that supports plugins with `userConfig`. It was
   developed against 2.1.322. `claude plugin eval` needs 2.1.269 or newer.
-- **Node** on your `PATH`, because the hooks and the CLI run as
-  `node dist/...`. `.node-version` (24) is the authority for development, and
-  `engines` in `package.json` says `>=24`.
-- **pnpm**, only to build from a checkout. `dist/` is committed, so a plain
-  clone already runs.
+- **Node 24.3 or newer** on your `PATH`, because the hooks and the CLI run as
+  `node src/...ts`. Node removes the types itself, so nothing is built. Node
+  24.0 to 24.2 print an experimental-feature warning every time they run
+  TypeScript, and 24.3 does not. `.node-version` (24) is the authority for
+  development, and `engines` in `package.json` says `>=24.3.0`.
+- **pnpm**, only to work on a checkout: its checks and tests. Nothing is built,
+  so a plain clone already runs.
 
 ## Working on this repo
 
 ```bash
 pnpm install   # dependencies and the lefthook git hooks
 pnpm verify    # every gate CI runs: format, lint, harness, toolchain, knip,
-               # typecheck, build, tests with coverage, node pin, dist-fresh,
+               # typecheck, tests with coverage, node pin, no-dist,
                # version-sync, docs site, file budget
 ```
 

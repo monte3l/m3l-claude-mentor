@@ -6,7 +6,7 @@ import {
   checkFastFacts,
   hasPhrase,
   parseFrontmatter,
-} from "../skills/helpers.js";
+} from "../skills/helpers.ts";
 
 const PATH = join(ROOT, "output-styles", "mentor.md");
 

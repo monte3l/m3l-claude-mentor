@@ -13,7 +13,7 @@
  *
  * @example
  * ```ts
- * import { parseTopicId, type Parsed, type TopicId } from "./schema.js";
+ * import { parseTopicId, type Parsed, type TopicId } from "./schema.ts";
  * const r: Parsed<TopicId> = parseTopicId("plan-mode");
  * if (r.ok) console.log(r.value);
  * else console.error(r.reason);
@@ -28,7 +28,7 @@ export type Parsed<T> =
  *
  * @example
  * ```ts
- * import { LEVELS } from "./schema.js";
+ * import { LEVELS } from "./schema.ts";
  * LEVELS[0]; // "Unseen"
  * ```
  */
@@ -47,7 +47,7 @@ export const LEVELS = [
  *
  * @example
  * ```ts
- * import type { Level } from "./schema.js";
+ * import type { Level } from "./schema.ts";
  * const target: Level = "Applied";
  * ```
  */
@@ -58,7 +58,7 @@ export type Level = (typeof LEVELS)[number];
  *
  * @example
  * ```ts
- * import { CHANNELS } from "./schema.js";
+ * import { CHANNELS } from "./schema.ts";
  * CHANNELS.includes("quiz"); // true
  * ```
  */
@@ -74,7 +74,7 @@ export const CHANNELS = [
  *
  * @example
  * ```ts
- * import type { Channel } from "./schema.js";
+ * import type { Channel } from "./schema.ts";
  * const c: Channel = "explain-back";
  * ```
  */
@@ -85,7 +85,7 @@ export type Channel = (typeof CHANNELS)[number];
  *
  * @example
  * ```ts
- * import { DIMENSIONS } from "./schema.js";
+ * import { DIMENSIONS } from "./schema.ts";
  * DIMENSIONS.length; // 3
  * ```
  */
@@ -96,7 +96,7 @@ export const DIMENSIONS = ["apply", "understand", "recall"] as const;
  *
  * @example
  * ```ts
- * import type { Dimension } from "./schema.js";
+ * import type { Dimension } from "./schema.ts";
  * const d: Dimension = "recall";
  * ```
  */
@@ -107,7 +107,7 @@ export type Dimension = (typeof DIMENSIONS)[number];
  *
  * @example
  * ```ts
- * import { TOPIC_TYPES } from "./schema.js";
+ * import { TOPIC_TYPES } from "./schema.ts";
  * TOPIC_TYPES.includes("feature"); // true
  * ```
  */
@@ -124,7 +124,7 @@ export const TOPIC_TYPES = [
  *
  * @example
  * ```ts
- * import type { TopicType } from "./schema.js";
+ * import type { TopicType } from "./schema.ts";
  * const t: TopicType = "concept";
  * ```
  */
@@ -135,7 +135,7 @@ export type TopicType = (typeof TOPIC_TYPES)[number];
  *
  * @example
  * ```ts
- * import { STYLES } from "./schema.js";
+ * import { STYLES } from "./schema.ts";
  * STYLES[0]; // "socratic"
  * ```
  */
@@ -151,7 +151,7 @@ export const STYLES = [
  *
  * @example
  * ```ts
- * import type { Style } from "./schema.js";
+ * import type { Style } from "./schema.ts";
  * const s: Style = "reference";
  * ```
  */
@@ -163,7 +163,7 @@ export type Style = (typeof STYLES)[number];
  *
  * @example
  * ```ts
- * import { parseTopicId, type TopicId } from "./schema.js";
+ * import { parseTopicId, type TopicId } from "./schema.ts";
  * const r = parseTopicId("plan-mode");
  * const id: TopicId | undefined = r.ok ? r.value : undefined;
  * ```
@@ -176,7 +176,7 @@ export type TopicId = string & { readonly __brand: "TopicId" };
  *
  * @example
  * ```ts
- * import { parseSessionId, type SessionId } from "./schema.js";
+ * import { parseSessionId, type SessionId } from "./schema.ts";
  * const r = parseSessionId("sess_1");
  * const id: SessionId | undefined = r.ok ? r.value : undefined;
  * ```
@@ -188,7 +188,7 @@ export type SessionId = string & { readonly __brand: "SessionId" };
  *
  * @example
  * ```ts
- * import { parseEvidence, type Evidence } from "./schema.js";
+ * import { parseEvidence, type Evidence } from "./schema.ts";
  * const r = parseEvidence({
  *   channel: "quiz",
  *   topic: "plan-mode",
@@ -215,7 +215,7 @@ export interface Evidence {
  *
  * @example
  * ```ts
- * import { MAX_EVIDENCE_EVENTS } from "./schema.js";
+ * import { MAX_EVIDENCE_EVENTS } from "./schema.ts";
  * MAX_EVIDENCE_EVENTS; // 10_000
  * ```
  */
@@ -226,7 +226,7 @@ export const MAX_EVIDENCE_EVENTS = 10_000;
  *
  * @example
  * ```ts
- * import { parseCatalogEntry, type CatalogEntry } from "./schema.js";
+ * import { parseCatalogEntry, type CatalogEntry } from "./schema.ts";
  * const r = parseCatalogEntry({
  *   id: "plan-mode",
  *   title: "Plan mode",
@@ -307,7 +307,7 @@ function isMember<T extends string>(
  *
  * @example
  * ```ts
- * import { parseTopicId } from "./schema.js";
+ * import { parseTopicId } from "./schema.ts";
  * parseTopicId("context-window").ok; // true
  * parseTopicId("Context Window").ok; // false
  * ```
@@ -332,7 +332,7 @@ export function parseTopicId(value: unknown): Parsed<TopicId> {
  *
  * @example
  * ```ts
- * import { parseSessionId } from "./schema.js";
+ * import { parseSessionId } from "./schema.ts";
  * parseSessionId("sess_1").ok; // true
  * parseSessionId("a b").ok; // false
  * ```
@@ -357,7 +357,7 @@ export function parseSessionId(value: unknown): Parsed<SessionId> {
  *
  * @example
  * ```ts
- * import { parseEvidence } from "./schema.js";
+ * import { parseEvidence } from "./schema.ts";
  * const r = parseEvidence({
  *   channel: "quiz",
  *   topic: "plan-mode",
@@ -407,7 +407,7 @@ export function parseEvidence(value: unknown): Parsed<Evidence> {
  *
  * @example
  * ```ts
- * import { levelRank } from "./schema.js";
+ * import { levelRank } from "./schema.ts";
  * levelRank("Recalled"); // 3
  * ```
  */
@@ -421,7 +421,7 @@ export function levelRank(level: Level): number {
  *
  * @example
  * ```ts
- * import { compareLevels, type Level } from "./schema.js";
+ * import { compareLevels, type Level } from "./schema.ts";
  * const sorted = (["Fluent", "Unseen"] as Level[]).sort(compareLevels);
  * // ["Unseen", "Fluent"]
  * ```
@@ -440,7 +440,7 @@ const NONE: readonly Dimension[] = [];
  *
  * @example
  * ```ts
- * import { requiredDimensions } from "./schema.js";
+ * import { requiredDimensions } from "./schema.ts";
  * requiredDimensions("concept"); // ["understand", "recall"]
  * requiredDimensions("fast-moving"); // []
  * ```
@@ -474,7 +474,7 @@ export function requiredDimensions(type: TopicType): readonly Dimension[] {
  *
  * @example
  * ```ts
- * import { parseKeywords } from "./schema.js";
+ * import { parseKeywords } from "./schema.ts";
  * parseKeywords(["  Plan Mode "], "keywords"); // { ok: true, value: ["plan mode"] }
  * ```
  */
@@ -547,7 +547,7 @@ function parseDependencies(
  *
  * @example
  * ```ts
- * import { parseCatalogEntry } from "./schema.js";
+ * import { parseCatalogEntry } from "./schema.ts";
  * const r = parseCatalogEntry({
  *   id: "claude-md",
  *   title: "CLAUDE.md",

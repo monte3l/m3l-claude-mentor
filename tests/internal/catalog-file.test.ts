@@ -4,8 +4,8 @@ import {
   parseCatalogFile,
   serializeCatalogFile,
   type CatalogFile,
-} from "../../src/internal/catalog-file.js";
-import type { Parsed } from "../../src/internal/schema.js";
+} from "../../src/internal/catalog-file.ts";
+import type { Parsed } from "../../src/internal/schema.ts";
 
 const entry = {
   id: "my-topic",

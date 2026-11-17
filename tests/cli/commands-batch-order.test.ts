@@ -1,7 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { makeSandbox, put, read, run, type Sandbox } from "./helpers.js";
+import { makeSandbox, put, read, run, type Sandbox } from "./helpers.ts";
 
 let sb: Sandbox;
 beforeEach(() => {

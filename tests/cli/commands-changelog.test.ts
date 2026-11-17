@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { run, runOk, makeSandbox, type Sandbox } from "./helpers.js";
+import { run, runOk, makeSandbox, type Sandbox } from "./helpers.ts";
 
 let sb: Sandbox;
 beforeEach(() => {

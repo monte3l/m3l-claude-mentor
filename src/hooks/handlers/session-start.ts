@@ -5,14 +5,14 @@
  * raised; it never lowers a level (the explicit `recompute` CLI command
  * does) and never writes `state.json`.
  */
-import { isReviewDue } from "../../internal/mastery.js";
-import { recomputeProfile } from "../../internal/recompute.js";
+import { isReviewDue } from "../../internal/mastery.ts";
+import { recomputeProfile } from "../../internal/recompute.ts";
 import {
   levelRank,
   type CatalogEntry,
   type Level,
-} from "../../internal/schema.js";
-import type { Profile } from "../../internal/state-schema.js";
+} from "../../internal/schema.ts";
+import type { Profile } from "../../internal/state-schema.ts";
 import {
   loadCatalogFile,
   loadGoals,
@@ -20,9 +20,9 @@ import {
   loadState,
   readEvidence,
   saveProfile,
-} from "../../internal/store.js";
-import { payloadField, payloadSession } from "../common.js";
-import type { HookDeps, HookHandler } from "../runtime.js";
+} from "../../internal/store.ts";
+import { payloadField, payloadSession } from "../common.ts";
+import type { HookDeps, HookHandler } from "../runtime.ts";
 
 const MAX_SUMMARY_CHARS = 2_000;
 const MAX_BELOW_TARGET = 8;
@@ -157,8 +157,8 @@ async function refreshedProfile(deps: HookDeps): Promise<Profile> {
  *
  * @example
  * ```ts
- * import { runHook } from "./process-shell.js";
- * import { sessionStartHandler } from "./handlers/session-start.js";
+ * import { runHook } from "./process-shell.ts";
+ * import { sessionStartHandler } from "./handlers/session-start.ts";
  * await runHook("SessionStart", sessionStartHandler);
  * ```
  */

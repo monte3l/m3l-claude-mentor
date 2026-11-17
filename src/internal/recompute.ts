@@ -2,15 +2,15 @@
  * Pure re-derivation of every evidenced topic's stored level from its
  * evidence, used by the SessionStart hook so levels follow observed usage.
  */
-import { reconcile } from "./reconcile.js";
+import { reconcile } from "./reconcile.ts";
 import {
   levelRank,
   MAX_EVIDENCE_EVENTS,
   type CatalogEntry,
   type Evidence,
   type TopicId,
-} from "./schema.js";
-import { MAX_TOPICS, type Profile, type TopicProfile } from "./state-schema.js";
+} from "./schema.ts";
+import { MAX_TOPICS, type Profile, type TopicProfile } from "./state-schema.ts";
 
 /**
  * The scoring overrides {@link recomputeProfile} honours (a subset of the
@@ -18,7 +18,7 @@ import { MAX_TOPICS, type Profile, type TopicProfile } from "./state-schema.js";
  *
  * @example
  * ```ts
- * import type { RecomputeScoring } from "./recompute.js";
+ * import type { RecomputeScoring } from "./recompute.ts";
  * const scoring: RecomputeScoring = { halfLifeDays: 60 };
  * ```
  */
@@ -34,8 +34,8 @@ export interface RecomputeScoring {
  *
  * @example
  * ```ts
- * import type { RecomputeInput } from "./recompute.js";
- * import { defaultProfile } from "./state-schema.js";
+ * import type { RecomputeInput } from "./recompute.ts";
+ * import { defaultProfile } from "./state-schema.ts";
  * const input: RecomputeInput = {
  *   profile: defaultProfile(),
  *   events: [],
@@ -69,7 +69,7 @@ export interface RecomputeInput {
  *
  * @example
  * ```ts
- * import { recomputeProfile, type RecomputeOutcome } from "./recompute.js";
+ * import { recomputeProfile, type RecomputeOutcome } from "./recompute.ts";
  * const outcome: RecomputeOutcome = recomputeProfile(input);
  * if (outcome.changed.length > 0) {
  *   // persist outcome.profile
@@ -125,7 +125,7 @@ function groupByTopic(
  *
  * @example
  * ```ts
- * import { recomputeProfile } from "./recompute.js";
+ * import { recomputeProfile } from "./recompute.ts";
  * const { profile, changed } = recomputeProfile({
  *   profile: stored,
  *   events,

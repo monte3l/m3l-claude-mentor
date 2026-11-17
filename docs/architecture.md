@@ -8,27 +8,27 @@ are in [`CLAUDE.md`](../CLAUDE.md). The threat analysis is in the
 
 ## Actors and actions
 
-| Actor                                | What it does here                                                                                                                                                                                                           |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Learner**                          | Installs the plugin from the `monte3l/m3l-plugins` catalog, works in Claude Code as usual, and invokes the skills `/m3l-claude-mentor:<name>`                                                                               |
-| **Claude Code**                      | Loads the plugin, runs the hooks with the event JSON on stdin, substitutes `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}`, and runs a skill's pre-approved command                                                     |
-| **Hooks** (`dist/hooks/entry-*.js`)  | Load the profile at session start, decide whether a tip is due, record usage signals and activity. They read and write the state files only, make no network call and never block                                           |
-| **Skills** (`skills/*/SKILL.md`)     | Teach, answer, quiz, summarize what changed, verify a claim and manage the profile. They read and write state only through the CLI                                                                                          |
-| **CLI** (`dist/cli/mentor-state.js`) | The single way a skill reads or changes the stored state, including export, import and deletion                                                                                                                             |
-| **Agents** (`agents/*.md`)           | `docs-researcher` fetches pages from `code.claude.com` with the web fetch tool. `mastery-assessor` reads files the learner names and judges answers. Both are read-only                                                     |
-| **Maintainers**                      | Review and merge pull requests, and merge the release pull request                                                                                                                                                          |
-| **Contributor**                      | Opens issues and pull requests                                                                                                                                                                                              |
-| **CI (GitHub Actions)**              | Runs the tests, coverage gate, style and lint checks, docs gate, scanners and the weekly Scorecard. Holds read-only tokens and no secrets, except the jobs named in [`SECURITY.md`](../SECURITY.md#secrets-and-credentials) |
-| **Release workflow**                 | Opens a release pull request, and on merge tags the commit and publishes the release. It also tells the `m3l-plugins` catalog                                                                                               |
+| Actor                               | What it does here                                                                                                                                                                                                           |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Learner**                         | Installs the plugin from the `monte3l/m3l-plugins` catalog, works in Claude Code as usual, and invokes the skills `/m3l-claude-mentor:<name>`                                                                               |
+| **Claude Code**                     | Loads the plugin, runs the hooks with the event JSON on stdin, substitutes `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}`, and runs a skill's pre-approved command                                                     |
+| **Hooks** (`src/hooks/entry-*.ts`)  | Load the profile at session start, decide whether a tip is due, record usage signals and activity. They read and write the state files only, make no network call and never block                                           |
+| **Skills** (`skills/*/SKILL.md`)    | Teach, answer, quiz, summarize what changed, verify a claim and manage the profile. They read and write state only through the CLI                                                                                          |
+| **CLI** (`src/cli/mentor-state.ts`) | The single way a skill reads or changes the stored state, including export, import and deletion                                                                                                                             |
+| **Agents** (`agents/*.md`)          | `docs-researcher` fetches pages from `code.claude.com` with the web fetch tool. `mastery-assessor` reads files the learner names and judges answers. Both are read-only                                                     |
+| **Maintainers**                     | Review and merge pull requests, and merge the release pull request                                                                                                                                                          |
+| **Contributor**                     | Opens issues and pull requests                                                                                                                                                                                              |
+| **CI (GitHub Actions)**             | Runs the tests, coverage gate, style and lint checks, docs gate, scanners and the weekly Scorecard. Holds read-only tokens and no secrets, except the jobs named in [`SECURITY.md`](../SECURITY.md#secrets-and-credentials) |
+| **Release workflow**                | Opens a release pull request, and on merge tags the commit and publishes the release. It also tells the `m3l-plugins` catalog                                                                                               |
 
 ## Data flow
 
 ```text
-Claude Code event -stdin JSON-> dist/hooks/entry-*.js -> state files in ${CLAUDE_PLUGIN_DATA}
+Claude Code event -stdin JSON-> src/hooks/entry-*.ts -> state files in ${CLAUDE_PLUGIN_DATA}
                                           |                         ^
                                           | additionalContext       | read and write
                                           v                         |
-                                   Claude (tip line)    skill -> dist/cli/mentor-state.js
+                                   Claude (tip line)    skill -> src/cli/mentor-state.ts
 ```
 
 The state is `profile.json`, `evidence.jsonl`, `state.json`, and the optional
@@ -39,7 +39,7 @@ feature-usage signals are stored, never conversation content.
 
 **Interface 1: the skills.** `teach`, `ask`, `quiz`, `whats-new`, `assess` and
 `profile`, invoked as `/m3l-claude-mentor:<name>`. Each pre-approves exactly
-`Bash(node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js *)` through its
+`Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)` through its
 `allowed-tools`, and nothing else. This is part of the public contract.
 
 **Interface 2: the plugin options.** `dial` (0 to 5, default 2) and
@@ -69,6 +69,6 @@ rules. This is the only network use in the plugin.
 
 **Interface 7: distribution.** The plugin is installed from the
 `monte3l/m3l-plugins` catalog, which pins a release tag and commit over HTTPS.
-The built `dist/` is committed, so the hooks and CLI run without a build step.
+Nothing is built and no generated file is committed: Node runs `src/*.ts` directly by removing the types, so the hooks and CLI run from a plain clone.
 The docs site at `claude-mentor.monte3l.com` is static HTML deployed to
 Cloudflare Workers Static Assets.

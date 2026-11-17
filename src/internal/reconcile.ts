@@ -7,7 +7,7 @@ import {
   checkFinite,
   dimensionScore,
   isSatisfied,
-} from "./mastery.js";
+} from "./mastery.ts";
 import {
   CHANNELS,
   DIMENSIONS,
@@ -17,7 +17,7 @@ import {
   type Evidence,
   type Level,
   type TopicType,
-} from "./schema.js";
+} from "./schema.ts";
 
 const RUNG: Readonly<Record<Dimension, Level>> = {
   apply: "Applied",
@@ -30,7 +30,7 @@ const RUNG: Readonly<Record<Dimension, Level>> = {
  *
  * @example
  * ```ts
- * import type { LevelInput } from "./reconcile.js";
+ * import type { LevelInput } from "./reconcile.ts";
  * const input: LevelInput = {
  *   type: "concept",
  *   events: [],
@@ -57,7 +57,7 @@ export interface LevelInput {
  *
  * @example
  * ```ts
- * import { deriveLevel, type LevelResult } from "./reconcile.js";
+ * import { deriveLevel, type LevelResult } from "./reconcile.ts";
  * const result: LevelResult = deriveLevel(input);
  * result.satisfied; // e.g. ["understand", "recall"]
  * ```
@@ -163,7 +163,7 @@ function evaluate(
  *
  * @example
  * ```ts
- * import { deriveLevel } from "./reconcile.js";
+ * import { deriveLevel } from "./reconcile.ts";
  * const { level } = deriveLevel({
  *   type: "concept",
  *   events,
@@ -189,7 +189,7 @@ export function deriveLevel(input: LevelInput): LevelResult {
  *
  * @example
  * ```ts
- * import type { Diagnosis } from "./reconcile.js";
+ * import type { Diagnosis } from "./reconcile.ts";
  * const d: Diagnosis = "weak-recall";
  * ```
  */
@@ -205,7 +205,7 @@ export type Diagnosis =
  *
  * @example
  * ```ts
- * import type { ClaimOutcome } from "./reconcile.js";
+ * import type { ClaimOutcome } from "./reconcile.ts";
  * const outcome: ClaimOutcome = "confirmed";
  * ```
  */
@@ -216,7 +216,7 @@ export type ClaimOutcome = "none" | "unverified" | "confirmed" | "refuted";
  *
  * @example
  * ```ts
- * import type { ReconcileInput } from "./reconcile.js";
+ * import type { ReconcileInput } from "./reconcile.ts";
  * const input: ReconcileInput = {
  *   type: "feature",
  *   events: [],
@@ -236,7 +236,7 @@ export interface ReconcileInput extends LevelInput {
  *
  * @example
  * ```ts
- * import { reconcile, type ReconcileResult } from "./reconcile.js";
+ * import { reconcile, type ReconcileResult } from "./reconcile.ts";
  * const result: ReconcileResult = reconcile(input);
  * result.diagnoses; // e.g. ["overclaim"]
  * ```
@@ -289,7 +289,7 @@ function classifyClaim(
  *
  * @example
  * ```ts
- * import { reconcile } from "./reconcile.js";
+ * import { reconcile } from "./reconcile.ts";
  * const { claim, diagnoses } = reconcile({
  *   type: "feature",
  *   events,
@@ -346,7 +346,7 @@ export function reconcile(input: ReconcileInput): ReconcileResult {
  *
  * @example
  * ```ts
- * import { applyProductChange } from "./reconcile.js";
+ * import { applyProductChange } from "./reconcile.ts";
  * const current = applyProductChange(events, releaseDate);
  * ```
  */
@@ -363,7 +363,7 @@ export function applyProductChange(
  *
  * @example
  * ```ts
- * import type { Calibration } from "./reconcile.js";
+ * import type { Calibration } from "./reconcile.ts";
  * const empty: Calibration = { confirmed: 0, refuted: 0 };
  * ```
  */
@@ -396,7 +396,7 @@ function readCalibration(c: Calibration): Calibration {
  *
  * @example
  * ```ts
- * import { updateCalibration } from "./reconcile.js";
+ * import { updateCalibration } from "./reconcile.ts";
  * updateCalibration({ confirmed: 0, refuted: 0 }, "confirmed");
  * // { confirmed: 1, refuted: 0 }
  * ```
@@ -427,7 +427,7 @@ export function updateCalibration(
  *
  * @example
  * ```ts
- * import { calibrationScore } from "./reconcile.js";
+ * import { calibrationScore } from "./reconcile.ts";
  * calibrationScore({ confirmed: 3, refuted: 0 }); // 0.8
  * ```
  */

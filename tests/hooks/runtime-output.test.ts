@@ -5,15 +5,15 @@ import {
   type HookDeps,
   type HookHandler,
   type HookOutput,
-} from "../../src/hooks/runtime.js";
-import { loadBundledCatalog } from "../../src/internal/bundled-catalog.js";
+} from "../../src/hooks/runtime.ts";
+import { loadBundledCatalog } from "../../src/internal/bundled-catalog.ts";
 import {
   cleanSandboxes,
   isOneLine,
   makeSandbox,
   NOW,
   run,
-} from "./runtime-helpers.js";
+} from "./runtime-helpers.ts";
 
 afterEach(cleanSandboxes);
 

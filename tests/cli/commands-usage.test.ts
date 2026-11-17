@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { runCommand } from "../../src/cli/commands.js";
+import { runCommand } from "../../src/cli/commands.ts";
 import {
   ctxFor,
   makeSandbox,
@@ -10,7 +10,7 @@ import {
   read,
   run,
   type Sandbox,
-} from "./helpers.js";
+} from "./helpers.ts";
 
 let sb: Sandbox;
 beforeEach(() => {

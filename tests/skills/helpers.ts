@@ -1,8 +1,8 @@
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { runCommand } from "../../src/cli/commands.js";
-import { BUNDLED, NOW, SESSION } from "../cli/helpers.js";
+import { runCommand } from "../../src/cli/commands.ts";
+import { BUNDLED, NOW, SESSION } from "../cli/helpers.ts";
 
 export const SKILLS_DIR = resolve(import.meta.dirname, "../../skills");
 
@@ -95,7 +95,7 @@ export async function cliCommands(): Promise<string[]> {
 }
 
 const STANDARD =
-  /^node \$\{CLAUDE_PLUGIN_ROOT\}\/dist\/cli\/mentor-state\.js --data-dir \$\{CLAUDE_PLUGIN_DATA\} ([a-z][a-z-]*)(?: .*)?$/;
+  /^node \$\{CLAUDE_PLUGIN_ROOT\}\/src\/cli\/mentor-state\.ts --data-dir \$\{CLAUDE_PLUGIN_DATA\} ([a-z][a-z-]*)(?: .*)?$/;
 
 /** Rule 4: state access only via the standard CLI invocation. */
 export function checkStateAccess(
@@ -114,7 +114,7 @@ export function checkStateAccess(
     }
   }
   for (const line of body.split("\n")) {
-    const named = /mentor-state\.js\s+--data-dir\s+\S+\s+([a-z][a-z-]*)/.exec(
+    const named = /mentor-state\.ts\s+--data-dir\s+\S+\s+([a-z][a-z-]*)/.exec(
       line,
     );
     if (named && !commands.includes(named[1] ?? ""))
@@ -216,7 +216,7 @@ export function skillMarkdownFiles(
 }
 
 export const CLI_TOOL =
-  "Bash(node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js *)";
+  "Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)";
 
 /** Rule: allowed-tools entries (comma separated). */
 export function toolEntries(allowedTools: string | undefined): string[] {

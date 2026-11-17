@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import type { TopicId } from "../../src/internal/schema.js";
+import type { TopicId } from "../../src/internal/schema.ts";
 import {
   clampProfileToNow,
   clampStateToNow,
@@ -9,7 +9,7 @@ import {
   parseState,
   type MentorState,
   type Profile,
-} from "../../src/internal/state-schema.js";
+} from "../../src/internal/state-schema.ts";
 
 function mustState(v: unknown): MentorState {
   const r = parseState(v);

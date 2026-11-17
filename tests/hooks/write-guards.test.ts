@@ -57,12 +57,12 @@ const DIRNAME = ["__", "dirname"].join("");
 const FILENAME = ["__", "filename"].join("");
 const named = (spec: string): string => `${IMPORT} { x } ${FROM} "${spec}";`;
 
-const EXT_REASON = "missing the required `.js` extension";
+const EXT_REASON = "without the required `.ts` extension";
 
-describe("guard-js-extension", () => {
-  const hook = "guard-js-extension";
+describe("guard-ts-extension", () => {
+  const hook = "guard-ts-extension";
 
-  test("blocks a relative import missing .js in a Write", () => {
+  test("blocks a relative import missing .ts in a Write", () => {
     const r = runHook(hook, write("/p/src/a.ts", named("./x")));
     expect(r.status).toBe(2);
     expect(r.stderr).toContain(EXT_REASON);
@@ -76,8 +76,15 @@ describe("guard-js-extension", () => {
     expect(r.stderr).toContain('"../y"');
   });
 
-  test("allows a relative import ending in .js", () => {
+  test("blocks a .js specifier and says to use .ts", () => {
     const r = runHook(hook, write("/p/src/a.ts", named("./x.js")));
+    expect(r.status).toBe(2);
+    expect(r.stderr).toContain(EXT_REASON);
+    expect(r.stderr).toContain('"./x.js"  ->  "./x.ts"');
+  });
+
+  test("allows a relative import ending in .ts", () => {
+    const r = runHook(hook, write("/p/src/a.ts", named("./x.ts")));
     expect(r).toEqual({ status: 0, stderr: "" });
   });
 
@@ -89,18 +96,18 @@ describe("guard-js-extension", () => {
     },
   );
 
-  test("allows bare package specifiers and type-only imports with .js", () => {
+  test("allows bare package specifiers and type-only imports with .ts", () => {
     const r = runHook(
       hook,
       write(
         "/p/src/a.ts",
-        `${named("zod")}\n${IMPORT} type { T } ${FROM} "./t.js";`,
+        `${named("zod")}\n${IMPORT} type { T } ${FROM} "./t.ts";`,
       ),
     );
     expect(r).toEqual({ status: 0, stderr: "" });
   });
 
-  test("blocks a type-only import missing .js", () => {
+  test("blocks a type-only import missing .ts", () => {
     const r = runHook(
       hook,
       write("/p/src/a.ts", `${IMPORT} type { T } ${FROM} "./t";`),
@@ -110,7 +117,7 @@ describe("guard-js-extension", () => {
     expect(r.stderr).toContain('"./t"');
   });
 
-  test("blocks a dynamic import missing .js", () => {
+  test("blocks a dynamic import missing .ts", () => {
     const r = runHook(
       hook,
       write("/p/src/a.ts", `const m = await ${IMPORT}("./lazy");`),
@@ -175,7 +182,7 @@ describe("guard-no-commonjs", () => {
       hook,
       write(
         "/p/src/a.ts",
-        `${named("./a.js")}\nexport const b = ${IMPORT}.meta.dirname;`,
+        `${named("./a.ts")}\nexport const b = ${IMPORT}.meta.dirname;`,
       ),
     );
     expect(r).toEqual({ status: 0, stderr: "" });

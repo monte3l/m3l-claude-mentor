@@ -5,8 +5,8 @@ import {
   mergeCatalog,
   parseCatalog,
   parseUserCatalog,
-} from "../../src/internal/catalog.js";
-import type { CatalogEntry } from "../../src/internal/schema.js";
+} from "../../src/internal/catalog.ts";
+import type { CatalogEntry } from "../../src/internal/schema.ts";
 
 function raw(
   id: string,

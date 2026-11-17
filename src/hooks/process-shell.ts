@@ -10,7 +10,7 @@ import {
   type HookHandler,
   type HookRunOptions,
   type HookRunResult,
-} from "./runtime.js";
+} from "./runtime.ts";
 
 /**
  * Reads stdin, keeping at most {@link MAX_STDIN_BYTES} + 1 bytes (enough to
@@ -49,8 +49,8 @@ function ignoreStreamError(): void {
  *
  * @example
  * ```ts
- * import { runHook } from "./process-shell.js";
- * import { isMainModule } from "./main-guard.js";
+ * import { runHook } from "./process-shell.ts";
+ * import { isMainModule } from "./main-guard.ts";
  * if (isMainModule(import.meta, process.argv[1])) {
  *   await runHook("Stop", () => Promise.resolve(null), { catalog: false });
  * }

@@ -1,8 +1,8 @@
 import { existsSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { sessionStartHandler } from "../../../src/hooks/handlers/session-start.js";
-import { appendEvidence, saveGoals } from "../../../src/internal/store.js";
-import { parseEvidence } from "../../../src/internal/schema.js";
+import { sessionStartHandler } from "../../../src/hooks/handlers/session-start.ts";
+import { appendEvidence, saveGoals } from "../../../src/internal/store.ts";
+import { parseEvidence } from "../../../src/internal/schema.ts";
 import {
   BAD_SESSIONS,
   NOW,
@@ -17,7 +17,7 @@ import {
   topicId,
   withSession,
   type Sandbox,
-} from "./helpers.js";
+} from "./helpers.ts";
 
 let sb: Sandbox;
 beforeEach(() => {

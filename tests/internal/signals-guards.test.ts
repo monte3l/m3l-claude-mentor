@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import {
   extractUsageSignals,
   MAX_SIGNALS_PER_EVENT,
-} from "../../src/internal/signals.js";
+} from "../../src/internal/signals.ts";
 
 const SECRET = "sk-ant-SECRET-1234567890";
 

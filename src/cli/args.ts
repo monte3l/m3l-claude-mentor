@@ -1,5 +1,5 @@
 import path from "node:path";
-import { parseTopicId, type TopicId } from "../internal/schema.js";
+import { parseTopicId, type TopicId } from "../internal/schema.ts";
 
 /**
  * A command-line usage error. It carries no text: `runCommand` prints the
@@ -7,7 +7,7 @@ import { parseTopicId, type TopicId } from "../internal/schema.js";
  *
  * @example
  * ```ts
- * import { CliUsageError } from "./args.js";
+ * import { CliUsageError } from "./args.ts";
  * throw new CliUsageError();
  * ```
  */
@@ -23,7 +23,7 @@ export class CliUsageError extends Error {
  *
  * @example
  * ```ts
- * import type { CommandSpec } from "./args.js";
+ * import type { CommandSpec } from "./args.ts";
  * const spec: CommandSpec = {
  *   usage: "introduce --topic <id>",
  *   positional: undefined,
@@ -48,7 +48,7 @@ export interface CommandSpec {
  *
  * @example
  * ```ts
- * import { parseArgs, type ParsedArgs } from "./args.js";
+ * import { parseArgs, type ParsedArgs } from "./args.ts";
  * const args: ParsedArgs = parseArgs(["--topic", "plan-mode"], spec);
  * ```
  */
@@ -71,7 +71,7 @@ const FLAG_PREFIX = "--";
  *
  * @example
  * ```ts
- * import { parseArgs } from "./args.js";
+ * import { parseArgs } from "./args.ts";
  * parseArgs(["on", "--topic", "plan-mode"], spec).positional; // "on"
  * ```
  */
@@ -130,7 +130,7 @@ function checkPositional(
  *
  * @example
  * ```ts
- * import { requireValue } from "./args.js";
+ * import { requireValue } from "./args.ts";
  * const text = requireValue(args, "text");
  * ```
  */
@@ -147,7 +147,7 @@ export function requireValue(args: ParsedArgs, name: string): string {
  *
  * @example
  * ```ts
- * import { requireOneOf } from "./args.js";
+ * import { requireOneOf } from "./args.ts";
  * const result = requireOneOf(args, "result", ["pass", "fail"] as const);
  * ```
  */
@@ -170,7 +170,7 @@ export function requireOneOf<T extends string>(
  *
  * @example
  * ```ts
- * import { requireTopicId } from "./args.js";
+ * import { requireTopicId } from "./args.ts";
  * const topic = requireTopicId(args);
  * ```
  */
@@ -190,7 +190,7 @@ const MAX_PATH_LENGTH = 1024;
  *
  * @example
  * ```ts
- * import { requireAbsolutePath } from "./args.js";
+ * import { requireAbsolutePath } from "./args.ts";
  * const to = requireAbsolutePath(args, "to");
  * ```
  */

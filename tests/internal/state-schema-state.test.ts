@@ -4,7 +4,7 @@ import {
   defaultState,
   parseSegmentState,
   parseState,
-} from "../../src/internal/state-schema.js";
+} from "../../src/internal/state-schema.ts";
 
 const seg = {
   segmentId: 3,

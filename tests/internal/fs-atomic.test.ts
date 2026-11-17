@@ -15,7 +15,7 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import {
   MentorStateError,
   type MentorErrorCode,
-} from "../../src/internal/errors.js";
+} from "../../src/internal/errors.ts";
 import {
   EVIDENCE_TAIL_BYTES,
   MAX_EVIDENCE_LINE_BYTES,
@@ -25,7 +25,7 @@ import {
   readTailLines,
   readTextBounded,
   writeTextAtomic,
-} from "../../src/internal/fs-atomic.js";
+} from "../../src/internal/fs-atomic.ts";
 
 let sandbox = "";
 let dir = "";

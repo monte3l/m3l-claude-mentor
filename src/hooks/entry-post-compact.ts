@@ -1,5 +1,5 @@
 /**
- * The `PostCompact` hook process entry (`dist/hooks/entry-post-compact.js`), run by
+ * The `PostCompact` hook process entry (`src/hooks/entry-post-compact.ts`), run by
  * `hooks/hooks.json`. It runs only as the process entry point: importing
  * it does nothing.
  *
@@ -33,11 +33,11 @@ async function isProcessEntry(): Promise<boolean> {
 
 let loaded = false;
 try {
-  const { isMainModule } = await import("./main-guard.js");
+  const { isMainModule } = await import("./main-guard.ts");
   if (isMainModule(import.meta, process.argv[1])) {
     const [{ runHook }, { postCompactHandler }] = await Promise.all([
-      import("./process-shell.js"),
-      import("./handlers/post-compact.js"),
+      import("./process-shell.ts"),
+      import("./handlers/post-compact.ts"),
     ]);
     loaded = true;
     await runHook("PostCompact", postCompactHandler, { catalog: false });

@@ -1,7 +1,7 @@
 import { appendFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { makeSandbox, runOk, seedEvidence, type Sandbox } from "./helpers.js";
+import { makeSandbox, runOk, seedEvidence, type Sandbox } from "./helpers.ts";
 
 let sb: Sandbox;
 beforeEach(() => {

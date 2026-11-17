@@ -10,8 +10,8 @@ import {
   serializeCatalogFile,
   EMPTY_CATALOG_FILE,
   type CatalogFile,
-} from "./catalog-file.js";
-import { MentorStateError } from "./errors.js";
+} from "./catalog-file.ts";
+import { MentorStateError } from "./errors.ts";
 import {
   EVIDENCE_TAIL_BYTES,
   MAX_EVIDENCE_LINE_BYTES,
@@ -21,14 +21,14 @@ import {
   readTailLines,
   readTextBounded,
   writeTextAtomic,
-} from "./fs-atomic.js";
-import { DATA_FILES, assertValidDataDir, type DataFile } from "./paths.js";
+} from "./fs-atomic.ts";
+import { DATA_FILES, assertValidDataDir, type DataFile } from "./paths.ts";
 import {
   MAX_EVIDENCE_EVENTS,
   parseEvidence,
   type Evidence,
   type Parsed,
-} from "./schema.js";
+} from "./schema.ts";
 import {
   clampProfileToNow,
   clampStateToNow,
@@ -38,7 +38,7 @@ import {
   parseState,
   type MentorState,
   type Profile,
-} from "./state-schema.js";
+} from "./state-schema.ts";
 
 function checkNow(now: number): void {
   if (!Number.isFinite(now) || now < 0) {
@@ -129,7 +129,7 @@ async function saveJson<T>(
  *
  * @example
  * ```ts
- * import { loadState } from "./store.js";
+ * import { loadState } from "./store.ts";
  * const state = await loadState("/var/data/m3l", Date.now());
  * ```
  */
@@ -159,8 +159,8 @@ export async function loadState(
  *
  * @example
  * ```ts
- * import { defaultState } from "./state-schema.js";
- * import { saveState } from "./store.js";
+ * import { defaultState } from "./state-schema.ts";
+ * import { saveState } from "./store.ts";
  * await saveState("/var/data/m3l", defaultState(Date.now()));
  * ```
  */
@@ -188,7 +188,7 @@ export async function saveState(
  *
  * @example
  * ```ts
- * import { loadProfile } from "./store.js";
+ * import { loadProfile } from "./store.ts";
  * const profile = await loadProfile("/var/data/m3l", Date.now());
  * ```
  */
@@ -215,8 +215,8 @@ export async function loadProfile(dir: string, now: number): Promise<Profile> {
  *
  * @example
  * ```ts
- * import { defaultProfile } from "./state-schema.js";
- * import { saveProfile } from "./store.js";
+ * import { defaultProfile } from "./state-schema.ts";
+ * import { saveProfile } from "./store.ts";
  * await saveProfile("/var/data/m3l", defaultProfile());
  * ```
  */
@@ -242,7 +242,7 @@ export async function saveProfile(
  *
  * @example
  * ```ts
- * import { loadCatalogFile } from "./store.js";
+ * import { loadCatalogFile } from "./store.ts";
  * const { user, scoring } = await loadCatalogFile("/var/data/m3l");
  * ```
  */
@@ -282,8 +282,8 @@ function catalogCandidate(file: CatalogFile): unknown {
  *
  * @example
  * ```ts
- * import { EMPTY_CATALOG_FILE } from "./catalog-file.js";
- * import { saveCatalogFile } from "./store.js";
+ * import { EMPTY_CATALOG_FILE } from "./catalog-file.ts";
+ * import { saveCatalogFile } from "./store.ts";
  * await saveCatalogFile("/var/data/m3l", EMPTY_CATALOG_FILE);
  * ```
  */
@@ -314,7 +314,7 @@ export async function saveCatalogFile(
  *
  * @example
  * ```ts
- * import { loadGoals } from "./store.js";
+ * import { loadGoals } from "./store.ts";
  * const goals = await loadGoals("/var/data/m3l");
  * ```
  */
@@ -340,7 +340,7 @@ export async function loadGoals(dir: string): Promise<string> {
  *
  * @example
  * ```ts
- * import { saveGoals } from "./store.js";
+ * import { saveGoals } from "./store.ts";
  * await saveGoals("/var/data/m3l", "Learn hooks\n");
  * ```
  */
@@ -371,8 +371,8 @@ export async function saveGoals(dir: string, text: string): Promise<void> {
  *
  * @example
  * ```ts
- * import { parseEvidence } from "./schema.js";
- * import { appendEvidence } from "./store.js";
+ * import { parseEvidence } from "./schema.ts";
+ * import { appendEvidence } from "./store.ts";
  * const r = parseEvidence({
  *   channel: "quiz",
  *   topic: "plan-mode",
@@ -410,7 +410,7 @@ export async function appendEvidence(
  *
  * @example
  * ```ts
- * import { readEvidence, type EvidenceRead } from "./store.js";
+ * import { readEvidence, type EvidenceRead } from "./store.ts";
  * const read: EvidenceRead = await readEvidence("/var/data/m3l");
  * ```
  */
@@ -455,7 +455,7 @@ function parseEvidenceLine(line: string): Evidence | null {
  *
  * @example
  * ```ts
- * import { readEvidence } from "./store.js";
+ * import { readEvidence } from "./store.ts";
  * const { events, skipped } = await readEvidence("/var/data/m3l", { maxEvents: 500 });
  * ```
  */

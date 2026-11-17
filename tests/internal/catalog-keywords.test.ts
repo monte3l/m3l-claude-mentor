@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
-import { matchTopics, parseCatalog } from "../../src/internal/catalog.js";
-import type { CatalogEntry } from "../../src/internal/schema.js";
+import { matchTopics, parseCatalog } from "../../src/internal/catalog.ts";
+import type { CatalogEntry } from "../../src/internal/schema.ts";
 
 function loadBundled(): readonly CatalogEntry[] {
   const raw: unknown = JSON.parse(

@@ -6,21 +6,21 @@
 
 import { lstat, readdir, unlink } from "node:fs/promises";
 import path from "node:path";
-import { MentorStateError } from "./errors.js";
-import { checkNow, isConfirmed } from "./export-bundle.js";
+import { MentorStateError } from "./errors.ts";
+import { checkNow, isConfirmed } from "./export-bundle.ts";
 import {
   DATA_FILES,
   assertValidDataDir,
   dataFilePath,
   type DataFile,
-} from "./paths.js";
+} from "./paths.ts";
 import {
   loadCatalogFile,
   loadGoals,
   loadProfile,
   loadState,
   readEvidence,
-} from "./store.js";
+} from "./store.ts";
 
 /** Every managed file, in {@link DATA_FILES} order. */
 const MANAGED_FILES = Object.keys(DATA_FILES) as readonly DataFile[];
@@ -36,7 +36,7 @@ function errorCode(error: unknown): unknown {
  *
  * @example
  * ```ts
- * import { describeData, type DataFileInfo } from "./export.js";
+ * import { describeData, type DataFileInfo } from "./export.ts";
  * const [first]: readonly DataFileInfo[] = (await describeData(dir, Date.now())).files;
  * ```
  */
@@ -52,7 +52,7 @@ export interface DataFileInfo {
  *
  * @example
  * ```ts
- * import { describeData, type DataSummary } from "./export.js";
+ * import { describeData, type DataSummary } from "./export.ts";
  * const summary: DataSummary = await describeData("/var/data/m3l", Date.now());
  * ```
  */
@@ -113,7 +113,7 @@ async function sizeOf(dir: string, file: DataFile): Promise<number | null> {
  *
  * @example
  * ```ts
- * import { describeData } from "./export.js";
+ * import { describeData } from "./export.ts";
  * const { files, evidenceEvents } = await describeData("/var/data/m3l", Date.now());
  * ```
  */
@@ -158,7 +158,7 @@ export async function describeData(
  *
  * @example
  * ```ts
- * import { purgeData, type PurgeResult } from "./export.js";
+ * import { purgeData, type PurgeResult } from "./export.ts";
  * const result: PurgeResult = await purgeData("/var/data/m3l", { confirm: true });
  * ```
  */
@@ -228,7 +228,7 @@ async function listEntries(dir: string): Promise<readonly string[]> {
  *
  * @example
  * ```ts
- * import { purgeData } from "./export.js";
+ * import { purgeData } from "./export.ts";
  * const { deleted } = await purgeData("/var/data/m3l", { confirm: true });
  * ```
  */

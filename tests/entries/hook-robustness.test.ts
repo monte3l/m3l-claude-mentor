@@ -21,22 +21,22 @@ import {
 } from "vitest";
 import {
   ROOT,
-  distPath,
+  scriptPath,
   makeSandbox,
-  runDist,
-  requireBuilt,
+  runScript,
+  requireScript,
   type Sandbox,
-} from "./spawn-helpers.js";
+} from "./spawn-helpers.ts";
 
-const START = "hooks/entry-session-start.js";
-const PROMPT = "hooks/entry-user-prompt-submit.js";
-const STOP = "hooks/entry-stop.js";
-const POST = "hooks/entry-post-tool-use.js";
-const POST_COMPACT = "hooks/entry-post-compact.js";
+const START = "hooks/entry-session-start.ts";
+const PROMPT = "hooks/entry-user-prompt-submit.ts";
+const STOP = "hooks/entry-stop.ts";
+const POST = "hooks/entry-post-tool-use.ts";
+const POST_COMPACT = "hooks/entry-post-compact.ts";
 
 let sb: Sandbox;
 beforeAll(() => {
-  for (const f of [START, PROMPT, STOP]) requireBuilt(f);
+  for (const f of [START, PROMPT, STOP]) requireScript(f);
 });
 beforeEach(() => {
   sb = makeSandbox();
@@ -95,7 +95,7 @@ function runWithClosedPipe(
 
 describe("a closed output pipe never crashes a hook", () => {
   test("control: with nothing closed, SessionStart writes non-empty stdout", () => {
-    const r = runDist(START, {
+    const r = runScript(START, {
       input: JSON.stringify({
         session_id: "s1",
         hook_event_name: "SessionStart",
@@ -108,14 +108,14 @@ describe("a closed output pipe never crashes a hook", () => {
   });
 
   test("control: with stderr open, UserPromptSubmit on bad JSON writes a stderr note", () => {
-    const r = runDist(PROMPT, { input: "{nope", dataDir: sb.dir });
+    const r = runScript(PROMPT, { input: "{nope", dataDir: sb.dir });
     expect(r.status).toBe(0);
     expect(r.stderr.length).toBeGreaterThan(0);
   });
 
   test("stdout closed early: exit 0 and no stack trace", async () => {
     const r = await runWithClosedPipe(
-      distPath(START),
+      scriptPath(START),
       "stdout",
       JSON.stringify({
         session_id: "s1",
@@ -131,7 +131,7 @@ describe("a closed output pipe never crashes a hook", () => {
   test("stderr closed early: exit 0 and no stack trace", async () => {
     // Invalid JSON makes the hook write a note to stderr.
     const r = await runWithClosedPipe(
-      distPath(PROMPT),
+      scriptPath(PROMPT),
       "stderr",
       "{nope",
       sb.dir,
@@ -162,7 +162,7 @@ describe("a broken install still exits 0", () => {
   let copy = "";
   beforeEach(() => {
     copy = mkdtempSync(join(tmpdir(), "broken-install-"));
-    cpSync(join(ROOT, "dist"), join(copy, "dist"), { recursive: true });
+    cpSync(join(ROOT, "src"), join(copy, "src"), { recursive: true });
     cpSync(join(ROOT, "package.json"), join(copy, "package.json"));
     cpSync(join(ROOT, "data"), join(copy, "data"), { recursive: true });
     symlinkSync(join(ROOT, "node_modules"), join(copy, "node_modules"));
@@ -172,45 +172,49 @@ describe("a broken install still exits 0", () => {
   });
 
   const run = (relative: string, input: string) =>
-    spawnSync(process.execPath, [join(copy, "dist", relative)], {
-      input,
-      encoding: "utf8",
-      timeout: 30_000,
-      env: {
-        PATH: process.env["PATH"] ?? "",
-        CLAUDE_PLUGIN_ROOT: copy,
-        CLAUDE_PLUGIN_DATA: sb.dir,
+    spawnSync(
+      process.execPath,
+      ["--disable-warning=ExperimentalWarning", join(copy, "src", relative)],
+      {
+        input,
+        encoding: "utf8",
+        timeout: 30_000,
+        env: {
+          PATH: process.env["PATH"] ?? "",
+          CLAUDE_PLUGIN_ROOT: copy,
+          CLAUDE_PLUGIN_DATA: sb.dir,
+        },
       },
-    });
+    );
 
   const ENTRIES = [
     [
       "SessionStart",
       START,
-      "hooks/handlers/session-start.js",
+      "hooks/handlers/session-start.ts",
       { session_id: "s1", hook_event_name: "SessionStart", source: "startup" },
     ],
     [
       "UserPromptSubmit",
       PROMPT,
-      "hooks/handlers/user-prompt-submit.js",
+      "hooks/handlers/user-prompt-submit.ts",
       { session_id: "s1", prompt: "hello there" },
     ],
     [
       "PostToolUse",
       POST,
-      "hooks/handlers/post-tool-use.js",
+      "hooks/handlers/post-tool-use.ts",
       {
         session_id: "s1",
         tool_name: "Write",
         tool_input: { file_path: "/proj/a.txt", content: "x" },
       },
     ],
-    ["Stop", STOP, "hooks/handlers/stop.js", { session_id: "s1" }],
+    ["Stop", STOP, "hooks/handlers/stop.ts", { session_id: "s1" }],
     [
       "PostCompact",
       POST_COMPACT,
-      "hooks/handlers/post-compact.js",
+      "hooks/handlers/post-compact.ts",
       { session_id: "s1", cwd: "/proj" },
     ],
   ] as const;
@@ -234,20 +238,20 @@ describe("a broken install still exits 0", () => {
 
     // The main-guard cases matter on older Node (engines allows >= 24.0):
     // `import.meta.main` needs >= 24.2, so the failure path must not depend on
-    // it or on main-guard.js, which may itself be the broken module.
+    // it or on main-guard.ts, which may itself be the broken module.
     const loadFailures: readonly [string, string, string | null][] = [
-      ["process-shell.js missing", "hooks/process-shell.js", null],
-      ["main-guard.js missing", "hooks/main-guard.js", null],
-      ["main-guard.js throws at import", "hooks/main-guard.js", THROWS],
+      ["process-shell.ts missing", "hooks/process-shell.ts", null],
+      ["main-guard.ts missing", "hooks/main-guard.ts", null],
+      ["main-guard.ts throws at import", "hooks/main-guard.ts", THROWS],
       ["handler missing", handler, null],
       ["handler throws at import", handler, THROWS],
-      ["process-shell.js throws at import", "hooks/process-shell.js", THROWS],
+      ["process-shell.ts throws at import", "hooks/process-shell.ts", THROWS],
     ];
 
     test.each(loadFailures)(
       "%s: exit 0, empty stdout, one 'could not start' note, no stack",
       (_label, target, replacement) => {
-        const file = join(copy, "dist", target);
+        const file = join(copy, "src", target);
         if (replacement === null) rmSync(file);
         else writeFileSync(file, replacement);
         const r = run(entry, payload);
@@ -274,10 +278,7 @@ describe("a broken install still exits 0", () => {
     test.each(runFailures)(
       "%s: exit 0, empty stdout, one 'failed unexpectedly' note, no stack",
       (_label, replacement) => {
-        writeFileSync(
-          join(copy, "dist", "hooks/process-shell.js"),
-          replacement,
-        );
+        writeFileSync(join(copy, "src", "hooks/process-shell.ts"), replacement);
         const r = run(entry, payload);
         expect(r.status).toBe(0);
         expect(r.stdout).toBe("");
@@ -289,11 +290,16 @@ describe("a broken install still exits 0", () => {
     );
 
     test("a broken entry that is only imported prints nothing and exits 0", () => {
-      rmSync(join(copy, "dist", "hooks/process-shell.js"));
-      const url = pathToFileURL(join(copy, "dist", entry)).href;
+      rmSync(join(copy, "src", "hooks/process-shell.ts"));
+      const url = pathToFileURL(join(copy, "src", entry)).href;
       const r = spawnSync(
         process.execPath,
-        ["--input-type=module", "-e", `await import(${JSON.stringify(url)});`],
+        [
+          "--disable-warning=ExperimentalWarning",
+          "--input-type=module",
+          "-e",
+          `await import(${JSON.stringify(url)});`,
+        ],
         {
           encoding: "utf8",
           timeout: 30_000,

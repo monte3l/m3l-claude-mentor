@@ -1,9 +1,9 @@
-import { MentorStateError } from "../internal/errors.js";
-import { parseSessionId, type CatalogEntry } from "../internal/schema.js";
-import { CliUsageError, parseArgs, type CommandSpec } from "./args.js";
-import { recordBatch } from "./batch-commands.js";
-import { setTopicOverride, topics } from "./catalog-commands.js";
-import { GLOBAL_USAGE } from "./global-options.js";
+import { MentorStateError } from "../internal/errors.ts";
+import { parseSessionId, type CatalogEntry } from "../internal/schema.ts";
+import { CliUsageError, parseArgs, type CommandSpec } from "./args.ts";
+import { recordBatch } from "./batch-commands.ts";
+import { setTopicOverride, topics } from "./catalog-commands.ts";
+import { GLOBAL_USAGE } from "./global-options.ts";
 import {
   excludeProject,
   exportData,
@@ -16,14 +16,14 @@ import {
   setMute,
   setTopicMute,
   show,
-} from "./data-commands.js";
-import type { CommandEnv } from "./env.js";
+} from "./data-commands.ts";
+import type { CommandEnv } from "./env.ts";
 import {
   getProfile,
   introduce,
   recompute,
   recordPass,
-} from "./profile-commands.js";
+} from "./profile-commands.ts";
 
 const ON_OFF = ["on", "off"] as const;
 
@@ -103,7 +103,7 @@ function isCommandName(value: string | undefined): value is CommandName {
  *
  * @example
  * ```ts
- * import type { CliContext } from "./commands.js";
+ * import type { CliContext } from "./commands.ts";
  * const ctx: CliContext = {
  *   dir: "/var/data/m3l",
  *   now: Date.now(),
@@ -134,7 +134,7 @@ export interface CliContext {
  *
  * @example
  * ```ts
- * import type { CliResult } from "./commands.js";
+ * import type { CliResult } from "./commands.ts";
  * const ok: CliResult = { exitCode: 0, stdout: "{\"muted\":true}\n", stderr: "" };
  * ```
  */
@@ -251,7 +251,7 @@ function mapError(error: unknown, usage: string): CliResult {
  *
  * @example
  * ```ts
- * import { runCommand } from "./commands.js";
+ * import { runCommand } from "./commands.ts";
  * const result = await runCommand(["set-mute", "on"], {
  *   dir: "/var/data/m3l",
  *   now: Date.now(),

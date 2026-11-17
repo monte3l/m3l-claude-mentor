@@ -6,15 +6,15 @@
  * Pure: no I/O, no environment, no clock. Output is built only from fixed
  * kinds and catalog topic ids, so no prompt text is ever returned.
  */
-import { matchTopics } from "./catalog.js";
-import type { CatalogEntry, TopicId } from "./schema.js";
+import { matchTopics } from "./catalog.ts";
+import type { CatalogEntry, TopicId } from "./schema.ts";
 
 /**
  * One instruction detected in a prompt.
  *
  * @example
  * ```ts
- * import type { PromptSignal } from "./prompt-signals.js";
+ * import type { PromptSignal } from "./prompt-signals.ts";
  * const s: PromptSignal = { kind: "stop-tips" };
  * ```
  */
@@ -30,7 +30,7 @@ export type PromptSignal =
  *
  * @example
  * ```ts
- * import { MAX_PROMPT_CHARS } from "./prompt-signals.js";
+ * import { MAX_PROMPT_CHARS } from "./prompt-signals.ts";
  * MAX_PROMPT_CHARS; // 4_000
  * ```
  */
@@ -41,7 +41,7 @@ export const MAX_PROMPT_CHARS = 4_000;
  *
  * @example
  * ```ts
- * import { MAX_PROMPT_SIGNALS } from "./prompt-signals.js";
+ * import { MAX_PROMPT_SIGNALS } from "./prompt-signals.ts";
  * MAX_PROMPT_SIGNALS; // 3
  * ```
  */
@@ -179,7 +179,7 @@ function lastAt(hits: readonly Hit[], key: string): number {
  *
  * @example
  * ```ts
- * import { detectPromptSignals } from "./prompt-signals.js";
+ * import { detectPromptSignals } from "./prompt-signals.ts";
  * detectPromptSignals("just tell me, and stop tips", []);
  * // [{ kind: "just-tell-me" }, { kind: "stop-tips" }]
  * ```

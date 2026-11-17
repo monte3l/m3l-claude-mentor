@@ -19,11 +19,11 @@ import {
   sectionOf,
   usedCommands,
   skillMarkdownFiles,
-} from "./helpers.js";
+} from "./helpers.ts";
 
 const REQUIRES_HINT = ["teach", "ask", "assess"];
 const CLI = (command: string): string =>
-  `node \${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir \${CLAUDE_PLUGIN_DATA} ${command}`;
+  `node \${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir \${CLAUDE_PLUGIN_DATA} ${command}`;
 const fence = (...lines: string[]): string =>
   ["```bash", ...lines, "```"].join("\n");
 
@@ -121,7 +121,7 @@ describe("rule 4: state access only through the CLI", () => {
     (name) => {
       const body = parseFrontmatter(readSkill(name)).body;
       expect(
-        bashLines(body).filter((l) => l.includes("mentor-state.js")).length,
+        bashLines(body).filter((l) => l.includes("mentor-state.ts")).length,
       ).toBeGreaterThan(0);
     },
   );
@@ -140,15 +140,15 @@ describe("rule 4: state access only through the CLI", () => {
 
   test("checker flags a non-standard invocation (bare node, no env)", () => {
     expect(
-      checkStateAccess(fence("node dist/cli/mentor-state.js show"), ["show"]),
+      checkStateAccess(fence("node src/cli/mentor-state.ts show"), ["show"]),
     ).not.toEqual([]);
   });
 
   test.each([
-    'CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" node "${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js" show',
-    "CLAUDE_PLUGIN_DATA=${CLAUDE_PLUGIN_DATA} node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} show",
-    "node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js show",
-    'node "${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js" --data-dir "${CLAUDE_PLUGIN_DATA}" show',
+    'CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" node "${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts" show',
+    "CLAUDE_PLUGIN_DATA=${CLAUDE_PLUGIN_DATA} node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} show",
+    "node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts show",
+    'node "${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts" --data-dir "${CLAUDE_PLUGIN_DATA}" show',
   ])("checker flags the old or malformed invocation: %s", (line) => {
     expect(checkStateAccess(fence(line), ["show"])).not.toEqual([]);
   });
@@ -163,7 +163,7 @@ describe("rule 4: state access only through the CLI", () => {
 
   test("checker flags a unknown command named in prose", () => {
     expect(
-      checkStateAccess("then run mentor-state.js --data-dir $X bogus now", [
+      checkStateAccess("then run mentor-state.ts --data-dir $X bogus now", [
         "show",
       ]),
     ).not.toEqual([]);
@@ -341,7 +341,7 @@ describe("rule 7: ask and whats-new source from official docs", () => {
 const WEB_SKILLS = ["teach", "ask", "whats-new"];
 const usesCli = (name: string): boolean =>
   skillMarkdownFiles(name).some((f) =>
-    bashLines(f.body).some((l) => l.includes("mentor-state.js")),
+    bashLines(f.body).some((l) => l.includes("mentor-state.ts")),
   );
 
 describe("allowed-tools", () => {
@@ -442,7 +442,7 @@ describe("batch recording and profile additions", () => {
 
   test("profile documents the permission rule and never edits settings", () => {
     const text = readSkill("profile");
-    expect(hasPhrase(text, "Bash(node */dist/cli/mentor-state.js *)")).toBe(
+    expect(hasPhrase(text, "Bash(node */src/cli/mentor-state.ts *)")).toBe(
       true,
     );
     expect(text).toMatch(/permissions/i);

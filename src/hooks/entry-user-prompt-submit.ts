@@ -1,5 +1,5 @@
 /**
- * The `UserPromptSubmit` hook process entry (`dist/hooks/entry-user-prompt-submit.js`), run by
+ * The `UserPromptSubmit` hook process entry (`src/hooks/entry-user-prompt-submit.ts`), run by
  * `hooks/hooks.json`. It runs only as the process entry point: importing
  * it does nothing.
  *
@@ -33,11 +33,11 @@ async function isProcessEntry(): Promise<boolean> {
 
 let loaded = false;
 try {
-  const { isMainModule } = await import("./main-guard.js");
+  const { isMainModule } = await import("./main-guard.ts");
   if (isMainModule(import.meta, process.argv[1])) {
     const [{ runHook }, { userPromptSubmitHandler }] = await Promise.all([
-      import("./process-shell.js"),
-      import("./handlers/user-prompt-submit.js"),
+      import("./process-shell.ts"),
+      import("./handlers/user-prompt-submit.ts"),
     ]);
     loaded = true;
     await runHook("UserPromptSubmit", userPromptSubmitHandler);

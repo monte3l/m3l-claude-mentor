@@ -2,7 +2,7 @@
 name: quiz
 description: Runs a short spaced recall quiz on Claude and Claude Code topics the learner has already seen, judging answers and recording the results. This skill should be used when the user asks to "quiz me", "quiz me on hooks", "test what I know", "test my recall" or "review what I learned", or invokes /m3l-claude-mentor:quiz, optionally with a topic.
 argument-hint: "[topic]"
-allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js *)
+allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)
 ---
 
 # Quiz
@@ -21,11 +21,11 @@ Run a brief recall quiz on the topic in `$ARGUMENTS`, or else on topics due for 
 ## State
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} get-profile
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} get-profile
 ```
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} topics
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} topics
 ```
 
 `get-profile` lists `reviewDue`, `passes` and `mutedTopics`; `topics` gives titles,
@@ -54,7 +54,7 @@ types and `enabled`.
    score what they answered; never record `--pass fail` for an abandoned group.
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} record-batch --topic <id> --events '<quiz:positive,quiz:negative,...>' --pass <pass|fail>
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} record-batch --topic <id> --events '<quiz:positive,quiz:negative,...>' --pass <pass|fail>
 ```
 
 7. **Report the returned level** honestly: one group or low counts rarely move a level.

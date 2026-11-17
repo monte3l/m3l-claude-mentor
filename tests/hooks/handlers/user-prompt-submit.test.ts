@@ -1,8 +1,8 @@
 import { existsSync, readFileSync, statSync, utimesSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { userPromptSubmitHandler } from "../../../src/hooks/handlers/user-prompt-submit.js";
-import { newSegment } from "../../../src/internal/segment.js";
+import { userPromptSubmitHandler } from "../../../src/hooks/handlers/user-prompt-submit.ts";
+import { newSegment } from "../../../src/internal/segment.ts";
 import {
   BAD_SESSIONS,
   DAY,
@@ -15,7 +15,7 @@ import {
   topicId,
   withSession,
   type Sandbox,
-} from "./helpers.js";
+} from "./helpers.ts";
 
 let sb: Sandbox;
 beforeEach(() => {

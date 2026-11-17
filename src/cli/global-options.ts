@@ -12,7 +12,7 @@ const FLAG_PREFIX = "--";
  *
  * @example
  * ```ts
- * import { GLOBAL_USAGE } from "./global-options.js";
+ * import { GLOBAL_USAGE } from "./global-options.ts";
  * process.stderr.write(`usage: ${GLOBAL_USAGE}\n`);
  * ```
  */
@@ -26,7 +26,7 @@ export const GLOBAL_USAGE =
  *
  * @example
  * ```ts
- * import { parseGlobalOptions, type GlobalOptions } from "./global-options.js";
+ * import { parseGlobalOptions, type GlobalOptions } from "./global-options.ts";
  * const parsed: GlobalOptions = parseGlobalOptions(["show"]);
  * ```
  */
@@ -50,7 +50,7 @@ export type GlobalOptions =
  *
  * @example
  * ```ts
- * import { parseGlobalOptions } from "./global-options.js";
+ * import { parseGlobalOptions } from "./global-options.ts";
  * parseGlobalOptions(["--data-dir", "/var/data/m3l", "show"]);
  * // { ok: true, dataDir: "/var/data/m3l", argv: ["show"] }
  * ```

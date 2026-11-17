@@ -136,8 +136,8 @@ m3l-claude-mentor/
   agents/
     mastery-assessor.md              # read-only (Read, Grep, Glob): judges probe answers, returns JSON verdicts
     docs-researcher.md               # WebFetch only: fetches official docs and changelog; isolated context
-  hooks/hooks.json                   # command hooks running dist/hooks/*.js
-  dist/                              # committed build output (hooks and CLI run from here)
+  hooks/hooks.json                   # command hooks running src/hooks/*.ts
+  src/                               # TypeScript: the hooks and the CLI run from here directly, nothing is built
   data/topic-catalog.json            # default topics, types, dependencies
   evals/                             # `claude plugin eval` cases and graders
 ```
@@ -158,7 +158,7 @@ Notes:
 - Hooks are the deterministic part (rate limiting, state loading, usage observation). The output style and skills carry the soft behavior.
 - `PostToolUse` only appends observed evidence. `SessionStart` then recomputes levels from that evidence, **raise-only**: it never lowers a stored level (decay and truncation of the evidence window could otherwise erase a quiz-earned level), and the explicit `recompute` command is the only path that lowers one. This keeps tips from firing on topics the learner already uses.
 - `Stop` `additionalContext` forces the conversation to continue, and `PreCompact`/`PostCompact` output cannot reach the model, so tips are injected on `UserPromptSubmit` and context is restored with `SessionStart` matcher `compact`.
-- Skills are namespaced by plugin: `/m3l-claude-mentor:teach`, not `/mentor teach`. State access from skills goes through a small CLI (`dist/cli/mentor-state.js`), so Markdown never hand-edits JSON.
+- Skills are namespaced by plugin: `/m3l-claude-mentor:teach`, not `/mentor teach`. State access from skills goes through a small CLI (`src/cli/mentor-state.ts`), so Markdown never hand-edits JSON.
 - Plugin agents ignore `hooks`, `mcpServers` and `permissionMode` frontmatter; hooks ship at plugin level.
 - The CLI commands are `show`, `get-profile`, `record-evidence`, `record-batch`, `recompute`, `introduce`, `record-pass`, `set-mute`, `set-topic-mute`, `exclude-project`, `get-goals`, `set-goals`, `topics`, `set-topic-override`, `set-changelog-version`, `export`, `import` and `purge`. A leading `--data-dir <absolute path>` beats the environment. `record-batch` takes 1 to 10 events, validates before the first write and saves once, so a lesson or quiz needs one save per answered group.
 - A skill's `allowed-tools` pre-approval lasts only for the turn the learner invokes it, and a plugin cannot ship permission rules. The README therefore documents a one-time user rule for the CLI and a narrower, still unverified, rule set. The `docs-researcher` agent prompts per domain for `WebFetch`, which the README also covers.
@@ -252,7 +252,7 @@ Confirmed by the user after checking this spec against current official docs:
 
 8. **Commands:** separate skills, namespaced `/m3l-claude-mentor:<verb>`.
 9. **Tips:** hybrid delivery (hook decides, model words the tip on `UserPromptSubmit`).
-10. **Hook build:** commit built `dist/`; a verify step fails when it is stale.
+10. **Hook build:** none. The hooks and the CLI run `src/*.ts` directly, because Node removes the types itself. This replaces the earlier decision to commit a built `dist/` (2026-11-18): a generated executable artifact in version control fails OpenSSF Baseline OSPS-QA-05.01, and a verify step (`no-dist`) now fails if build output is ever committed again.
 11. **Controls:** `userConfig` for `dial` and `transcriptAnalysis`; `state.json` for mutes.
 12. **Recompute:** the SessionStart recompute is raise-only; only the explicit `recompute` command lowers a level.
 13. **Segments:** a segment ends on a topic change or a 30-minute idle gap. `Stop` and `PostCompact` only record activity.

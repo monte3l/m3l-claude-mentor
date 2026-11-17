@@ -8,7 +8,7 @@
  *
  * @example
  * ```ts
- * import type { MentorErrorCode } from "./errors.js";
+ * import type { MentorErrorCode } from "./errors.ts";
  * const code: MentorErrorCode = "DATA_DIR_UNSET";
  * ```
  */
@@ -31,7 +31,7 @@ export type MentorErrorCode =
  *
  * @example
  * ```ts
- * import { MentorStateError } from "./errors.js";
+ * import { MentorStateError } from "./errors.ts";
  * try {
  *   throw new MentorStateError("READ_FAILED", "could not read state.json");
  * } catch (error) {
@@ -72,7 +72,7 @@ export class MentorStateError extends Error {
  *
  * @example
  * ```ts
- * import { isMentorStateError } from "./errors.js";
+ * import { isMentorStateError } from "./errors.ts";
  * try {
  *   JSON.parse("{");
  * } catch (error) {

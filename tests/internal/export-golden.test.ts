@@ -9,8 +9,8 @@ import {
   parseBundle,
   serializeBundle,
   type Bundle,
-} from "../../src/internal/export.js";
-import { NOW } from "./fixtures/export-data.js";
+} from "../../src/internal/export.ts";
+import { NOW } from "./fixtures/export-data.ts";
 // NOW matches the fixture exportedAt only by coincidence; exportBundle is
 // handed it as the clock, and the compared sections do not include exportedAt.
 

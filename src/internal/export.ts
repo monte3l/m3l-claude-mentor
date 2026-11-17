@@ -9,8 +9,8 @@
 import { randomUUID } from "node:crypto";
 import { open, rename, unlink, type FileHandle } from "node:fs/promises";
 import path from "node:path";
-import { serializeCatalogFile } from "./catalog-file.js";
-import { MentorStateError } from "./errors.js";
+import { serializeCatalogFile } from "./catalog-file.ts";
+import { MentorStateError } from "./errors.ts";
 import {
   BUNDLE_FORMAT,
   BUNDLE_VERSION,
@@ -21,21 +21,21 @@ import {
   parseBundle,
   serializeBundle,
   type Bundle,
-} from "./export-bundle.js";
-import { writeTextAtomic } from "./fs-atomic.js";
+} from "./export-bundle.ts";
+import { writeTextAtomic } from "./fs-atomic.ts";
 import {
   DATA_FILES,
   assertValidDataDir,
   dataFilePath,
   type DataFile,
-} from "./paths.js";
+} from "./paths.ts";
 import {
   loadCatalogFile,
   loadGoals,
   loadProfile,
   loadState,
   readEvidence,
-} from "./store.js";
+} from "./store.ts";
 
 export {
   BUNDLE_FORMAT,
@@ -43,8 +43,8 @@ export {
   parseBundle,
   serializeBundle,
   type Bundle,
-} from "./export-bundle.js";
-export { describeData, purgeData } from "./purge.js";
+} from "./export-bundle.ts";
+export { describeData, purgeData } from "./purge.ts";
 
 /** Every managed file, in {@link DATA_FILES} order. */
 const MANAGED_FILES = Object.keys(DATA_FILES) as readonly DataFile[];
@@ -189,7 +189,7 @@ async function writeFileAtomic(target: string, text: string): Promise<void> {
  *
  * @example
  * ```ts
- * import { exportBundle, type ExportResult } from "./export.js";
+ * import { exportBundle, type ExportResult } from "./export.ts";
  * const { bundle, evidenceSkipped }: ExportResult = await exportBundle(dir, Date.now());
  * ```
  */
@@ -261,7 +261,7 @@ async function buildExport(
  *
  * @example
  * ```ts
- * import { exportBundle } from "./export.js";
+ * import { exportBundle } from "./export.ts";
  * const { bundle, evidenceSkipped } = await exportBundle("/var/data/m3l", Date.now());
  * ```
  */
@@ -302,7 +302,7 @@ export async function exportBundle(
  *
  * @example
  * ```ts
- * import { exportBundleToFile } from "./export.js";
+ * import { exportBundleToFile } from "./export.ts";
  * await exportBundleToFile("/var/data/m3l", Date.now(), "/home/me/mentor-export.json");
  * ```
  */
@@ -333,7 +333,7 @@ export async function exportBundleToFile(
  *
  * @example
  * ```ts
- * import { importBundle, type ImportSummary } from "./export.js";
+ * import { importBundle, type ImportSummary } from "./export.ts";
  * const summary: ImportSummary = await importBundle(dir, bundle, { replace: true });
  * ```
  */
@@ -430,7 +430,7 @@ async function replaceAll(dir: string, bundle: Bundle): Promise<ImportSummary> {
  *
  * @example
  * ```ts
- * import { exportBundle, importBundle } from "./export.js";
+ * import { exportBundle, importBundle } from "./export.ts";
  * const bundle = await exportBundle("/old/data", Date.now());
  * await importBundle("/new/data", bundle, { replace: true });
  * ```
@@ -468,7 +468,7 @@ export async function importBundle(
  *
  * @example
  * ```ts
- * import { importBundleFromFile } from "./export.js";
+ * import { importBundleFromFile } from "./export.ts";
  * await importBundleFromFile("/var/data/m3l", "/home/me/mentor-export.json", { replace: true });
  * ```
  */

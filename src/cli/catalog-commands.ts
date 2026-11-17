@@ -1,4 +1,4 @@
-import type { CatalogOverride } from "../internal/catalog.js";
+import type { CatalogOverride } from "../internal/catalog.ts";
 import {
   LEVELS,
   STYLES,
@@ -6,19 +6,19 @@ import {
   type Style,
   type TopicId,
   type TopicType,
-} from "../internal/schema.js";
-import { loadProfile, loadState, saveCatalogFile } from "../internal/store.js";
+} from "../internal/schema.ts";
+import { loadProfile, loadState, saveCatalogFile } from "../internal/store.ts";
 import {
   CliUsageError,
   requireOneOf,
   requireTopicId,
   type ParsedArgs,
-} from "./args.js";
+} from "./args.ts";
 import {
   loadMergedCatalog,
   requireCatalogEntry,
   type CommandEnv,
-} from "./env.js";
+} from "./env.ts";
 
 /**
  * One topic as printed by `topics`: the merged catalog entry joined with the
@@ -26,7 +26,7 @@ import {
  *
  * @example
  * ```ts
- * import type { CatalogTopicView } from "./catalog-commands.js";
+ * import type { CatalogTopicView } from "./catalog-commands.ts";
  * const view: CatalogTopicView = {
  *   id: "plan-mode",
  *   title: "Plan mode",
@@ -67,7 +67,7 @@ export interface CatalogTopicView {
  *
  * @example
  * ```ts
- * import { topics } from "./catalog-commands.js";
+ * import { topics } from "./catalog-commands.ts";
  * const { topics: rows } = await topics(env);
  * ```
  */
@@ -163,7 +163,7 @@ function withoutTopic(
  *
  * @example
  * ```ts
- * import { setTopicOverride } from "./catalog-commands.js";
+ * import { setTopicOverride } from "./catalog-commands.ts";
  * const { override } = await setTopicOverride(args, env);
  * // override: { enabled: false }
  * ```

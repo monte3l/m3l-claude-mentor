@@ -17,14 +17,14 @@ import {
   recencyFactor,
   reviewIntervalMs,
   topicScore,
-} from "../../src/internal/mastery.js";
+} from "../../src/internal/mastery.ts";
 import {
   calibrationScore,
   updateCalibration,
   type Calibration,
-} from "../../src/internal/reconcile.js";
-import { DAY, NOW, days, ev, repeat } from "./fixtures/evidence.js";
-import type { Evidence } from "../../src/internal/schema.js";
+} from "../../src/internal/reconcile.ts";
+import { DAY, NOW, days, ev, repeat } from "./fixtures/evidence.ts";
+import type { Evidence } from "../../src/internal/schema.ts";
 
 describe("constants", () => {
   test("pin the documented values", () => {

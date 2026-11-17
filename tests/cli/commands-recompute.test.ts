@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { parseCatalog } from "../../src/internal/catalog.js";
-import { EMPTY_CATALOG_FILE } from "../../src/internal/catalog-file.js";
+import { parseCatalog } from "../../src/internal/catalog.ts";
+import { EMPTY_CATALOG_FILE } from "../../src/internal/catalog-file.ts";
 import {
   DAY,
   NOW,
@@ -10,12 +10,12 @@ import {
   runOk,
   seedEvidence,
   type Sandbox,
-} from "./helpers.js";
+} from "./helpers.ts";
 import {
   defaultProfile,
   type Profile,
-} from "../../src/internal/state-schema.js";
-import { saveCatalogFile, saveProfile } from "../../src/internal/store.js";
+} from "../../src/internal/state-schema.ts";
+import { saveCatalogFile, saveProfile } from "../../src/internal/store.ts";
 
 let sb: Sandbox;
 beforeEach(() => {

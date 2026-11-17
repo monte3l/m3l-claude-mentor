@@ -93,10 +93,6 @@ throw "a string";
 - **Runtime-green ≠ typecheck-green** — Vitest transforms without
   type-checking, so run `pnpm typecheck` as its own gate on every test file
   you touch.
-- **`pnpm build` is a distinct gate from `pnpm typecheck`, not a slower
-  version of it** — `isolatedDeclarations` (the `tsconfig.build.json`
-  project only) makes an additive `as const satisfies` pass `typecheck` and
-  fail `build` with TS9010. Any exported-type change needs both.
 - **A test that deliberately avoids importing from `src` can strand an
   export and fail `pnpm knip`** — keep both a hand-authored table and an
   import for projection identity. `knip` is a `lint`-group step, so `pre-push`

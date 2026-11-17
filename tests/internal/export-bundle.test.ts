@@ -5,13 +5,13 @@ import {
   parseBundle,
   serializeBundle,
   type Bundle,
-} from "../../src/internal/export.js";
-import { EMPTY_CATALOG_FILE } from "../../src/internal/catalog-file.js";
+} from "../../src/internal/export.ts";
+import { EMPTY_CATALOG_FILE } from "../../src/internal/catalog-file.ts";
 import {
   defaultProfile,
   defaultState,
-} from "../../src/internal/state-schema.js";
-import { evidenceAt } from "./fixtures/export-data.js";
+} from "../../src/internal/state-schema.ts";
+import { evidenceAt } from "./fixtures/export-data.ts";
 
 const valid = (): Record<string, unknown> => ({
   format: "m3l-claude-mentor-export",

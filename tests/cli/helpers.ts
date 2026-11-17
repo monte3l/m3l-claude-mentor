@@ -7,12 +7,12 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { CatalogEntry, Evidence } from "../../src/internal/schema.js";
-import { parseCatalog } from "../../src/internal/catalog.js";
-import { parseEvidence } from "../../src/internal/schema.js";
-import { appendEvidence } from "../../src/internal/store.js";
-import type { CliContext, CliResult } from "../../src/cli/commands.js";
-import { runCommand } from "../../src/cli/commands.js";
+import type { CatalogEntry, Evidence } from "../../src/internal/schema.ts";
+import { parseCatalog } from "../../src/internal/catalog.ts";
+import { parseEvidence } from "../../src/internal/schema.ts";
+import { appendEvidence } from "../../src/internal/store.ts";
+import type { CliContext, CliResult } from "../../src/cli/commands.ts";
+import { runCommand } from "../../src/cli/commands.ts";
 
 /** A fixed "now": day 100 in epoch milliseconds. */
 export const NOW = 100 * 86_400_000;

@@ -3,9 +3,9 @@ import {
   deriveLevel,
   reconcile,
   type LevelInput,
-} from "../../src/internal/reconcile.js";
-import type { Evidence, Level, TopicType } from "../../src/internal/schema.js";
-import { NOW, days, ev, repeat } from "./fixtures/evidence.js";
+} from "../../src/internal/reconcile.ts";
+import type { Evidence, Level, TopicType } from "../../src/internal/schema.ts";
+import { NOW, days, ev, repeat } from "./fixtures/evidence.ts";
 
 function input(
   events: readonly Evidence[],

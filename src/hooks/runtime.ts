@@ -5,20 +5,20 @@
  * one-line stderr note and the process still exits 0.
  */
 import path from "node:path";
-import { loadBundledCatalog } from "../internal/bundled-catalog.js";
-import { mergeCatalog } from "../internal/catalog.js";
-import { isMentorStateError, MentorStateError } from "../internal/errors.js";
-import { resolveDataDir } from "../internal/paths.js";
-import type { CatalogEntry } from "../internal/schema.js";
-import { loadCatalogFile } from "../internal/store.js";
-import { readSettings, type HookSettings } from "./settings.js";
+import { loadBundledCatalog } from "../internal/bundled-catalog.ts";
+import { mergeCatalog } from "../internal/catalog.ts";
+import { isMentorStateError, MentorStateError } from "../internal/errors.ts";
+import { resolveDataDir } from "../internal/paths.ts";
+import type { CatalogEntry } from "../internal/schema.ts";
+import { loadCatalogFile } from "../internal/store.ts";
+import { readSettings, type HookSettings } from "./settings.ts";
 
 /**
  * What a hook process received.
  *
  * @example
  * ```ts
- * import type { HookRunInput } from "./runtime.js";
+ * import type { HookRunInput } from "./runtime.ts";
  * const input: HookRunInput = { stdinText: "{}", env: process.env, now: Date.now() };
  * ```
  */
@@ -37,7 +37,7 @@ export interface HookRunInput {
  *
  * @example
  * ```ts
- * import type { HookOutput } from "./runtime.js";
+ * import type { HookOutput } from "./runtime.ts";
  * const output: HookOutput = {
  *   hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: "..." },
  * };
@@ -60,7 +60,7 @@ export interface HookOutput {
  *
  * @example
  * ```ts
- * import type { HookDeps } from "./runtime.js";
+ * import type { HookDeps } from "./runtime.ts";
  * const deps: HookDeps = {
  *   dir: "/var/data/m3l",
  *   now: Date.now(),
@@ -89,7 +89,7 @@ export interface HookDeps {
  *
  * @example
  * ```ts
- * import type { HookHandler } from "./runtime.js";
+ * import type { HookHandler } from "./runtime.ts";
  * const handler: HookHandler = () => Promise.resolve(null);
  * ```
  */
@@ -104,7 +104,7 @@ export type HookHandler = (
  *
  * @example
  * ```ts
- * import type { HookRunResult } from "./runtime.js";
+ * import type { HookRunResult } from "./runtime.ts";
  * const result: HookRunResult = { stdout: "", stderr: "" };
  * ```
  */
@@ -120,7 +120,7 @@ export interface HookRunResult {
  *
  * @example
  * ```ts
- * import type { HookRunOptions } from "./runtime.js";
+ * import type { HookRunOptions } from "./runtime.ts";
  * const options: HookRunOptions = { catalog: false };
  * ```
  */
@@ -138,7 +138,7 @@ export interface HookRunOptions {
  *
  * @example
  * ```ts
- * import { MAX_STDIN_BYTES } from "./runtime.js";
+ * import { MAX_STDIN_BYTES } from "./runtime.ts";
  * Buffer.byteLength("{}") <= MAX_STDIN_BYTES; // true
  * ```
  */
@@ -150,7 +150,7 @@ export const MAX_STDIN_BYTES: number = 1_048_576;
  *
  * @example
  * ```ts
- * import { MAX_CONTEXT_CHARS } from "./runtime.js";
+ * import { MAX_CONTEXT_CHARS } from "./runtime.ts";
  * "hint".length <= MAX_CONTEXT_CHARS; // true
  * ```
  */
@@ -168,7 +168,7 @@ const ELLIPSIS = "…";
  *
  * @example
  * ```ts
- * import { oneLine } from "./runtime.js";
+ * import { oneLine } from "./runtime.ts";
  * oneLine("a\r\nb"); // "a b"
  * ```
  */
@@ -187,7 +187,7 @@ export function oneLine(text: string): string {
  *
  * @example
  * ```ts
- * import { hookNote } from "./runtime.js";
+ * import { hookNote } from "./runtime.ts";
  * hookNote("Stop", "stdin could not be read"); // "m3l-claude-mentor: Stop: stdin could not be read\n"
  * ```
  */
@@ -342,7 +342,7 @@ async function runSteps(
  *
  * @example
  * ```ts
- * import { runHookCore } from "./runtime.js";
+ * import { runHookCore } from "./runtime.ts";
  * const result = await runHookCore(
  *   "Stop",
  *   { stdinText: "{}", env: process.env, now: Date.now() },

@@ -29,14 +29,14 @@ Report a suspected security vulnerability privately. See
 
 ## Coding standards
 
-| Standard                                                                                | How it is enforced                                                                    |
-| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `.editorconfig`: UTF-8, LF, two-space indent, final newline, no trailing whitespace     | Prettier reads it, and the format check in `pnpm verify` and CI fails on a difference |
-| TypeScript with `strict: true` and ESM only: no `require`, no `module.exports`          | `tsc` in the typecheck and build steps, and `.claude/hooks/guard-no-commonjs.mjs`     |
-| ESLint with the typed recommended rules, named exports and exhaustive `switch`          | The lint step of `pnpm verify` and CI                                                 |
-| TSDoc on exports and tests for every module, with coverage of at least 80% of each file | The test step runs Vitest with a per-file coverage gate                               |
-| No file over 25,000 bytes                                                               | The file-budget step                                                                  |
-| The committed `dist/` matches a fresh build                                             | The `dist-fresh` step, because the hooks and the CLI run from `dist/`                 |
+| Standard                                                                                | How it is enforced                                                                                                    |
+| --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `.editorconfig`: UTF-8, LF, two-space indent, final newline, no trailing whitespace     | Prettier reads it, and the format check in `pnpm verify` and CI fails on a difference                                 |
+| TypeScript with `strict: true` and ESM only: no `require`, no `module.exports`          | `tsc` in the typecheck step, and `.claude/hooks/guard-no-commonjs.mjs`                                                |
+| ESLint with the typed recommended rules, named exports and exhaustive `switch`          | The lint step of `pnpm verify` and CI                                                                                 |
+| TSDoc on exports and tests for every module, with coverage of at least 80% of each file | The test step runs Vitest with a per-file coverage gate                                                               |
+| No file over 25,000 bytes                                                               | The file-budget step                                                                                                  |
+| Relative imports end in `.ts`, and no build output is committed                         | `.claude/hooks/guard-ts-extension.mjs`, and the `no-dist` step, because the hooks and the CLI run `src/*.ts` directly |
 
 ## Building and testing
 

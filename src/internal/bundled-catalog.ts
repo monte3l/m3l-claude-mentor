@@ -2,9 +2,9 @@
  * Loads the topic catalog that ships with the plugin (`data/topic-catalog.json`).
  */
 import { open, type FileHandle } from "node:fs/promises";
-import { parseCatalog } from "./catalog.js";
-import { MentorStateError } from "./errors.js";
-import type { CatalogEntry } from "./schema.js";
+import { parseCatalog } from "./catalog.ts";
+import { MentorStateError } from "./errors.ts";
+import type { CatalogEntry } from "./schema.ts";
 
 /** The largest bundled catalog accepted, in bytes. */
 const MAX_BUNDLED_BYTES = 1_048_576;
@@ -54,9 +54,8 @@ async function readBounded(source: URL, maxBytes: number): Promise<Buffer> {
 /**
  * Loads and validates the bundled topic catalog. By default it reads
  * `data/topic-catalog.json`, located relative to this module so it resolves
- * from both `src/internal/` and `dist/internal/` (the plugin keeps `data/`
- * next to `dist/`). Nothing is cached: each call reads the file again and
- * returns a fresh array.
+ * from `src/internal/` (the plugin keeps `data/` next to `src/`). Nothing is
+ * cached: each call reads the file again and returns a fresh array.
  *
  * @param source - A `file:` URL of the catalog to read; defaults to the
  * bundled `data/topic-catalog.json`.
@@ -68,7 +67,7 @@ async function readBounded(source: URL, maxBytes: number): Promise<Buffer> {
  *
  * @example
  * ```ts
- * import { loadBundledCatalog } from "./bundled-catalog.js";
+ * import { loadBundledCatalog } from "./bundled-catalog.ts";
  * const catalog = await loadBundledCatalog();
  * const enabled = catalog.filter((entry) => entry.enabled);
  * ```

@@ -8,28 +8,28 @@ import {
   parseCatalogFile,
   serializeCatalogFile,
   type CatalogFile,
-} from "./catalog-file.js";
-import { MentorStateError } from "./errors.js";
-import { MAX_GOALS_BYTES } from "./fs-atomic.js";
+} from "./catalog-file.ts";
+import { MentorStateError } from "./errors.ts";
+import { MAX_GOALS_BYTES } from "./fs-atomic.ts";
 import {
   MAX_EVIDENCE_EVENTS,
   parseEvidence,
   type Evidence,
   type Parsed,
-} from "./schema.js";
+} from "./schema.ts";
 import {
   parseProfile,
   parseState,
   type MentorState,
   type Profile,
-} from "./state-schema.js";
+} from "./state-schema.ts";
 
 /**
  * The `format` tag every bundle carries.
  *
  * @example
  * ```ts
- * import { BUNDLE_FORMAT } from "./export.js";
+ * import { BUNDLE_FORMAT } from "./export.ts";
  * BUNDLE_FORMAT; // "m3l-claude-mentor-export"
  * ```
  */
@@ -40,7 +40,7 @@ export const BUNDLE_FORMAT = "m3l-claude-mentor-export";
  *
  * @example
  * ```ts
- * import { BUNDLE_VERSION } from "./export.js";
+ * import { BUNDLE_VERSION } from "./export.ts";
  * BUNDLE_VERSION; // 1
  * ```
  */
@@ -51,7 +51,7 @@ export const BUNDLE_VERSION = 1;
  *
  * @example
  * ```ts
- * import { MAX_BUNDLE_BYTES } from "./export-bundle.js";
+ * import { MAX_BUNDLE_BYTES } from "./export-bundle.ts";
  * MAX_BUNDLE_BYTES; // 16_777_216
  * ```
  */
@@ -62,7 +62,7 @@ export const MAX_BUNDLE_BYTES: number = 16 * 1024 * 1024;
  *
  * @example
  * ```ts
- * import { exportBundle, type Bundle } from "./export.js";
+ * import { exportBundle, type Bundle } from "./export.ts";
  * const bundle: Bundle = await exportBundle("/var/data/m3l", Date.now());
  * ```
  */
@@ -141,7 +141,7 @@ function parseEvidenceList(value: unknown): Parsed<readonly Evidence[]> {
  *
  * @example
  * ```ts
- * import { parseBundle } from "./export.js";
+ * import { parseBundle } from "./export.ts";
  * const r = parseBundle(JSON.parse(text));
  * if (!r.ok) console.error(r.reason);
  * ```
@@ -211,7 +211,7 @@ export function parseBundle(value: unknown): Parsed<Bundle> {
  *
  * @example
  * ```ts
- * import { jsonText } from "./export-bundle.js";
+ * import { jsonText } from "./export-bundle.ts";
  * jsonText({ a: 1 }, "example", 0); // '{"a":1}\n'
  * ```
  */
@@ -237,7 +237,7 @@ export function jsonText(value: unknown, what: string, indent: number): string {
  *
  * @example
  * ```ts
- * import { exportBundle, serializeBundle } from "./export.js";
+ * import { exportBundle, serializeBundle } from "./export.ts";
  * const text = serializeBundle(await exportBundle("/var/data/m3l", Date.now()));
  * ```
  */
@@ -266,7 +266,7 @@ export function serializeBundle(bundle: Bundle): string {
  *
  * @example
  * ```ts
- * import { checkNow } from "./export-bundle.js";
+ * import { checkNow } from "./export-bundle.ts";
  * checkNow(Date.now()); // returns; checkNow(-1) throws
  * ```
  */
@@ -287,7 +287,7 @@ export function checkNow(now: number): void {
  *
  * @example
  * ```ts
- * import { isConfirmed } from "./export-bundle.js";
+ * import { isConfirmed } from "./export-bundle.ts";
  * isConfirmed({ confirm: true }, "confirm"); // true
  * isConfirmed({ confirm: "yes" }, "confirm"); // false
  * ```

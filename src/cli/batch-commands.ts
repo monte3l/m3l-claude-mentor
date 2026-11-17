@@ -1,30 +1,30 @@
-import { MentorStateError } from "../internal/errors.js";
-import type { ClaimOutcome, Diagnosis } from "../internal/reconcile.js";
+import { MentorStateError } from "../internal/errors.ts";
+import type { ClaimOutcome, Diagnosis } from "../internal/reconcile.ts";
 import {
   CHANNELS,
   parseEvidence,
   type Evidence,
   type Level,
   type TopicId,
-} from "../internal/schema.js";
-import { appendEvidence, loadProfile, saveProfile } from "../internal/store.js";
+} from "../internal/schema.ts";
+import { appendEvidence, loadProfile, saveProfile } from "../internal/store.ts";
 import {
   CliUsageError,
   requireOneOf,
   requireTopicId,
   requireValue,
   type ParsedArgs,
-} from "./args.js";
+} from "./args.ts";
 import {
   loadMergedCatalog,
   requireCatalogEntry,
   type CommandEnv,
-} from "./env.js";
+} from "./env.ts";
 import {
   applyPass,
   optionalClaim,
   recomputeTopic,
-} from "./profile-commands.js";
+} from "./profile-commands.ts";
 
 const MAX_BATCH_EVENTS = 10;
 const RESULTS = ["positive", "negative"] as const;
@@ -94,7 +94,7 @@ async function appendAll(
  *
  * @example
  * ```ts
- * import { recordBatch, type BatchView } from "./batch-commands.js";
+ * import { recordBatch, type BatchView } from "./batch-commands.ts";
  * const view: BatchView = await recordBatch(args, env);
  * ```
  */
@@ -136,7 +136,7 @@ export interface BatchView {
  *
  * @example
  * ```ts
- * import { recordBatch } from "./batch-commands.js";
+ * import { recordBatch } from "./batch-commands.ts";
  * const { recorded, level } = await recordBatch(args, env);
  * ```
  */

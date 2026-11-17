@@ -2,7 +2,7 @@
 name: whats-new
 description: Produces a short digest of recent Claude Code changelog entries, filtered to the learner's goals and topics, and remembers the newest version seen. This skill should be used when the user asks "what's new in Claude Code", "what changed lately", "recent changes", "new release", "changelog", or "anything new I should know", or invokes /m3l-claude-mentor:whats-new.
 argument-hint: "[focus area]"
-allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js *)
+allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)
 ---
 
 # What's new
@@ -23,17 +23,17 @@ matters to them. The optional `$ARGUMENTS` narrows the focus area.
 ## State
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} get-profile
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} get-profile
 ```
 
 Read `lastChangelogVersion` (null means first run) and the topic levels.
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} get-goals
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} get-goals
 ```
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} topics
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} topics
 ```
 
 ## Steps
@@ -58,7 +58,7 @@ node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_D
    line, and only when it looks like `x.y.z` (digits and dots); otherwise skip this step:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} set-changelog-version --version <newest seen>
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} set-changelog-version --version <newest seen>
 ```
 
 Skip step 5 when the fetch failed and say so.

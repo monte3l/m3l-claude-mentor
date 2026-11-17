@@ -2,7 +2,7 @@
 name: profile
 description: Shows the learner's mentoring profile and changes its settings, such as goals, mutes, project exclusions and topic overrides, plus export, import and deletion of stored data. This skill should be used when the user asks to "show my learning profile", "change my goals", "mute tips about a topic", "export my mentor data", "delete everything the mentor stored", or invokes /m3l-claude-mentor:profile.
 argument-hint: "[show | goals | mute | topic | export | import | delete]"
-allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js *)
+allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)
 ---
 
 # Profile
@@ -29,19 +29,19 @@ about the area; with none, show the summary and ask what to change.
 ## Show
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} show
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} show
 ```
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} get-goals
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} get-goals
 ```
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} get-profile
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} get-profile
 ```
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} topics
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} topics
 ```
 
 Summarise readably: topics grouped by level, topics due for review, calibration, mute
@@ -52,11 +52,11 @@ not computed from the output. Do not dump raw JSON.
 ## Goals
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} get-goals
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} get-goals
 ```
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} set-goals --text '<new goals>'
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} set-goals --text '<new goals>'
 ```
 
 Show the current goals as a block, draft the new text with the learner, and save only
@@ -69,15 +69,15 @@ normal.
 ## Mutes and exclusions
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} set-mute <on|off>
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} set-mute <on|off>
 ```
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} set-topic-mute <on|off> --topic <id>
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} set-topic-mute <on|off> --topic <id>
 ```
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} exclude-project <add|remove> --path '<absolute path>'
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} exclude-project <add|remove> --path '<absolute path>'
 ```
 
 The first silences all ambient tips; the second one topic; the third a project
@@ -89,13 +89,13 @@ Enable or disable a topic, set its target level, set its style (socratic, explai
 recall-quiz or reference), or remove an override:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} set-topic-override --topic <id> --enabled <true|false> --target <Level> --style <style>
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} set-topic-override --topic <id> --enabled <true|false> --target <Level> --style <style>
 ```
 
 Pass only the options being changed (at least one).
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} set-topic-override --topic <id> --reset
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} set-topic-override --topic <id> --reset
 ```
 
 ## Plugin options (not changed here)
@@ -110,7 +110,7 @@ calls in a lesson or quiz may ask for approval. To avoid that, the learner can a
 rule to the user-level `~/.claude/settings.json` (or through `/permissions`):
 
 ```json
-{ "permissions": { "allow": ["Bash(node */dist/cli/mentor-state.js *)"] } }
+{ "permissions": { "allow": ["Bash(node */src/cli/mentor-state.ts *)"] } }
 ```
 
 That broad rule also pre-approves the destructive commands (delete, import), so the
@@ -122,12 +122,12 @@ the day-to-day commands only:
 {
   "permissions": {
     "allow": [
-      "Bash(node */dist/cli/mentor-state.js --data-dir * show)",
-      "Bash(node */dist/cli/mentor-state.js --data-dir * get-profile)",
-      "Bash(node */dist/cli/mentor-state.js --data-dir * topics)",
-      "Bash(node */dist/cli/mentor-state.js --data-dir * get-goals)",
-      "Bash(node */dist/cli/mentor-state.js --data-dir * introduce *)",
-      "Bash(node */dist/cli/mentor-state.js --data-dir * record-batch *)"
+      "Bash(node */src/cli/mentor-state.ts --data-dir * show)",
+      "Bash(node */src/cli/mentor-state.ts --data-dir * get-profile)",
+      "Bash(node */src/cli/mentor-state.ts --data-dir * topics)",
+      "Bash(node */src/cli/mentor-state.ts --data-dir * get-goals)",
+      "Bash(node */src/cli/mentor-state.ts --data-dir * introduce *)",
+      "Bash(node */src/cli/mentor-state.ts --data-dir * record-batch *)"
     ]
   }
 }

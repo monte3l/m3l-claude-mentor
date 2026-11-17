@@ -69,7 +69,6 @@ export const CORE_STEPS = [
     name: "Typecheck",
     cmd: ["pnpm", "typecheck"],
   },
-  { id: "build", group: "build", name: "Build", cmd: ["pnpm", "build"] },
   {
     id: "test",
     group: "test",
@@ -83,10 +82,10 @@ export const CORE_STEPS = [
     cmd: ["node", "bin/check-node-version.mjs"],
   },
   {
-    id: "dist-fresh",
+    id: "no-dist",
     group: "build",
-    name: "Check committed dist/ is fresh",
-    cmd: ["node", "bin/check-dist-fresh.mjs"],
+    name: "Check no build output is committed",
+    cmd: ["node", "bin/check-no-dist.mjs"],
   },
   {
     id: "version-sync",

@@ -3,27 +3,27 @@
  * tracks task segments, and adds a style hint, an occasional tip directive
  * and a teach-next offer to the model's context.
  */
-import { matchTopics } from "../../internal/catalog.js";
+import { matchTopics } from "../../internal/catalog.ts";
 import {
   detectPromptSignals,
   type PromptSignal,
-} from "../../internal/prompt-signals.js";
+} from "../../internal/prompt-signals.ts";
 import {
   levelRank,
   type CatalogEntry,
   type Level,
   type Style,
   type TopicId,
-} from "../../internal/schema.js";
+} from "../../internal/schema.ts";
 import {
   advanceSegment,
   decideTip,
   recordTip,
-} from "../../internal/segment.js";
-import type { MentorState } from "../../internal/state-schema.js";
-import { loadProfile, loadState, saveState } from "../../internal/store.js";
-import { payloadField, payloadSession, topicTitle } from "../common.js";
-import type { HookHandler } from "../runtime.js";
+} from "../../internal/segment.ts";
+import type { MentorState } from "../../internal/state-schema.ts";
+import { loadProfile, loadState, saveState } from "../../internal/store.ts";
+import { payloadField, payloadSession, topicTitle } from "../common.ts";
+import type { HookHandler } from "../runtime.ts";
 
 /** The most topics a learner may mute individually. */
 const MAX_MUTED_TOPICS = 500;
@@ -118,8 +118,8 @@ function teachOffer(catalog: readonly CatalogEntry[], id: TopicId): string {
  *
  * @example
  * ```ts
- * import { runHook } from "./process-shell.js";
- * import { userPromptSubmitHandler } from "./handlers/user-prompt-submit.js";
+ * import { runHook } from "./process-shell.ts";
+ * import { userPromptSubmitHandler } from "./handlers/user-prompt-submit.ts";
  * await runHook("UserPromptSubmit", userPromptSubmitHandler);
  * ```
  */

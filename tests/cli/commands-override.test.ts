@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { parseCatalog } from "../../src/internal/catalog.js";
-import { saveCatalogFile } from "../../src/internal/store.js";
+import { parseCatalog } from "../../src/internal/catalog.ts";
+import { saveCatalogFile } from "../../src/internal/store.ts";
 import {
   put,
   read,
@@ -11,7 +11,7 @@ import {
   runOk,
   makeSandbox,
   type Sandbox,
-} from "./helpers.js";
+} from "./helpers.ts";
 
 let sb: Sandbox;
 beforeEach(() => {

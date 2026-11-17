@@ -30,22 +30,27 @@ export function makeSandbox(): Sandbox {
   };
 }
 
-/** The compiled path of a script; `pnpm build` must have run first. */
-export function distPath(relative: string): string {
-  return join(ROOT, "dist", relative);
+/**
+ * The path of a TypeScript entry point under src/. Node runs it directly by
+ * stripping the types, which is how the plugin ships: nothing is built.
+ */
+export function scriptPath(relative: string): string {
+  return join(ROOT, "src", relative);
 }
 
-/** Fails loudly (not with a cryptic spawn error) when the build is absent. */
-export function requireBuilt(relative: string): void {
-  if (!existsSync(distPath(relative))) {
-    throw new Error(
-      `dist/${relative} is missing: run \`pnpm build\` before these tests`,
-    );
+/** Fails loudly (not with a cryptic spawn error) when the script is absent. */
+export function requireScript(relative: string): void {
+  if (!existsSync(scriptPath(relative))) {
+    throw new Error(`src/${relative} is missing`);
   }
 }
 
-/** Runs a compiled script with a controlled environment. */
-export function runDist(
+/**
+ * Runs an entry point the way hooks/hooks.json does, with a controlled
+ * environment. The flag matches hooks.json: Node 24.0 to 24.2 prints an
+ * experimental-feature warning for type stripping, and later releases do not.
+ */
+export function runScript(
   relative: string,
   options: {
     readonly input?: string;
@@ -54,7 +59,7 @@ export function runDist(
     readonly env?: Readonly<Record<string, string>>;
   } = {},
 ): SpawnResult {
-  requireBuilt(relative);
+  requireScript(relative);
   const env: Record<string, string> = {
     PATH: process.env["PATH"] ?? "",
     CLAUDE_PLUGIN_ROOT: ROOT,
@@ -65,7 +70,11 @@ export function runDist(
   }
   const result = spawnSync(
     process.execPath,
-    [distPath(relative), ...(options.args ?? [])],
+    [
+      "--disable-warning=ExperimentalWarning",
+      scriptPath(relative),
+      ...(options.args ?? []),
+    ],
     {
       input: options.input ?? "",
       env,

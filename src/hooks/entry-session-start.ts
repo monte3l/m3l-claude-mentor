@@ -1,5 +1,5 @@
 /**
- * The `SessionStart` hook process entry (`dist/hooks/entry-session-start.js`), run by
+ * The `SessionStart` hook process entry (`src/hooks/entry-session-start.ts`), run by
  * `hooks/hooks.json`. It runs only as the process entry point: importing
  * it does nothing.
  *
@@ -33,11 +33,11 @@ async function isProcessEntry(): Promise<boolean> {
 
 let loaded = false;
 try {
-  const { isMainModule } = await import("./main-guard.js");
+  const { isMainModule } = await import("./main-guard.ts");
   if (isMainModule(import.meta, process.argv[1])) {
     const [{ runHook }, { sessionStartHandler }] = await Promise.all([
-      import("./process-shell.js"),
-      import("./handlers/session-start.js"),
+      import("./process-shell.ts"),
+      import("./handlers/session-start.ts"),
     ]);
     loaded = true;
     await runHook("SessionStart", sessionStartHandler);

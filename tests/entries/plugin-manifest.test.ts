@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
-import { ROOT } from "./spawn-helpers.js";
+import { ROOT } from "./spawn-helpers.ts";
 
 interface Manifest {
   name?: string;

@@ -1,13 +1,13 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
-import { parseCatalog } from "../../src/internal/catalog.js";
+import { parseCatalog } from "../../src/internal/catalog.ts";
 import {
   extractUsageSignals,
   signalToEvidence,
   USAGE_KINDS,
   type UsageSignal,
-} from "../../src/internal/signals.js";
-import { parseSessionId } from "../../src/internal/schema.js";
+} from "../../src/internal/signals.ts";
+import { parseSessionId } from "../../src/internal/schema.ts";
 
 const FM = "---\nname: x\ndescription: does x\n---\nbody";
 

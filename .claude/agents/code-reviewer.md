@@ -59,7 +59,7 @@ on it.
 
 - SRP / OCP / LSP / ISP / DIP violations; dependencies injected, not
   constructed internally; composition over inheritance.
-- **ESM `.js` extension** on every relative import; **named exports only**;
+- **`.ts` extension** on every relative import; **named exports only**;
   **no `any`**, no non-null `!`; no CommonJS.
 - A new self-invocation guard (`bin/**` or `.claude/hooks/**`) must compare
   `realpathSync(process.argv[1])` to `fileURLToPath(import.meta.url)` -- never

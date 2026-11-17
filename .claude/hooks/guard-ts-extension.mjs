@@ -1,18 +1,20 @@
 #!/usr/bin/env node
 /**
- * PreToolUse guard (Write|Edit): blocks writing a relative import that is
- * missing the `.js` extension.
+ * PreToolUse guard (Write|Edit): blocks writing a relative import in a
+ * TypeScript file that does not end in `.ts`.
  *
- * This is the #1 documented ESM gotcha -- a relative import without `.js`
- * type-checks but fails to resolve at runtime in Node. Path-scoped rules
- * load on Read, Write and Edit (Claude Code 2.1.288) but only advise, so
- * this runs as a hook, which blocks.
+ * The plugin ships no build output: Node runs `src/*.ts` directly by
+ * stripping the types, and Node resolves a relative import by its real file
+ * name. So `./x` and `./x.js` both type-check under the right tsconfig but
+ * fail at runtime, because neither file exists. Path-scoped rules load on
+ * Read, Write and Edit (Claude Code 2.1.288) but only advise, so this runs
+ * as a hook, which blocks.
  *
  * Blocks by exiting 2 with a message on stderr (Claude Code convention).
  */
 import process from "node:process";
 
-const ALLOWED = [".js", ".mjs", ".cjs", ".json", ".node"];
+const ALLOWED = [".ts", ".mts", ".cts", ".mjs", ".cjs", ".json", ".node"];
 
 /** Extract the content being written from the tool input. */
 function contentToCheck(input) {
@@ -21,7 +23,7 @@ function contentToCheck(input) {
   return [ti.content, ti.new_string].filter((s) => typeof s === "string");
 }
 
-/** Find relative import/export specifiers missing an allowed extension. */
+/** Find relative import/export specifiers without an allowed extension (`.js` is not one). */
 function offendingSpecifiers(source) {
   const offenders = [];
   // Matches: from "./x", from '../y', import("./z"), require("./w")
@@ -55,11 +57,12 @@ if (!/\.(ts|tsx|mts|cts)$/.test(filePath)) process.exit(0);
 const offenders = contentToCheck(input).flatMap(offendingSpecifiers);
 if (offenders.length > 0) {
   const unique = [...new Set(offenders)];
+  const fix = (s) => (s.endsWith(".js") ? `${s.slice(0, -3)}.ts` : `${s}.ts`);
   process.stderr.write(
-    `Blocked: relative import(s) missing the required \`.js\` extension ` +
-      `(ESM + NodeNext will fail to resolve at runtime):\n` +
-      unique.map((s) => `  - "${s}"  ->  "${s}.js"`).join("\n") +
-      `\nAdd the \`.js\` extension to every relative import.\n`,
+    `Blocked: relative import(s) without the required \`.ts\` extension ` +
+      `(Node runs src/*.ts directly and will fail to resolve them at runtime):\n` +
+      unique.map((s) => `  - "${s}"  ->  "${fix(s)}"`).join("\n") +
+      `\nEnd every relative import in a TypeScript file with \`.ts\`.\n`,
   );
   process.exit(2);
 }

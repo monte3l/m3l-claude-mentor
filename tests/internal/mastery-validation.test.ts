@@ -5,14 +5,14 @@ import {
   isReviewDue,
   recencyFactor,
   topicScore,
-} from "../../src/internal/mastery.js";
+} from "../../src/internal/mastery.ts";
 import {
   calibrationScore,
   deriveLevel,
   updateCalibration,
-} from "../../src/internal/reconcile.js";
-import type { Channel } from "../../src/internal/schema.js";
-import { NOW, ev, repeat } from "./fixtures/evidence.js";
+} from "../../src/internal/reconcile.ts";
+import type { Channel } from "../../src/internal/schema.ts";
+import { NOW, ev, repeat } from "./fixtures/evidence.ts";
 
 const MAX = Number.MAX_SAFE_INTEGER;
 

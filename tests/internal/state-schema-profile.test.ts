@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
-import { LEVELS } from "../../src/internal/schema.js";
+import { LEVELS } from "../../src/internal/schema.ts";
 import {
   defaultProfile,
   parseProfile,
-} from "../../src/internal/state-schema.js";
+} from "../../src/internal/state-schema.ts";
 
 const topic = {
   introduced: true,

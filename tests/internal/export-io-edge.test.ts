@@ -16,14 +16,14 @@ import {
   exportBundleToFile,
   importBundle,
   importBundleFromFile,
-} from "../../src/internal/export.js";
+} from "../../src/internal/export.ts";
 import {
   NOW,
   evidenceAt,
   expectCode,
   seed,
   snapshot,
-} from "./fixtures/export-data.js";
+} from "./fixtures/export-data.ts";
 
 let sandbox = "";
 let src = "";

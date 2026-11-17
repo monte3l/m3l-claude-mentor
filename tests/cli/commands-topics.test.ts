@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { parseCatalog } from "../../src/internal/catalog.js";
-import { saveCatalogFile, saveProfile } from "../../src/internal/store.js";
-import { defaultProfile } from "../../src/internal/state-schema.js";
-import { put, read, run, runOk, makeSandbox, type Sandbox } from "./helpers.js";
+import { parseCatalog } from "../../src/internal/catalog.ts";
+import { saveCatalogFile, saveProfile } from "../../src/internal/store.ts";
+import { defaultProfile } from "../../src/internal/state-schema.ts";
+import { put, read, run, runOk, makeSandbox, type Sandbox } from "./helpers.ts";
 
 let sb: Sandbox;
 beforeEach(() => {

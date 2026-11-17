@@ -56,7 +56,7 @@ goal flips to green — the rest of the discipline below is identical.)
 
 1. Read the contract (or, when backfilling, the target export and its TSDoc):
    inputs, return shape, failure modes, behavioral guarantees.
-2. Create or extend the test file, importing from `src/` with the `.js`
+2. Create or extend the test file, importing from `src/` with the `.ts`
    extension.
 3. Write, at minimum:
    - **Happy path** — observable behavior for valid input.

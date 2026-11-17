@@ -58,6 +58,12 @@ Every confirmed vulnerability gets a GitHub security advisory, with a CVE
 requested when it qualifies. The advisories for this repository are listed under
 its Security tab. None has been published so far.
 
+A published vulnerability in a component the plugin does not ship or use is
+recorded as not affected in an [OpenVEX](https://openvex.dev) document,
+[`docs/m3l-claude-mentor.openvex.json`](docs/m3l-claude-mentor.openvex.json),
+with the reason. It holds one statement today: `picomatch`, a development-only
+dependency with no patched version.
+
 ## Dependency and code-scanning findings
 
 | Tool                                        | What it checks                                                                                           | Threshold                                                                                                        |

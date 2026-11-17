@@ -6,14 +6,14 @@ import {
   type Diagnosis,
   type LevelInput,
   type ReconcileInput,
-} from "../../src/internal/reconcile.js";
+} from "../../src/internal/reconcile.ts";
 import {
   TOPIC_TYPES,
   type Evidence,
   type Level,
   type TopicType,
-} from "../../src/internal/schema.js";
-import { DAY, NOW, days, ev, repeat } from "./fixtures/evidence.js";
+} from "../../src/internal/schema.ts";
+import { DAY, NOW, days, ev, repeat } from "./fixtures/evidence.ts";
 
 function input(
   events: readonly Evidence[],

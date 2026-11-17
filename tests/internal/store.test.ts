@@ -13,21 +13,21 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import {
   parseCatalogFile,
   type CatalogFile,
-} from "../../src/internal/catalog-file.js";
+} from "../../src/internal/catalog-file.ts";
 import {
   MentorStateError,
   type MentorErrorCode,
-} from "../../src/internal/errors.js";
+} from "../../src/internal/errors.ts";
 import {
   MAX_GOALS_BYTES,
   MAX_JSON_BYTES,
-} from "../../src/internal/fs-atomic.js";
+} from "../../src/internal/fs-atomic.ts";
 import {
   defaultState,
   parseState,
   type MentorState,
   type Profile,
-} from "../../src/internal/state-schema.js";
+} from "../../src/internal/state-schema.ts";
 import {
   loadCatalogFile,
   loadGoals,
@@ -37,7 +37,7 @@ import {
   saveGoals,
   saveProfile,
   saveState,
-} from "../../src/internal/store.js";
+} from "../../src/internal/store.ts";
 
 let sandbox = "";
 let dir = "";

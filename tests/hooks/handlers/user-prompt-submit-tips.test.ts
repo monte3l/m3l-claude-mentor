@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { userPromptSubmitHandler } from "../../../src/hooks/handlers/user-prompt-submit.js";
-import { parseCatalog } from "../../../src/internal/catalog.js";
+import { userPromptSubmitHandler } from "../../../src/hooks/handlers/user-prompt-submit.ts";
+import { parseCatalog } from "../../../src/internal/catalog.ts";
 import {
   CATALOG,
   NOW,
@@ -13,7 +13,7 @@ import {
   settingsWith,
   topicId,
   type Sandbox,
-} from "./helpers.js";
+} from "./helpers.ts";
 
 let sb: Sandbox;
 beforeEach(() => {

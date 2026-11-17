@@ -9,7 +9,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { afterEach, describe, expect, test } from "vitest";
-import { isMainModule } from "../../src/hooks/main-guard.js";
+import { isMainModule } from "../../src/hooks/main-guard.ts";
 
 const sandboxes: string[] = [];
 afterEach(() => {

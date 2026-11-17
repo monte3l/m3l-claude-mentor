@@ -6,8 +6,8 @@ paths:
 # Source rules (`src/**`)
 
 > This file is the terse checklist that auto-loads when you edit source.
-> Enforced by tooling: `strict` and ESM `.js` imports (`tsconfig.base.json`,
-> `module: nodenext`), named exports only (`import-x/no-default-export`),
+> Enforced by tooling: `strict` and relative imports ending in `.ts`
+> (`tsconfig.base.json`, `module: nodenext`, `import-x/extensions`), named exports only (`import-x/no-default-export`),
 > exhaustive `switch` (`switch-exhaustiveness-check`), `const` over `let`/`var`
 > (`prefer-const`, `no-var`), and TSDoc syntax (`tsdoc/syntax`, a warning).
 > Conventions only, no rule checks them: exporting a type next to its value,
