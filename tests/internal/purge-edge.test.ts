@@ -8,8 +8,8 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { purgeData } from "../../src/internal/export.js";
-import { expectCode, seed } from "./fixtures/export-data.js";
+import { purgeData } from "../../src/internal/export.ts";
+import { expectCode, seed } from "./fixtures/export-data.ts";
 
 let sandbox = "";
 let dir = "";

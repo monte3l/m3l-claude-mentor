@@ -3,14 +3,14 @@ import {
   MAX_CONTEXT_CHARS,
   MAX_STDIN_BYTES,
   type HookHandler,
-} from "../../src/hooks/runtime.js";
-import { MentorStateError } from "../../src/internal/errors.js";
+} from "../../src/hooks/runtime.ts";
+import { MentorStateError } from "../../src/internal/errors.ts";
 import {
   cleanSandboxes,
   isOneLine,
   makeSandbox,
   run,
-} from "./runtime-helpers.js";
+} from "./runtime-helpers.ts";
 
 afterEach(cleanSandboxes);
 

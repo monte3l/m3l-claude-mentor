@@ -4,14 +4,14 @@
  */
 
 import path from "node:path";
-import { MentorStateError } from "./errors.js";
+import { MentorStateError } from "./errors.ts";
 
 /**
  * The environment variable that names the plugin's data directory.
  *
  * @example
  * ```ts
- * import { DATA_DIR_ENV } from "./paths.js";
+ * import { DATA_DIR_ENV } from "./paths.ts";
  * process.env[DATA_DIR_ENV]; // the directory Claude Code assigned, if any
  * ```
  */
@@ -22,7 +22,7 @@ export const DATA_DIR_ENV = "CLAUDE_PLUGIN_DATA";
  *
  * @example
  * ```ts
- * import { DATA_FILES } from "./paths.js";
+ * import { DATA_FILES } from "./paths.ts";
  * DATA_FILES.state; // "state.json"
  * ```
  */
@@ -45,7 +45,7 @@ export const DATA_FILES: Readonly<{
  *
  * @example
  * ```ts
- * import type { DataFile } from "./paths.js";
+ * import type { DataFile } from "./paths.ts";
  * const f: DataFile = "profile";
  * ```
  */
@@ -76,7 +76,7 @@ function dataDirProblem(
  *
  * @example
  * ```ts
- * import { resolveDataDir } from "./paths.js";
+ * import { resolveDataDir } from "./paths.ts";
  * resolveDataDir({ CLAUDE_PLUGIN_DATA: "/var/data/m3l/" }); // "/var/data/m3l"
  * ```
  */
@@ -125,7 +125,7 @@ export function resolveDataDir(
  *
  * @example
  * ```ts
- * import { assertValidDataDir } from "./paths.js";
+ * import { assertValidDataDir } from "./paths.ts";
  * assertValidDataDir("/var/data/m3l"); // returns; "relative" or "/" would throw
  * ```
  */
@@ -150,7 +150,7 @@ export function assertValidDataDir(dir: string): void {
  *
  * @example
  * ```ts
- * import { dataFilePath } from "./paths.js";
+ * import { dataFilePath } from "./paths.ts";
  * dataFilePath("/var/data/m3l", "state"); // "/var/data/m3l/state.json"
  * ```
  */

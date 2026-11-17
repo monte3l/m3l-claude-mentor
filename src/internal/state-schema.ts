@@ -10,15 +10,15 @@
  * Proxy may propagate its error.
  */
 
-import type { Calibration } from "./reconcile.js";
+import type { Calibration } from "./reconcile.ts";
 import {
   LEVELS,
   parseTopicId,
   type Level,
   type Parsed,
   type TopicId,
-} from "./schema.js";
-import { newSegment, type SegmentState } from "./segment.js";
+} from "./schema.ts";
+import { newSegment, type SegmentState } from "./segment.ts";
 
 /**
  * The schema version this module reads and writes. A file with any other
@@ -26,7 +26,7 @@ import { newSegment, type SegmentState } from "./segment.js";
  *
  * @example
  * ```ts
- * import { SCHEMA_VERSION } from "./state-schema.js";
+ * import { SCHEMA_VERSION } from "./state-schema.ts";
  * SCHEMA_VERSION; // 1
  * ```
  */
@@ -39,7 +39,7 @@ export const SCHEMA_VERSION = 1;
  *
  * @example
  * ```ts
- * import { defaultState, type MentorState } from "./state-schema.js";
+ * import { defaultState, type MentorState } from "./state-schema.ts";
  * const s: MentorState = defaultState(Date.now());
  * ```
  */
@@ -60,7 +60,7 @@ export interface MentorState {
  *
  * @example
  * ```ts
- * import type { TopicProfile } from "./state-schema.js";
+ * import type { TopicProfile } from "./state-schema.ts";
  * const t: TopicProfile = {
  *   introduced: true,
  *   level: "Recalled",
@@ -83,7 +83,7 @@ export interface TopicProfile {
  *
  * @example
  * ```ts
- * import { defaultProfile, type Profile } from "./state-schema.js";
+ * import { defaultProfile, type Profile } from "./state-schema.ts";
  * const p: Profile = defaultProfile();
  * ```
  */
@@ -100,7 +100,7 @@ export interface Profile {
  *
  * @example
  * ```ts
- * import { MAX_TOPICS } from "./state-schema.js";
+ * import { MAX_TOPICS } from "./state-schema.ts";
  * MAX_TOPICS; // 500
  * ```
  */
@@ -202,7 +202,7 @@ function projectOrNull(item: unknown): string | null {
  *
  * @example
  * ```ts
- * import { defaultState } from "./state-schema.js";
+ * import { defaultState } from "./state-schema.ts";
  * defaultState(1_000).segment.startedAt; // 1_000
  * ```
  */
@@ -231,7 +231,7 @@ export function defaultState(now: number): MentorState {
  *
  * @example
  * ```ts
- * import { parseSegmentState } from "./state-schema.js";
+ * import { parseSegmentState } from "./state-schema.ts";
  * parseSegmentState({
  *   segmentId: 0,
  *   startedAt: 0,
@@ -307,7 +307,7 @@ export function parseSegmentState(value: unknown): Parsed<SegmentState> {
  *
  * @example
  * ```ts
- * import { isChangelogVersion } from "./state-schema.js";
+ * import { isChangelogVersion } from "./state-schema.ts";
  * isChangelogVersion("1.2.3-rc.1"); // true
  * isChangelogVersion("1.2 3"); // false
  * ```
@@ -331,7 +331,7 @@ export function isChangelogVersion(value: unknown): value is string {
  *
  * @example
  * ```ts
- * import { defaultState, parseState } from "./state-schema.js";
+ * import { defaultState, parseState } from "./state-schema.ts";
  * parseState(defaultState(0)).ok; // true
  * parseState({ schemaVersion: 2 }).ok; // false
  * ```
@@ -392,7 +392,7 @@ export function parseState(value: unknown): Parsed<MentorState> {
  *
  * @example
  * ```ts
- * import { defaultProfile } from "./state-schema.js";
+ * import { defaultProfile } from "./state-schema.ts";
  * defaultProfile().calibration; // { confirmed: 0, refuted: 0 }
  * ```
  */
@@ -493,7 +493,7 @@ function parseCalibration(value: unknown): Parsed<Calibration> {
  *
  * @example
  * ```ts
- * import { defaultProfile, parseProfile } from "./state-schema.js";
+ * import { defaultProfile, parseProfile } from "./state-schema.ts";
  * parseProfile(defaultProfile()).ok; // true
  * ```
  */
@@ -538,7 +538,7 @@ function checkNow(now: number): void {
  *
  * @example
  * ```ts
- * import { clampStateToNow, defaultState } from "./state-schema.js";
+ * import { clampStateToNow, defaultState } from "./state-schema.ts";
  * clampStateToNow(defaultState(5_000), 1_000).segment.startedAt; // 1_000
  * ```
  */
@@ -576,7 +576,7 @@ export function clampStateToNow(state: MentorState, now: number): MentorState {
  *
  * @example
  * ```ts
- * import { clampProfileToNow, defaultProfile } from "./state-schema.js";
+ * import { clampProfileToNow, defaultProfile } from "./state-schema.ts";
  * clampProfileToNow(defaultProfile(), Date.now()).topics; // {}
  * ```
  */

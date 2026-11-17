@@ -7,14 +7,14 @@ import {
   extractUsageSignals,
   signalToEvidence,
   type UsageSignal,
-} from "../../internal/signals.js";
+} from "../../internal/signals.ts";
 import {
   appendEvidence,
   loadState,
   readEvidence,
-} from "../../internal/store.js";
-import { payloadSession } from "../common.js";
-import type { HookHandler } from "../runtime.js";
+} from "../../internal/store.ts";
+import { payloadSession } from "../common.ts";
+import type { HookHandler } from "../runtime.ts";
 
 /** How many recent evidence events the per-session rate limit inspects. */
 const RATE_LIMIT_WINDOW = 500;
@@ -56,8 +56,8 @@ function isWithin(excluded: string, cwd: string): boolean {
  *
  * @example
  * ```ts
- * import { runHook } from "./process-shell.js";
- * import { postToolUseHandler } from "./handlers/post-tool-use.js";
+ * import { runHook } from "./process-shell.ts";
+ * import { postToolUseHandler } from "./handlers/post-tool-use.ts";
  * await runHook("PostToolUse", postToolUseHandler);
  * ```
  */

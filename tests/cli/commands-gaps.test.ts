@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { parseCatalog } from "../../src/internal/catalog.js";
-import { EMPTY_CATALOG_FILE } from "../../src/internal/catalog-file.js";
-import { parseEvidence } from "../../src/internal/schema.js";
+import { parseCatalog } from "../../src/internal/catalog.ts";
+import { EMPTY_CATALOG_FILE } from "../../src/internal/catalog-file.ts";
+import { parseEvidence } from "../../src/internal/schema.ts";
 import {
   appendEvidence,
   saveCatalogFile,
   saveProfile,
-} from "../../src/internal/store.js";
-import { defaultProfile } from "../../src/internal/state-schema.js";
-import { runCommand } from "../../src/cli/commands.js";
+} from "../../src/internal/store.ts";
+import { defaultProfile } from "../../src/internal/state-schema.ts";
+import { runCommand } from "../../src/cli/commands.ts";
 import {
   DAY,
   NOW,
@@ -19,7 +19,7 @@ import {
   runOk,
   seedEvidence,
   type Sandbox,
-} from "./helpers.js";
+} from "./helpers.ts";
 
 let sb: Sandbox;
 beforeEach(() => {

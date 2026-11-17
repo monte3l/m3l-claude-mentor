@@ -1,9 +1,11 @@
 # Dependencies
 node_modules/
 
-# Build output: dist/ IS committed (a plugin installed from git has no build
-# step, so hooks and the CLI run from it). `pnpm verify`'s dist-fresh step
-# fails when it drifts from src/. Only the incremental cache is ignored.
+# Build output: there is none. A plugin installed from git has no build step,
+# so the hooks and the CLI run src/*.ts directly (Node strips the types), and
+# nothing generated is committed. `pnpm verify`'s no-dist step fails if any of
+# this comes back.
+dist/
 *.tsbuildinfo
 
 # Test / coverage artifacts

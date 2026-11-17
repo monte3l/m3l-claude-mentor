@@ -7,7 +7,7 @@ import {
   type CatalogEntry,
   type SessionId,
   type TopicId,
-} from "../internal/schema.js";
+} from "../internal/schema.ts";
 
 /**
  * Reads an own payload field exactly once; an absent or only inherited field
@@ -19,7 +19,7 @@ import {
  *
  * @example
  * ```ts
- * import { payloadField } from "./common.js";
+ * import { payloadField } from "./common.ts";
  * payloadField({ prompt: "hi" }, "prompt"); // "hi"
  * ```
  */
@@ -39,7 +39,7 @@ export function payloadField(
  *
  * @example
  * ```ts
- * import { payloadSession } from "./common.js";
+ * import { payloadSession } from "./common.ts";
  * payloadSession({ session_id: "sess-1" }); // "sess-1"
  * payloadSession({ session_id: "a b" }); // null
  * ```
@@ -60,7 +60,7 @@ export function payloadSession(
  *
  * @example
  * ```ts
- * import { topicTitle } from "./common.js";
+ * import { topicTitle } from "./common.ts";
  * topicTitle([], "plan-mode" as Parameters<typeof topicTitle>[1]); // "plan-mode"
  * ```
  */

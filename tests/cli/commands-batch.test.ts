@@ -1,18 +1,18 @@
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { parseCatalog } from "../../src/internal/catalog.js";
-import { EMPTY_CATALOG_FILE } from "../../src/internal/catalog-file.js";
-import { parseEvidence } from "../../src/internal/schema.js";
+import { parseCatalog } from "../../src/internal/catalog.ts";
+import { EMPTY_CATALOG_FILE } from "../../src/internal/catalog-file.ts";
+import { parseEvidence } from "../../src/internal/schema.ts";
 import {
   defaultProfile,
   type Profile,
-} from "../../src/internal/state-schema.js";
+} from "../../src/internal/state-schema.ts";
 import {
   appendEvidence,
   saveCatalogFile,
   saveProfile,
-} from "../../src/internal/store.js";
+} from "../../src/internal/store.ts";
 import {
   DAY,
   NOW,
@@ -24,7 +24,7 @@ import {
   run,
   runOk,
   type Sandbox,
-} from "./helpers.js";
+} from "./helpers.ts";
 
 let sb: Sandbox;
 beforeEach(() => {

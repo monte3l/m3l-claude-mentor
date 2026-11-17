@@ -5,8 +5,8 @@ import {
   dataFilePath,
   resolveDataDir,
   type DataFile,
-} from "../../src/internal/paths.js";
-import { isMentorStateError } from "../../src/internal/errors.js";
+} from "../../src/internal/paths.ts";
+import { isMentorStateError } from "../../src/internal/errors.ts";
 
 function codeOf(fn: () => unknown): unknown {
   try {

@@ -8,33 +8,33 @@ import {
   expect,
   test,
 } from "vitest";
-import { readEvidence } from "../../src/internal/store.js";
+import { readEvidence } from "../../src/internal/store.ts";
 import {
-  distPath,
+  scriptPath,
   makeSandbox,
   parseSingleJson,
-  requireBuilt,
-  runDist,
+  requireScript,
+  runScript,
   type Sandbox,
-} from "./spawn-helpers.js";
+} from "./spawn-helpers.ts";
 
 const ENTRIES = [
-  ["SessionStart", "hooks/entry-session-start.js"],
-  ["UserPromptSubmit", "hooks/entry-user-prompt-submit.js"],
-  ["PostToolUse", "hooks/entry-post-tool-use.js"],
-  ["Stop", "hooks/entry-stop.js"],
-  ["PostCompact", "hooks/entry-post-compact.js"],
+  ["SessionStart", "hooks/entry-session-start.ts"],
+  ["UserPromptSubmit", "hooks/entry-user-prompt-submit.ts"],
+  ["PostToolUse", "hooks/entry-post-tool-use.ts"],
+  ["Stop", "hooks/entry-stop.ts"],
+  ["PostCompact", "hooks/entry-post-compact.ts"],
 ] as const;
 
-const STOP = "hooks/entry-stop.js";
-const PROMPT = "hooks/entry-user-prompt-submit.js";
-const POST = "hooks/entry-post-tool-use.js";
-const START = "hooks/entry-session-start.js";
+const STOP = "hooks/entry-stop.ts";
+const PROMPT = "hooks/entry-user-prompt-submit.ts";
+const POST = "hooks/entry-post-tool-use.ts";
+const START = "hooks/entry-session-start.ts";
 
 let sb: Sandbox;
 beforeAll(() => {
-  // `pnpm build` must run first: these tests spawn the compiled entries.
-  for (const [, file] of ENTRIES) requireBuilt(file);
+  // These tests spawn each hook entry as a child process, running src/*.ts directly.
+  for (const [, file] of ENTRIES) requireScript(file);
 });
 beforeEach(() => {
   sb = makeSandbox();
@@ -48,7 +48,7 @@ const payload = (extra: Record<string, unknown> = {}): string =>
 
 describe.each(ENTRIES)("%s entry", (event, file) => {
   test("exits 0 with empty or single-JSON stdout for a plain payload", () => {
-    const r = runDist(file, {
+    const r = runScript(file, {
       input: payload({ hook_event_name: event, source: "startup" }),
       dataDir: sb.dir,
     });
@@ -57,13 +57,13 @@ describe.each(ENTRIES)("%s entry", (event, file) => {
   });
 
   test("exits 0 on invalid JSON", () => {
-    const r = runDist(file, { input: "{nope", dataDir: sb.dir });
+    const r = runScript(file, { input: "{nope", dataDir: sb.dir });
     expect(r.status).toBe(0);
     expect(r.stdout).toBe("");
   });
 
   test("exits 0 on a 2 MB stdin", () => {
-    const r = runDist(file, {
+    const r = runScript(file, {
       input: payload({ junk: "x".repeat(2 * 1024 * 1024) }),
       dataDir: sb.dir,
     });
@@ -72,7 +72,7 @@ describe.each(ENTRIES)("%s entry", (event, file) => {
   });
 
   test("exits 0 when CLAUDE_PLUGIN_DATA is unset", () => {
-    const r = runDist(file, { input: payload(), dataDir: null });
+    const r = runScript(file, { input: payload(), dataDir: null });
     expect(r.status).toBe(0);
     expect(() => parseSingleJson(r.stdout)).not.toThrow();
   });
@@ -80,7 +80,7 @@ describe.each(ENTRIES)("%s entry", (event, file) => {
   test("exits 0 with a corrupt state.json", () => {
     mkdirSync(sb.dir, { recursive: true });
     writeFileSync(join(sb.dir, "state.json"), "{corrupt");
-    const r = runDist(file, {
+    const r = runScript(file, {
       input: payload({
         prompt: "plan mode",
         tool_name: "Skill",
@@ -95,7 +95,7 @@ describe.each(ENTRIES)("%s entry", (event, file) => {
   test("importing the module in-process runs nothing", async () => {
     const before = process.exitCode;
     const mod: unknown = await import(
-      /* @vite-ignore */ distPath(file).replaceAll("\\", "/")
+      /* @vite-ignore */ scriptPath(file).replaceAll("\\", "/")
     );
     expect(mod).toBeTypeOf("object");
     expect(process.exitCode).toBe(before);
@@ -106,13 +106,13 @@ describe.each(ENTRIES)("%s entry", (event, file) => {
 describe("Stop entry", () => {
   test("prints nothing even when a tip is already due", () => {
     const dial = { CLAUDE_PLUGIN_OPTION_DIAL: "2" };
-    const first = runDist(PROMPT, {
+    const first = runScript(PROMPT, {
       input: payload({ prompt: "how do I use plan mode" }),
       dataDir: sb.dir,
       env: dial,
     });
     expect(first.stdout).toContain("Mentor tip due");
-    const stop = runDist(STOP, {
+    const stop = runScript(STOP, {
       input: payload({ hook_event_name: "Stop" }),
       dataDir: sb.dir,
       env: dial,
@@ -126,7 +126,7 @@ describe("UserPromptSubmit entry end-to-end", () => {
   const env = { CLAUDE_PLUGIN_OPTION_DIAL: "2" };
 
   test("emits a tip directive once; a second prompt in the segment does not", () => {
-    const first = runDist(PROMPT, {
+    const first = runScript(PROMPT, {
       input: payload({ prompt: "how do I use plan mode" }),
       dataDir: sb.dir,
       env,
@@ -140,7 +140,7 @@ describe("UserPromptSubmit entry end-to-end", () => {
       'Mentor tip due on "Plan mode" (plan-mode)',
     );
 
-    const second = runDist(PROMPT, {
+    const second = runScript(PROMPT, {
       input: payload({ prompt: "and what about plan mode again" }),
       dataDir: sb.dir,
       env,
@@ -150,7 +150,7 @@ describe("UserPromptSubmit entry end-to-end", () => {
   });
 
   test("dial 0 never emits a tip directive", () => {
-    const r = runDist(PROMPT, {
+    const r = runScript(PROMPT, {
       input: payload({ prompt: "how do I use plan mode" }),
       dataDir: sb.dir,
       env: { CLAUDE_PLUGIN_OPTION_DIAL: "0" },
@@ -170,7 +170,7 @@ describe("PostToolUse entry", () => {
   };
 
   test("appends observed evidence for a SKILL.md write and prints nothing", async () => {
-    const r = runDist(POST, { input: payload(write), dataDir: sb.dir });
+    const r = runScript(POST, { input: payload(write), dataDir: sb.dir });
     expect(r.status).toBe(0);
     expect(r.stdout).toBe("");
     const { events } = await readEvidence(sb.dir, { maxEvents: 500 });
@@ -184,7 +184,7 @@ describe("PostToolUse entry", () => {
   });
 
   test("records nothing when CLAUDE_PLUGIN_OPTION_TRANSCRIPTANALYSIS is false", async () => {
-    const r = runDist(POST, {
+    const r = runScript(POST, {
       input: payload(write),
       dataDir: sb.dir,
       env: { CLAUDE_PLUGIN_OPTION_TRANSCRIPTANALYSIS: "false" },
@@ -197,7 +197,7 @@ describe("PostToolUse entry", () => {
 
 describe("SessionStart entry", () => {
   test("prints a learner-state summary as additional context", () => {
-    const r = runDist(START, {
+    const r = runScript(START, {
       input: payload({ source: "startup" }),
       dataDir: sb.dir,
     });
@@ -213,7 +213,7 @@ describe("SessionStart entry", () => {
 });
 
 describe("corrupt user catalog.json", () => {
-  const POST_COMPACT = "hooks/entry-post-compact.js";
+  const POST_COMPACT = "hooks/entry-post-compact.ts";
 
   function segmentId(): number {
     const state = JSON.parse(
@@ -230,7 +230,7 @@ describe("corrupt user catalog.json", () => {
   }
 
   function seedAndCorrupt(): number {
-    const seed = runDist(PROMPT, {
+    const seed = runScript(PROMPT, {
       input: payload({ prompt: "how do I use plan mode" }),
       dataDir: sb.dir,
     });
@@ -241,7 +241,7 @@ describe("corrupt user catalog.json", () => {
 
   test("Stop runs silently and keeps the segment and its emitted tip", () => {
     const dial = { CLAUDE_PLUGIN_OPTION_DIAL: "2" };
-    const seed = runDist(PROMPT, {
+    const seed = runScript(PROMPT, {
       input: payload({ prompt: "how do I use plan mode" }),
       dataDir: sb.dir,
       env: dial,
@@ -260,7 +260,7 @@ describe("corrupt user catalog.json", () => {
     expect(before.tipsEmitted).toBe(1);
     const activity = lastActivityAt();
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 25);
-    const r = runDist(STOP, {
+    const r = runScript(STOP, {
       input: payload({ cwd: sb.root }),
       dataDir: sb.dir,
       env: dial,
@@ -276,7 +276,7 @@ describe("corrupt user catalog.json", () => {
     const before = lastActivityAt();
     // Keep the two runs a few milliseconds apart (synchronous sleep).
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 25);
-    const r = runDist(POST_COMPACT, {
+    const r = runScript(POST_COMPACT, {
       input: payload({ cwd: sb.root }),
       dataDir: sb.dir,
     });
@@ -288,7 +288,7 @@ describe("corrupt user catalog.json", () => {
 
   test("UserPromptSubmit exits 0 silently with a stderr note", () => {
     seedAndCorrupt();
-    const r = runDist(PROMPT, {
+    const r = runScript(PROMPT, {
       input: payload({ prompt: "how do I use plan mode" }),
       dataDir: sb.dir,
     });

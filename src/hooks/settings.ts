@@ -14,7 +14,7 @@ const TRANSCRIPT_ANALYSIS_ENV = "CLAUDE_PLUGIN_OPTION_TRANSCRIPTANALYSIS";
  *
  * @example
  * ```ts
- * import type { HookSettings } from "./settings.js";
+ * import type { HookSettings } from "./settings.ts";
  * const settings: HookSettings = { dial: 3, transcriptAnalysis: false };
  * ```
  */
@@ -31,7 +31,7 @@ export interface HookSettings {
  *
  * @example
  * ```ts
- * import { DEFAULT_SETTINGS } from "./settings.js";
+ * import { DEFAULT_SETTINGS } from "./settings.ts";
  * DEFAULT_SETTINGS.dial; // 2
  * ```
  */
@@ -90,7 +90,7 @@ function parseFlag(raw: string | undefined, fallback: boolean): boolean {
  *
  * @example
  * ```ts
- * import { readSettings } from "./settings.js";
+ * import { readSettings } from "./settings.ts";
  * readSettings({ CLAUDE_PLUGIN_OPTION_DIAL: "4" }); // { dial: 4, transcriptAnalysis: true }
  * ```
  */

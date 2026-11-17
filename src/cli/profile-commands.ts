@@ -1,4 +1,4 @@
-import { isReviewDue } from "../internal/mastery.js";
+import { isReviewDue } from "../internal/mastery.ts";
 import {
   calibrationScore,
   reconcile,
@@ -6,28 +6,28 @@ import {
   type Calibration,
   type ClaimOutcome,
   type Diagnosis,
-} from "../internal/reconcile.js";
+} from "../internal/reconcile.ts";
 import {
   compareLevels,
   LEVELS,
   type CatalogEntry,
   type Level,
   type TopicId,
-} from "../internal/schema.js";
-import type { CatalogFile } from "../internal/catalog-file.js";
-import type { Profile, TopicProfile } from "../internal/state-schema.js";
+} from "../internal/schema.ts";
+import type { CatalogFile } from "../internal/catalog-file.ts";
+import type { Profile, TopicProfile } from "../internal/state-schema.ts";
 import {
   loadProfile,
   loadState,
   readEvidence,
   saveProfile,
-} from "../internal/store.js";
-import { requireOneOf, requireTopicId, type ParsedArgs } from "./args.js";
+} from "../internal/store.ts";
+import { requireOneOf, requireTopicId, type ParsedArgs } from "./args.ts";
 import {
   loadMergedCatalog,
   requireCatalogEntry,
   type CommandEnv,
-} from "./env.js";
+} from "./env.ts";
 
 const UNSEEN_TOPIC: TopicProfile = {
   introduced: false,
@@ -58,7 +58,7 @@ function withTopic(
  *
  * @example
  * ```ts
- * import type { TopicView } from "./profile-commands.js";
+ * import type { TopicView } from "./profile-commands.ts";
  * const view: TopicView = {
  *   id: "plan-mode",
  *   level: "Introduced",
@@ -79,7 +79,7 @@ export interface TopicView extends TopicProfile {
  *
  * @example
  * ```ts
- * import { getProfile, type ProfileView } from "./profile-commands.js";
+ * import { getProfile, type ProfileView } from "./profile-commands.ts";
  * const view: ProfileView = await getProfile(env);
  * ```
  */
@@ -102,7 +102,7 @@ export interface ProfileView {
  *
  * @example
  * ```ts
- * import { getProfile } from "./profile-commands.js";
+ * import { getProfile } from "./profile-commands.ts";
  * const { topics } = await getProfile(env);
  * ```
  */
@@ -138,7 +138,7 @@ export async function getProfile(env: CommandEnv): Promise<ProfileView> {
  *
  * @example
  * ```ts
- * import { recompute, type RecomputeView } from "./profile-commands.js";
+ * import { recompute, type RecomputeView } from "./profile-commands.ts";
  * const view: RecomputeView = await recompute(args, env);
  * ```
  */
@@ -167,7 +167,7 @@ export interface RecomputeView {
  *
  * @example
  * ```ts
- * import { recomputeTopic } from "./profile-commands.js";
+ * import { recomputeTopic } from "./profile-commands.ts";
  * const { profile, view } = await recomputeTopic(env, file, entry, stored);
  * await saveProfile(env.dir, profile);
  * ```
@@ -224,7 +224,7 @@ export async function recomputeTopic(
  *
  * @example
  * ```ts
- * import { optionalClaim } from "./profile-commands.js";
+ * import { optionalClaim } from "./profile-commands.ts";
  * const claimed = optionalClaim(args); // undefined without --claim
  * ```
  */
@@ -250,7 +250,7 @@ export function optionalClaim(args: ParsedArgs): Level | undefined {
  *
  * @example
  * ```ts
- * import { recompute } from "./profile-commands.js";
+ * import { recompute } from "./profile-commands.ts";
  * const { level, claim } = await recompute(args, env);
  * ```
  */
@@ -282,7 +282,7 @@ export async function recompute(
  *
  * @example
  * ```ts
- * import { introduce } from "./profile-commands.js";
+ * import { introduce } from "./profile-commands.ts";
  * const { level } = await introduce(args, env);
  * ```
  */
@@ -315,7 +315,7 @@ export async function introduce(
  *
  * @example
  * ```ts
- * import { applyPass } from "./profile-commands.js";
+ * import { applyPass } from "./profile-commands.ts";
  * const { profile: next, passes } = applyPass(profile, topic, "pass", Date.now());
  * ```
  */
@@ -342,7 +342,7 @@ export function applyPass(
  *
  * @example
  * ```ts
- * import { recordPass } from "./profile-commands.js";
+ * import { recordPass } from "./profile-commands.ts";
  * const { passes } = await recordPass(args, env);
  * ```
  */

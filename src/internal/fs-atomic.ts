@@ -7,13 +7,13 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, open, rename, unlink, type FileHandle } from "node:fs/promises";
 import path from "node:path";
-import { MentorStateError } from "./errors.js";
+import { MentorStateError } from "./errors.ts";
 import {
   DATA_FILES,
   assertValidDataDir,
   dataFilePath,
   type DataFile,
-} from "./paths.js";
+} from "./paths.ts";
 
 /**
  * The largest `state.json`, `profile.json` or `catalog.json` the loaders
@@ -21,7 +21,7 @@ import {
  *
  * @example
  * ```ts
- * import { MAX_JSON_BYTES, readTextBounded } from "./fs-atomic.js";
+ * import { MAX_JSON_BYTES, readTextBounded } from "./fs-atomic.ts";
  * await readTextBounded("/var/data/m3l", "state", MAX_JSON_BYTES);
  * ```
  */
@@ -32,7 +32,7 @@ export const MAX_JSON_BYTES = 1_048_576;
  *
  * @example
  * ```ts
- * import { MAX_GOALS_BYTES } from "./fs-atomic.js";
+ * import { MAX_GOALS_BYTES } from "./fs-atomic.ts";
  * Buffer.byteLength("my goals") <= MAX_GOALS_BYTES; // true
  * ```
  */
@@ -43,7 +43,7 @@ export const MAX_GOALS_BYTES = 65_536;
  *
  * @example
  * ```ts
- * import { EVIDENCE_TAIL_BYTES, readTailLines } from "./fs-atomic.js";
+ * import { EVIDENCE_TAIL_BYTES, readTailLines } from "./fs-atomic.ts";
  * await readTailLines("/var/data/m3l", "evidence", EVIDENCE_TAIL_BYTES);
  * ```
  */
@@ -54,7 +54,7 @@ export const EVIDENCE_TAIL_BYTES = 2_097_152;
  *
  * @example
  * ```ts
- * import { MAX_EVIDENCE_LINE_BYTES } from "./fs-atomic.js";
+ * import { MAX_EVIDENCE_LINE_BYTES } from "./fs-atomic.ts";
  * Buffer.byteLength("{}") + 1 <= MAX_EVIDENCE_LINE_BYTES; // true
  * ```
  */
@@ -180,7 +180,7 @@ async function ensureDir(dir: string, file: DataFile): Promise<void> {
  *
  * @example
  * ```ts
- * import { MAX_GOALS_BYTES, readTextBounded } from "./fs-atomic.js";
+ * import { MAX_GOALS_BYTES, readTextBounded } from "./fs-atomic.ts";
  * const goals = (await readTextBounded("/var/data/m3l", "goals", MAX_GOALS_BYTES)) ?? "";
  * ```
  */
@@ -234,7 +234,7 @@ export async function readTextBounded(
  *
  * @example
  * ```ts
- * import { writeTextAtomic } from "./fs-atomic.js";
+ * import { writeTextAtomic } from "./fs-atomic.ts";
  * await writeTextAtomic("/var/data/m3l", "goals", "Learn hooks\n");
  * ```
  */
@@ -304,7 +304,7 @@ async function endsTorn(handle: FileHandle): Promise<boolean> {
  *
  * @example
  * ```ts
- * import { appendLineAtomic } from "./fs-atomic.js";
+ * import { appendLineAtomic } from "./fs-atomic.ts";
  * await appendLineAtomic("/var/data/m3l", "evidence", '{"at":0}');
  * ```
  */
@@ -372,7 +372,7 @@ export async function appendLineAtomic(
  *
  * @example
  * ```ts
- * import { EVIDENCE_TAIL_BYTES, readTailLines } from "./fs-atomic.js";
+ * import { EVIDENCE_TAIL_BYTES, readTailLines } from "./fs-atomic.ts";
  * const lines = (await readTailLines("/var/data/m3l", "evidence", EVIDENCE_TAIL_BYTES)) ?? [];
  * ```
  */

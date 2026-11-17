@@ -2,8 +2,8 @@ import { describe, expect, expectTypeOf, test } from "vitest";
 import {
   parseScoringConfig,
   type ScoringConfig,
-} from "../../src/internal/scoring-config.js";
-import type { Channel } from "../../src/internal/schema.js";
+} from "../../src/internal/scoring-config.ts";
+import type { Channel } from "../../src/internal/schema.ts";
 
 const goodWeights = {
   observed: 1,

@@ -33,7 +33,7 @@ function realFile(file: string): string | null {
  *
  * @example
  * ```ts
- * import { isMainModule } from "./main-guard.js";
+ * import { isMainModule } from "./main-guard.ts";
  * if (isMainModule(import.meta, process.argv[1])) {
  *   // run the entry
  * }

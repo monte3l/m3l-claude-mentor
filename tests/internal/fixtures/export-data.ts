@@ -4,18 +4,18 @@ import { expect } from "vitest";
 import {
   MentorStateError,
   type MentorErrorCode,
-} from "../../../src/internal/errors.js";
+} from "../../../src/internal/errors.ts";
 import {
   defaultProfile,
   defaultState,
-} from "../../../src/internal/state-schema.js";
+} from "../../../src/internal/state-schema.ts";
 import {
   appendEvidence,
   saveGoals,
   saveProfile,
   saveState,
-} from "../../../src/internal/store.js";
-import type { Evidence } from "../../../src/internal/schema.js";
+} from "../../../src/internal/store.ts";
+import type { Evidence } from "../../../src/internal/schema.ts";
 
 /** Pinned clock for export tests. */
 export const NOW = 1_700_000_000_000;

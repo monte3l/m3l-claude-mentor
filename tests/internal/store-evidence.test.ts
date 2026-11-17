@@ -14,9 +14,9 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import {
   MentorStateError,
   type MentorErrorCode,
-} from "../../src/internal/errors.js";
-import type { Evidence } from "../../src/internal/schema.js";
-import { appendEvidence, readEvidence } from "../../src/internal/store.js";
+} from "../../src/internal/errors.ts";
+import type { Evidence } from "../../src/internal/schema.ts";
+import { appendEvidence, readEvidence } from "../../src/internal/store.ts";
 
 let sandbox = "";
 let dir = "";

@@ -7,7 +7,7 @@ import {
   readTailLines,
   readTextBounded,
   writeTextAtomic,
-} from "../../src/internal/fs-atomic.js";
+} from "../../src/internal/fs-atomic.ts";
 import {
   describeData,
   exportBundle,
@@ -16,8 +16,8 @@ import {
   importBundleFromFile,
   purgeData,
   type Bundle,
-} from "../../src/internal/export.js";
-import { EMPTY_CATALOG_FILE } from "../../src/internal/catalog-file.js";
+} from "../../src/internal/export.ts";
+import { EMPTY_CATALOG_FILE } from "../../src/internal/catalog-file.ts";
 import {
   appendEvidence,
   loadCatalogFile,
@@ -29,12 +29,12 @@ import {
   saveGoals,
   saveProfile,
   saveState,
-} from "../../src/internal/store.js";
+} from "../../src/internal/store.ts";
 import {
   defaultProfile,
   defaultState,
-} from "../../src/internal/state-schema.js";
-import { NOW, evidenceAt, expectCode } from "./fixtures/export-data.js";
+} from "../../src/internal/state-schema.ts";
+import { NOW, evidenceAt, expectCode } from "./fixtures/export-data.ts";
 
 const UNIQUE = `dir-guard-unique-${String(process.pid)}`;
 const DIRS = [`${UNIQUE}/relative`, "", ".", "/"] as const;

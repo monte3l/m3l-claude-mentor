@@ -8,7 +8,7 @@ import {
   parseFrontmatter,
   splitList,
   unknownKeys,
-} from "../skills/helpers.js";
+} from "../skills/helpers.ts";
 
 const AGENTS_DIR = join(ROOT, "agents");
 const AGENTS = ["docs-researcher", "mastery-assessor"] as const;

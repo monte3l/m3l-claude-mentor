@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { parseGlobalOptions } from "../../src/cli/global-options.js";
+import { parseGlobalOptions } from "../../src/cli/global-options.ts";
 
 // Result shape pinned here: { ok: true, dataDir: string | null, argv } on
 // success, { ok: false } for a usage error.

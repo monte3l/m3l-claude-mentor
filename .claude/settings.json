@@ -71,7 +71,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-js-extension.mjs\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-ts-extension.mjs\"",
             "timeout": 30
           },
           {

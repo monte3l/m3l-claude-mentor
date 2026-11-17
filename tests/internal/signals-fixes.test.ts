@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { extractUsageSignals } from "../../src/internal/signals.js";
+import { extractUsageSignals } from "../../src/internal/signals.ts";
 
 function bash(command: string): readonly { topic: string; kind: string }[] {
   return extractUsageSignals({

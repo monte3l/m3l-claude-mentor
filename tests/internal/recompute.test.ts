@@ -2,16 +2,16 @@ import { describe, expect, expectTypeOf, test } from "vitest";
 import {
   recomputeProfile,
   type RecomputeOutcome,
-} from "../../src/internal/recompute.js";
-import { parseCatalog } from "../../src/internal/catalog.js";
+} from "../../src/internal/recompute.ts";
+import { parseCatalog } from "../../src/internal/catalog.ts";
 import type {
   CatalogEntry,
   Evidence,
   Level,
   TopicId,
-} from "../../src/internal/schema.js";
-import type { Profile, TopicProfile } from "../../src/internal/state-schema.js";
-import { DAY, NOW, days, ev } from "./fixtures/evidence.js";
+} from "../../src/internal/schema.ts";
+import type { Profile, TopicProfile } from "../../src/internal/state-schema.ts";
+import { DAY, NOW, days, ev } from "./fixtures/evidence.ts";
 
 function entry(
   id: string,

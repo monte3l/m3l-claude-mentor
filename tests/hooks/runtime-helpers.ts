@@ -5,8 +5,8 @@ import type {
   HookHandler,
   HookRunInput,
   HookRunResult,
-} from "../../src/hooks/runtime.js";
-import { runHookCore } from "../../src/hooks/runtime.js";
+} from "../../src/hooks/runtime.ts";
+import { runHookCore } from "../../src/hooks/runtime.ts";
 
 export const NOW = 1_700_000_000_000;
 

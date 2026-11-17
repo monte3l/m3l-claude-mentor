@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { matchTopics, parseCatalog } from "../../src/internal/catalog.js";
+import { matchTopics, parseCatalog } from "../../src/internal/catalog.ts";
 
 function catalogWith(keywords: readonly string[]) {
   const r = parseCatalog([

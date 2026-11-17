@@ -1,20 +1,20 @@
 import { appendFileSync, existsSync, statSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { sessionStartHandler } from "../../../src/hooks/handlers/session-start.js";
-import { parseCatalog } from "../../../src/internal/catalog.js";
-import { EMPTY_CATALOG_FILE } from "../../../src/internal/catalog-file.js";
-import { DATA_FILES } from "../../../src/internal/paths.js";
+import { sessionStartHandler } from "../../../src/hooks/handlers/session-start.ts";
+import { parseCatalog } from "../../../src/internal/catalog.ts";
+import { EMPTY_CATALOG_FILE } from "../../../src/internal/catalog-file.ts";
+import { DATA_FILES } from "../../../src/internal/paths.ts";
 import {
   parseEvidence,
   type Channel,
   type Level,
-} from "../../../src/internal/schema.js";
+} from "../../../src/internal/schema.ts";
 import {
   appendEvidence,
   loadProfile,
   saveCatalogFile,
-} from "../../../src/internal/store.js";
+} from "../../../src/internal/store.ts";
 import {
   CATALOG,
   DAY,
@@ -27,7 +27,7 @@ import {
   seedState,
   settingsWith,
   type Sandbox,
-} from "./helpers.js";
+} from "./helpers.ts";
 
 let sb: Sandbox;
 beforeEach(() => {

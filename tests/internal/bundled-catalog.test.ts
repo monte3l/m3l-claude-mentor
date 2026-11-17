@@ -9,9 +9,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { afterEach, describe, expect, test } from "vitest";
-import { loadBundledCatalog } from "../../src/internal/bundled-catalog.js";
-import { parseCatalog } from "../../src/internal/catalog.js";
-import { MentorStateError } from "../../src/internal/errors.js";
+import { loadBundledCatalog } from "../../src/internal/bundled-catalog.ts";
+import { parseCatalog } from "../../src/internal/catalog.ts";
+import { MentorStateError } from "../../src/internal/errors.ts";
 
 function expectedEntries(): unknown {
   const raw: unknown = JSON.parse(

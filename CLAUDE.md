@@ -22,7 +22,6 @@ Run any task with `pnpm <script>`.
 
 | Script                         | What it does                                                                                                                                                                                             |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm build`                   | `tsc -b tsconfig.build.json` — emits `dist/`                                                                                                                                                             |
 | `pnpm typecheck`               | `tsc -b --force` over the tooling project (src + tests)                                                                                                                                                  |
 | `pnpm lint`                    | ESLint over the whole repo                                                                                                                                                                               |
 | `pnpm format` / `format:check` | Prettier write / check                                                                                                                                                                                   |
@@ -178,8 +177,8 @@ fix the config it points at.
 ## Forbidden Patterns
 
 **Enforced at write time by hooks:** `any` implied by CommonJS constructs
-(`require`, `module.exports`, `__dirname`, `__filename`), a missing `.js`
-extension on a relative import, a hand-edit to `dist/` or `coverage/`, a
+(`require`, `module.exports`, `__dirname`, `__filename`), a relative import
+without the `.ts` extension, a hand-edit to `dist/` or `coverage/`, a
 write to `src/`/`tests/` while on `main`, a real secret written to disk,
 an unsigned `git push` when `commit.gpgsign` is on, and a `run_in_background`
 Bash call stacked with a shell-level detach construct.

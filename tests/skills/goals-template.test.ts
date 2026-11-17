@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
-import { SKILLS_DIR, hasPhrase, headings, readSkill } from "./helpers.js";
+import { SKILLS_DIR, hasPhrase, headings, readSkill } from "./helpers.ts";
 
 const PATH = join(SKILLS_DIR, "profile", "references", "goals-template.md");
 const SECTIONS = [

@@ -2,7 +2,7 @@
 name: assess
 description: Checks a learner's self-reported skill on a Claude or Claude Code topic with a verification probe, then reports the claim as confirmed, refuted or unverified, kindly and concretely. This skill should be used when the user says "I know X well", "I'm comfortable with X", "I'm advanced at hooks", "skip the basics on skills", or invokes /m3l-claude-mentor:assess.
 argument-hint: "[topic]"
-allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js *)
+allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)
 ---
 
 # Assess
@@ -20,7 +20,7 @@ topic is in `$ARGUMENTS`; when empty, ask which topic and what level is claimed.
 - If a CLI call exits non-zero, say so plainly and do not claim anything was saved.
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} topics
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} topics
 ```
 
 Resolve the topic id and `type` from `topics`; ask the learner to pick when ambiguous.
@@ -66,7 +66,7 @@ Resolve the topic id and `type` from `topics`; ask the learner to pick when ambi
    nothing), with the claimed level:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} record-batch --topic <id> --events '<quiz|explain-back>:<positive|negative>,self-report:positive' --claim <Level>
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} record-batch --topic <id> --events '<quiz|explain-back>:<positive|negative>,self-report:positive' --claim <Level>
 ```
 
 8. **Read the output** (`level`, `previousLevel`, `claim`, `diagnoses`) for the outcome.

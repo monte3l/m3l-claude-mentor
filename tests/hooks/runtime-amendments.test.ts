@@ -1,9 +1,9 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import type { HookHandler, HookOutput } from "../../src/hooks/runtime.js";
-import { loadBundledCatalog } from "../../src/internal/bundled-catalog.js";
-import { cleanSandboxes, makeSandbox, run } from "./runtime-helpers.js";
+import type { HookHandler, HookOutput } from "../../src/hooks/runtime.ts";
+import { loadBundledCatalog } from "../../src/internal/bundled-catalog.ts";
+import { cleanSandboxes, makeSandbox, run } from "./runtime-helpers.ts";
 
 afterEach(cleanSandboxes);
 

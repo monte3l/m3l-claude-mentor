@@ -8,7 +8,10 @@
           {
             "type": "command",
             "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/dist/hooks/entry-session-start.js"],
+            "args": [
+              "--disable-warning=ExperimentalWarning",
+              "${CLAUDE_PLUGIN_ROOT}/src/hooks/entry-session-start.ts"
+            ],
             "timeout": 10
           }
         ]
@@ -19,7 +22,10 @@
           {
             "type": "command",
             "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/dist/hooks/entry-session-start.js"],
+            "args": [
+              "--disable-warning=ExperimentalWarning",
+              "${CLAUDE_PLUGIN_ROOT}/src/hooks/entry-session-start.ts"
+            ],
             "timeout": 10
           }
         ]
@@ -32,7 +38,8 @@
             "type": "command",
             "command": "node",
             "args": [
-              "${CLAUDE_PLUGIN_ROOT}/dist/hooks/entry-user-prompt-submit.js"
+              "--disable-warning=ExperimentalWarning",
+              "${CLAUDE_PLUGIN_ROOT}/src/hooks/entry-user-prompt-submit.ts"
             ],
             "timeout": 10
           }
@@ -46,7 +53,10 @@
           {
             "type": "command",
             "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/dist/hooks/entry-post-tool-use.js"],
+            "args": [
+              "--disable-warning=ExperimentalWarning",
+              "${CLAUDE_PLUGIN_ROOT}/src/hooks/entry-post-tool-use.ts"
+            ],
             "timeout": 10
           }
         ]
@@ -58,7 +68,10 @@
           {
             "type": "command",
             "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/dist/hooks/entry-stop.js"],
+            "args": [
+              "--disable-warning=ExperimentalWarning",
+              "${CLAUDE_PLUGIN_ROOT}/src/hooks/entry-stop.ts"
+            ],
             "timeout": 10
           }
         ]
@@ -70,7 +83,10 @@
           {
             "type": "command",
             "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/dist/hooks/entry-post-compact.js"],
+            "args": [
+              "--disable-warning=ExperimentalWarning",
+              "${CLAUDE_PLUGIN_ROOT}/src/hooks/entry-post-compact.ts"
+            ],
             "timeout": 10
           }
         ]

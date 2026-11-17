@@ -57,10 +57,12 @@ export default defineConfig(
     },
     rules: {
       // --- ESM correctness: the #1 documented gotcha ---------------------
+      // Nothing is built: Node runs src/*.ts directly, and resolves a
+      // relative import by its real file name, so it must end in `.ts`.
       "import-x/extensions": [
         "error",
         "ignorePackages",
-        { js: "always", ts: "never" },
+        { ts: "always", js: "never" },
       ],
 
       // --- Strictness: no `any` in the public API -------------------------

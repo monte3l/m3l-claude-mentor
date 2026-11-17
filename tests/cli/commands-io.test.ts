@@ -8,7 +8,7 @@ import {
   runOk,
   seedEvidence,
   type Sandbox,
-} from "./helpers.js";
+} from "./helpers.ts";
 
 let sb: Sandbox;
 let other: Sandbox;

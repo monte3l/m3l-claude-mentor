@@ -4,17 +4,17 @@
  * serializer that round-trip each other.
  */
 
-import type { CatalogOverride, UserCatalog } from "./catalog.js";
-import { parseUserCatalog } from "./catalog.js";
-import type { CatalogEntry, Parsed } from "./schema.js";
-import { parseScoringConfig, type ScoringConfig } from "./scoring-config.js";
+import type { CatalogOverride, UserCatalog } from "./catalog.ts";
+import { parseUserCatalog } from "./catalog.ts";
+import type { CatalogEntry, Parsed } from "./schema.ts";
+import { parseScoringConfig, type ScoringConfig } from "./scoring-config.ts";
 
 /**
  * The parsed content of `catalog.json`.
  *
  * @example
  * ```ts
- * import { EMPTY_CATALOG_FILE, type CatalogFile } from "./catalog-file.js";
+ * import { EMPTY_CATALOG_FILE, type CatalogFile } from "./catalog-file.ts";
  * const file: CatalogFile = EMPTY_CATALOG_FILE;
  * ```
  */
@@ -31,7 +31,7 @@ export interface CatalogFile {
  *
  * @example
  * ```ts
- * import { EMPTY_CATALOG_FILE } from "./catalog-file.js";
+ * import { EMPTY_CATALOG_FILE } from "./catalog-file.ts";
  * EMPTY_CATALOG_FILE.user.custom.length; // 0
  * ```
  */
@@ -71,7 +71,7 @@ function asRecord(value: unknown): Readonly<Record<string, unknown>> | null {
  *
  * @example
  * ```ts
- * import { parseCatalogFile } from "./catalog-file.js";
+ * import { parseCatalogFile } from "./catalog-file.ts";
  * const r = parseCatalogFile({ scoring: { halfLifeDays: 30 } });
  * if (r.ok) r.value.scoring; // { halfLifeDays: 30 }
  * ```
@@ -107,7 +107,7 @@ export function parseCatalogFile(value: unknown): Parsed<CatalogFile> {
  *
  * @example
  * ```ts
- * import { EMPTY_CATALOG_FILE, serializeCatalogFile } from "./catalog-file.js";
+ * import { EMPTY_CATALOG_FILE, serializeCatalogFile } from "./catalog-file.ts";
  * serializeCatalogFile(EMPTY_CATALOG_FILE); // { overrides: {}, custom: [] }
  * ```
  */

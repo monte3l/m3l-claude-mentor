@@ -20,7 +20,7 @@ import {
   type Style,
   type TopicId,
   type TopicType,
-} from "../../src/internal/schema.js";
+} from "../../src/internal/schema.ts";
 
 const validEntry = {
   id: "context-window",

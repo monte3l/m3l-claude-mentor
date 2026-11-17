@@ -8,7 +8,7 @@ quotes, escaping an embedded `'` as `'\''`; never use double quotes or backticks
 Say the exact target path first, and ask before overwriting an existing file.
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} export --to '<absolute path>'
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} export --to '<absolute path>'
 ```
 
 Report the path written. The file holds the learner's profile and settings; tell them
@@ -21,7 +21,7 @@ Before running anything, tell the learner: "This replaces ALL stored mentor data
 confirm explicitly if you want that." Wait for a clear yes. Suggest an export first.
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} import --from '<absolute path>' --replace
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} import --from '<absolute path>' --replace
 ```
 
 ## Delete everything
@@ -31,7 +31,7 @@ overrides and state. Say it cannot be undone and suggest an export first. Ask th
 learner to confirm explicitly. Only after a clear yes:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} purge --confirm
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} purge --confirm
 ```
 
 If the command fails, say so, do not claim anything was deleted or replaced, and do

@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { readTailLines } from "../../src/internal/fs-atomic.js";
+import { readTailLines } from "../../src/internal/fs-atomic.ts";
 
 let sandbox = "";
 let dir = "";

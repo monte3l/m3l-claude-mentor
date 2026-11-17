@@ -6,10 +6,10 @@
  * idle gap seen by the next prompt, and task completion is not detected. It
  * never prints anything.
  */
-import { touchActivity } from "../../internal/segment.js";
-import { loadState, saveState } from "../../internal/store.js";
-import { payloadSession } from "../common.js";
-import type { HookHandler } from "../runtime.js";
+import { touchActivity } from "../../internal/segment.ts";
+import { loadState, saveState } from "../../internal/store.ts";
+import { payloadSession } from "../common.ts";
+import type { HookHandler } from "../runtime.ts";
 
 /**
  * Handles `Stop`: moves the segment's `lastActivityAt` forward to now with
@@ -20,8 +20,8 @@ import type { HookHandler } from "../runtime.js";
  *
  * @example
  * ```ts
- * import { runHook } from "./process-shell.js";
- * import { stopHandler } from "./handlers/stop.js";
+ * import { runHook } from "./process-shell.ts";
+ * import { stopHandler } from "./handlers/stop.ts";
  * await runHook("Stop", stopHandler);
  * ```
  */

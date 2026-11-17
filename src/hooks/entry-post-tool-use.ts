@@ -1,5 +1,5 @@
 /**
- * The `PostToolUse` hook process entry (`dist/hooks/entry-post-tool-use.js`), run by
+ * The `PostToolUse` hook process entry (`src/hooks/entry-post-tool-use.ts`), run by
  * `hooks/hooks.json`. It runs only as the process entry point: importing
  * it does nothing.
  *
@@ -33,11 +33,11 @@ async function isProcessEntry(): Promise<boolean> {
 
 let loaded = false;
 try {
-  const { isMainModule } = await import("./main-guard.js");
+  const { isMainModule } = await import("./main-guard.ts");
   if (isMainModule(import.meta, process.argv[1])) {
     const [{ runHook }, { postToolUseHandler }] = await Promise.all([
-      import("./process-shell.js"),
-      import("./handlers/post-tool-use.js"),
+      import("./process-shell.ts"),
+      import("./handlers/post-tool-use.ts"),
     ]);
     loaded = true;
     await runHook("PostToolUse", postToolUseHandler);

@@ -1,5 +1,5 @@
 /**
- * The `mentor-state` CLI process entry (`dist/cli/mentor-state.js`). It runs
+ * The `mentor-state` CLI process entry (`src/cli/mentor-state.ts`). It runs
  * only as the process entry point: importing it does nothing. It never calls
  * `process.exit()`; it sets `process.exitCode` so pending writes flush.
  *
@@ -8,14 +8,14 @@
  * rules as the environment value, and the value is never echoed.
  */
 import path from "node:path";
-import { isMentorStateError } from "../internal/errors.js";
-import { loadBundledCatalog } from "../internal/bundled-catalog.js";
-import { assertValidDataDir, resolveDataDir } from "../internal/paths.js";
-import { parseSessionId } from "../internal/schema.js";
-import { isMainModule } from "../hooks/main-guard.js";
-import { oneLine } from "../hooks/runtime.js";
-import { runCommand, type CliResult } from "./commands.js";
-import { GLOBAL_USAGE, parseGlobalOptions } from "./global-options.js";
+import { isMentorStateError } from "../internal/errors.ts";
+import { loadBundledCatalog } from "../internal/bundled-catalog.ts";
+import { assertValidDataDir, resolveDataDir } from "../internal/paths.ts";
+import { parseSessionId } from "../internal/schema.ts";
+import { isMainModule } from "../hooks/main-guard.ts";
+import { oneLine } from "../hooks/runtime.ts";
+import { runCommand, type CliResult } from "./commands.ts";
+import { GLOBAL_USAGE, parseGlobalOptions } from "./global-options.ts";
 
 const SESSION_ENV = "CLAUDE_SESSION_ID";
 const FALLBACK_SESSION = "cli";

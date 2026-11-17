@@ -3,7 +3,7 @@ import {
   DEFAULT_SETTINGS,
   readSettings,
   type HookSettings,
-} from "../../src/hooks/settings.js";
+} from "../../src/hooks/settings.ts";
 
 const DIAL = "CLAUDE_PLUGIN_OPTION_DIAL";
 const TA = "CLAUDE_PLUGIN_OPTION_TRANSCRIPTANALYSIS";

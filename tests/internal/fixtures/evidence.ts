@@ -2,7 +2,7 @@ import {
   parseEvidence,
   type Channel,
   type Evidence,
-} from "../../../src/internal/schema.js";
+} from "../../../src/internal/schema.ts";
 
 /** One day in milliseconds, hand-written so tests do not import it. */
 export const DAY = 86_400_000;

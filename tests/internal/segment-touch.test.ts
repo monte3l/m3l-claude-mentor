@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
-import { parseTopicId } from "../../src/internal/schema.js";
+import { parseTopicId } from "../../src/internal/schema.ts";
 import {
   touchActivity,
   type SegmentState,
-} from "../../src/internal/segment.js";
+} from "../../src/internal/segment.ts";
 
 const LAST = 5_000_000;
 

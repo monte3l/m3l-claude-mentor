@@ -3,7 +3,7 @@ import {
   MentorStateError,
   isMentorStateError,
   type MentorErrorCode,
-} from "../../src/internal/errors.js";
+} from "../../src/internal/errors.ts";
 
 const CODES: readonly MentorErrorCode[] = [
   "DATA_DIR_UNSET",

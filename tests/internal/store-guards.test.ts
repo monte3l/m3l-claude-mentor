@@ -8,15 +8,15 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, expect, test } from "vitest";
-import type { CatalogFile } from "../../src/internal/catalog-file.js";
-import { MentorStateError } from "../../src/internal/errors.js";
+import type { CatalogFile } from "../../src/internal/catalog-file.ts";
+import { MentorStateError } from "../../src/internal/errors.ts";
 import {
   loadCatalogFile,
   loadGoals,
   loadProfile,
   loadState,
   saveCatalogFile,
-} from "../../src/internal/store.js";
+} from "../../src/internal/store.ts";
 
 let sandbox = "";
 let dir = "";

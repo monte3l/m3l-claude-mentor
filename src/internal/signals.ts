@@ -11,14 +11,14 @@ import {
   type Evidence,
   type SessionId,
   type TopicId,
-} from "./schema.js";
+} from "./schema.ts";
 
 /**
  * Every kind of feature usage the extractor can report, frozen.
  *
  * @example
  * ```ts
- * import { USAGE_KINDS } from "./signals.js";
+ * import { USAGE_KINDS } from "./signals.ts";
  * USAGE_KINDS.includes("invoked-skill"); // true
  * ```
  */
@@ -61,7 +61,7 @@ export const USAGE_KINDS: readonly [
  *
  * @example
  * ```ts
- * import type { UsageKind } from "./signals.js";
+ * import type { UsageKind } from "./signals.ts";
  * const k: UsageKind = "used-plan-mode";
  * ```
  */
@@ -73,7 +73,7 @@ export type UsageKind = (typeof USAGE_KINDS)[number];
  *
  * @example
  * ```ts
- * import { extractUsageSignals, type UsageSignal } from "./signals.js";
+ * import { extractUsageSignals, type UsageSignal } from "./signals.ts";
  * const [s]: readonly UsageSignal[] = extractUsageSignals({
  *   tool_name: "Skill",
  *   tool_input: {},
@@ -91,7 +91,7 @@ export interface UsageSignal {
  *
  * @example
  * ```ts
- * import { MAX_SIGNALS_PER_EVENT } from "./signals.js";
+ * import { MAX_SIGNALS_PER_EVENT } from "./signals.ts";
  * MAX_SIGNALS_PER_EVENT; // 4
  * ```
  */
@@ -291,7 +291,7 @@ function toolSignals(
  *
  * @example
  * ```ts
- * import { extractUsageSignals } from "./signals.js";
+ * import { extractUsageSignals } from "./signals.ts";
  * extractUsageSignals({
  *   tool_name: "Bash",
  *   tool_input: { command: "claude mcp add docs" },
@@ -328,8 +328,8 @@ export function extractUsageSignals(payload: unknown): readonly UsageSignal[] {
  *
  * @example
  * ```ts
- * import { parseSessionId } from "./schema.js";
- * import { extractUsageSignals, signalToEvidence } from "./signals.js";
+ * import { parseSessionId } from "./schema.ts";
+ * import { extractUsageSignals, signalToEvidence } from "./signals.ts";
  * const session = parseSessionId("sess_1");
  * const [s] = extractUsageSignals({ tool_name: "Skill", tool_input: {} });
  * if (session.ok && s !== undefined) {

@@ -142,7 +142,7 @@ conflict-resolution machinery for an existing value.
    | Facet id                     | Emitted surface it validates                                                            |
    | ---------------------------- | --------------------------------------------------------------------------------------- |
    | `compiler-config-flags`      | `tsconfig.base.json`, `tsconfig.json`                                                   |
-   | `modules-esm-node-interop`   | `guard-js-extension.mjs`, `guard-no-commonjs.mjs`, the `import-x/extensions` rule       |
+   | `modules-esm-node-interop`   | `guard-ts-extension.mjs`, `guard-no-commonjs.mjs`, the `import-x/extensions` rule       |
    | `packaging-declaration-emit` | `check-exports.mjs`, the `exports` map, `isolatedDeclarations`                          |
    | `lint-typing-rules`          | `eslint.config.js`'s preset composition                                                 |
    | `testing-language-features`  | `vitest.config.ts`, the coverage gate, the choice of runner and testing approach itself |

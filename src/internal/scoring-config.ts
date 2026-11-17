@@ -3,7 +3,7 @@
  * validates them before they reach the mastery scorer.
  */
 
-import { CHANNELS, type Channel, type Parsed } from "./schema.js";
+import { CHANNELS, type Channel, type Parsed } from "./schema.ts";
 
 /**
  * Optional overrides for the mastery scorer. Each key is present only when
@@ -13,7 +13,7 @@ import { CHANNELS, type Channel, type Parsed } from "./schema.js";
  *
  * @example
  * ```ts
- * import type { ScoringConfig } from "./scoring-config.js";
+ * import type { ScoringConfig } from "./scoring-config.ts";
  * const config: ScoringConfig = { halfLifeDays: 30, fluencySessions: 3 };
  * ```
  */
@@ -118,7 +118,7 @@ function parseFluencySessions(value: unknown): Parsed<number> {
  *
  * @example
  * ```ts
- * import { parseScoringConfig } from "./scoring-config.js";
+ * import { parseScoringConfig } from "./scoring-config.ts";
  * const r = parseScoringConfig({ halfLifeDays: 30 });
  * if (r.ok) r.value; // { halfLifeDays: 30 }
  * ```

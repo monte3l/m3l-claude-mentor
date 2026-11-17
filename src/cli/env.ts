@@ -1,16 +1,16 @@
-import { mergeCatalog } from "../internal/catalog.js";
-import type { CatalogFile } from "../internal/catalog-file.js";
-import { MentorStateError } from "../internal/errors.js";
-import type { CatalogEntry, SessionId, TopicId } from "../internal/schema.js";
-import { loadCatalogFile } from "../internal/store.js";
-import { CliUsageError } from "./args.js";
+import { mergeCatalog } from "../internal/catalog.ts";
+import type { CatalogFile } from "../internal/catalog-file.ts";
+import { MentorStateError } from "../internal/errors.ts";
+import type { CatalogEntry, SessionId, TopicId } from "../internal/schema.ts";
+import { loadCatalogFile } from "../internal/store.ts";
+import { CliUsageError } from "./args.ts";
 
 /**
  * The validated context every command handler receives.
  *
  * @example
  * ```ts
- * import type { CommandEnv } from "./env.js";
+ * import type { CommandEnv } from "./env.ts";
  * const env: CommandEnv = { dir, now: Date.now(), session, bundled: [] };
  * ```
  */
@@ -26,7 +26,7 @@ export interface CommandEnv {
  *
  * @example
  * ```ts
- * import { loadMergedCatalog, type LoadedCatalog } from "./env.js";
+ * import { loadMergedCatalog, type LoadedCatalog } from "./env.ts";
  * const loaded: LoadedCatalog = await loadMergedCatalog(env);
  * ```
  */
@@ -44,7 +44,7 @@ export interface LoadedCatalog {
  *
  * @example
  * ```ts
- * import { loadMergedCatalog } from "./env.js";
+ * import { loadMergedCatalog } from "./env.ts";
  * const { entries, file } = await loadMergedCatalog(env);
  * ```
  */
@@ -69,7 +69,7 @@ export async function loadMergedCatalog(
  *
  * @example
  * ```ts
- * import { requireCatalogEntry } from "./env.js";
+ * import { requireCatalogEntry } from "./env.ts";
  * const entry = requireCatalogEntry(entries, topic);
  * ```
  */

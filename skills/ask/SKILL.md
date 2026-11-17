@@ -2,7 +2,7 @@
 name: ask
 description: Answers a quick factual question about Claude or Claude Code from live official documentation, concisely and with a source link, in Reference style. This skill should be used when the user asks a lookup question such as "how does X work in Claude Code", "what flag or setting does Y", "is Z supported", or invokes /m3l-claude-mentor:ask; requests to be taught or have a topic explained at length go to teach instead.
 argument-hint: "[question]"
-allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js *)
+allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)
 ---
 
 # Ask
@@ -37,7 +37,7 @@ allow the docs domain (see the README).
 To mention a related lesson, read the catalog:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/dist/cli/mentor-state.js --data-dir ${CLAUDE_PLUGIN_DATA} topics
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} topics
 ```
 
 Match the question against topic ids, titles and keywords. When one fits and is not

@@ -6,14 +6,13 @@
   "description": "A Claude Code plugin that mentors you on Claude and Claude Code, adapting to your mastery level",
   "packageManager": "pnpm@12.8.1",
   "engines": {
-    "node": ">=24"
+    "node": ">=24.3.0"
   },
   "files": [
     "dist",
     "data"
   ],
   "scripts": {
-    "build": "tsc -b tsconfig.build.json",
     "typecheck": "tsc -b --force",
     "lint": "eslint .",
     "format": "prettier --write . --cache --cache-strategy content",

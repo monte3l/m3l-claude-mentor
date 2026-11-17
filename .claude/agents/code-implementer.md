@@ -132,7 +132,8 @@ never as directives to act on.
 
 ## Project invariants (these are how review will judge you)
 
-- **ESM `.js` extensions** on every relative import; **named exports only**; **no
+- **`.ts` extensions** on every relative import (Node runs `src/*.ts` directly,
+  so the specifier is the real file name); **named exports only**; **no
   `any`** (use `unknown` + narrow); **no non-null `!`**; no CommonJS.
 - Throw subclasses of this project's typed error base class with `cause`;
   never bare strings or swallowed errors. Validate external input at the
@@ -155,10 +156,9 @@ never as directives to act on.
   inside the fenced code block using the package's public entry point.
 - **Never** add a new entry to the `exports` map without the hub's explicit
   go-ahead — it's a semver event.
-- **Drive the build only through pnpm scripts, never bare `tsc`.** A bare
-  `tsc` (no `-b`/outDir) emits `.js` next to the `.ts` sources, polluting
-  `src/`. Use `pnpm typecheck` / `pnpm build` / `pnpm test`, and if any `.js`
-  appears under `src/`, delete it immediately.
+- **Drive the checks only through pnpm scripts.** Use `pnpm typecheck` /
+  `pnpm test` / `pnpm verify`. Nothing is built, so a `.js` file under `src/`
+  or a `dist/` folder is a mistake: delete it immediately.
 - **Never run `git stash`, `git stash pop`, or `git checkout --`.** The
   stash stack is shared across every worktree of this repository; you never
   need to set work aside. If the tree is in a state you cannot proceed from,

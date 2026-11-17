@@ -7,8 +7,8 @@ import {
   newSegment,
   recordTip,
   type SegmentState,
-} from "../../src/internal/segment.js";
-import { parseTopicId, type TopicId } from "../../src/internal/schema.js";
+} from "../../src/internal/segment.ts";
+import { parseTopicId, type TopicId } from "../../src/internal/schema.ts";
 
 const MIN = 60_000;
 const T0 = 1_000_000_000;

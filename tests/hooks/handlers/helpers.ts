@@ -7,26 +7,26 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { parseCatalog } from "../../../src/internal/catalog.js";
+import { parseCatalog } from "../../../src/internal/catalog.ts";
 import {
   parseTopicId,
   type CatalogEntry,
   type TopicId,
-} from "../../../src/internal/schema.js";
+} from "../../../src/internal/schema.ts";
 import {
   defaultProfile,
   defaultState,
   type MentorState,
   type Profile,
   type TopicProfile,
-} from "../../../src/internal/state-schema.js";
+} from "../../../src/internal/state-schema.ts";
 import {
   loadState,
   saveProfile,
   saveState,
-} from "../../../src/internal/store.js";
-import type { HookDeps } from "../../../src/hooks/runtime.js";
-import type { HookSettings } from "../../../src/hooks/settings.js";
+} from "../../../src/internal/store.ts";
+import type { HookDeps } from "../../../src/hooks/runtime.ts";
+import type { HookSettings } from "../../../src/hooks/settings.ts";
 
 /** A fixed clock: day 100 in epoch milliseconds. */
 export const NOW = 100 * 86_400_000;

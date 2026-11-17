@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "vitest";
-import { parseCatalogEntry, parseKeywords } from "../../src/internal/schema.js";
+import { parseCatalogEntry, parseKeywords } from "../../src/internal/schema.ts";
 
 const validEntry: Record<string, unknown> = {
   id: "context-window",

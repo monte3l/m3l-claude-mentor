@@ -1,4 +1,4 @@
-import type { TopicId } from "./schema.js";
+import type { TopicId } from "./schema.ts";
 
 /**
  * Minimum time, in milliseconds, between two tips at dial 3 to 5 (15
@@ -6,7 +6,7 @@ import type { TopicId } from "./schema.js";
  *
  * @example
  * ```ts
- * import { TIP_MIN_GAP_MS } from "./segment.js";
+ * import { TIP_MIN_GAP_MS } from "./segment.ts";
  * TIP_MIN_GAP_MS / 60_000; // 15
  * ```
  */
@@ -18,7 +18,7 @@ export const TIP_MIN_GAP_MS = 900_000;
  *
  * @example
  * ```ts
- * import { SEGMENT_IDLE_GAP_MS } from "./segment.js";
+ * import { SEGMENT_IDLE_GAP_MS } from "./segment.ts";
  * SEGMENT_IDLE_GAP_MS / 60_000; // 30
  * ```
  */
@@ -30,7 +30,7 @@ export const SEGMENT_IDLE_GAP_MS = 1_800_000;
  *
  * @example
  * ```ts
- * import { DIAL_GAP_MULTIPLIER, TIP_MIN_GAP_MS } from "./segment.js";
+ * import { DIAL_GAP_MULTIPLIER, TIP_MIN_GAP_MS } from "./segment.ts";
  * TIP_MIN_GAP_MS * DIAL_GAP_MULTIPLIER[1]; // 3_600_000 (one hour)
  * ```
  */
@@ -49,7 +49,7 @@ export const DIAL_GAP_MULTIPLIER: Readonly<Record<1 | 2 | 3 | 4 | 5, number>> =
  *
  * @example
  * ```ts
- * import { newSegment, type SegmentState } from "./segment.js";
+ * import { newSegment, type SegmentState } from "./segment.ts";
  * const s: SegmentState = newSegment(Date.now());
  * ```
  */
@@ -74,7 +74,7 @@ export interface SegmentState {
  *
  * @example
  * ```ts
- * import type { SegmentEvent } from "./segment.js";
+ * import type { SegmentEvent } from "./segment.ts";
  * const e: SegmentEvent = { kind: "task-complete", at: Date.now() };
  * ```
  */
@@ -87,7 +87,7 @@ export type SegmentEvent =
  *
  * @example
  * ```ts
- * import type { SegmentBoundary } from "./segment.js";
+ * import type { SegmentBoundary } from "./segment.ts";
  * const b: SegmentBoundary = "topic-change";
  * ```
  */
@@ -99,7 +99,7 @@ export type SegmentBoundary =
  *
  * @example
  * ```ts
- * import { advanceSegment, newSegment, type AdvanceResult } from "./segment.js";
+ * import { advanceSegment, newSegment, type AdvanceResult } from "./segment.ts";
  * const r: AdvanceResult = advanceSegment(newSegment(0), { kind: "activity", at: 1 });
  * r.boundary; // "none"
  * ```
@@ -115,8 +115,8 @@ export interface AdvanceResult {
  *
  * @example
  * ```ts
- * import { parseTopicId } from "./schema.js";
- * import type { RelatedTopic } from "./segment.js";
+ * import { parseTopicId } from "./schema.ts";
+ * import type { RelatedTopic } from "./segment.ts";
  * const p = parseTopicId("plan-mode");
  * const related: RelatedTopic | null = p.ok ? { id: p.value, belowTarget: true } : null;
  * ```
@@ -131,7 +131,7 @@ export interface RelatedTopic {
  *
  * @example
  * ```ts
- * import { newSegment, type TipGateInput } from "./segment.js";
+ * import { newSegment, type TipGateInput } from "./segment.ts";
  * const now = Date.now();
  * const input: TipGateInput = {
  *   state: newSegment(now),
@@ -163,7 +163,7 @@ export interface TipGateInput {
  *
  * @example
  * ```ts
- * import type { TipSkipReason } from "./segment.js";
+ * import type { TipSkipReason } from "./segment.ts";
  * const r: TipSkipReason = "min-gap";
  * ```
  */
@@ -182,7 +182,7 @@ export type TipSkipReason =
  *
  * @example
  * ```ts
- * import type { TipDecision } from "./segment.js";
+ * import type { TipDecision } from "./segment.ts";
  * function describe(d: TipDecision): string {
  *   return d.emit ? `tip on ${d.topic}` : `skipped: ${d.reason}`;
  * }
@@ -229,7 +229,7 @@ function checkDial(value: number): Dial {
  *
  * @example
  * ```ts
- * import { newSegment } from "./segment.js";
+ * import { newSegment } from "./segment.ts";
  * newSegment(1_000).segmentId; // 0
  * ```
  */
@@ -284,7 +284,7 @@ function startNext(
  *
  * @example
  * ```ts
- * import { advanceSegment, newSegment } from "./segment.js";
+ * import { advanceSegment, newSegment } from "./segment.ts";
  * const r = advanceSegment(newSegment(0), { kind: "task-complete", at: 60_000 });
  * r.boundary; // "task-complete"
  * r.state.segmentId; // 1
@@ -355,7 +355,7 @@ export function advanceSegment(
  *
  * @example
  * ```ts
- * import { newSegment, touchActivity } from "./segment.js";
+ * import { newSegment, touchActivity } from "./segment.ts";
  * touchActivity(newSegment(0), 5_000).lastActivityAt; // 5_000
  * ```
  */
@@ -382,7 +382,7 @@ export function touchActivity(state: SegmentState, now: number): SegmentState {
  *
  * @example
  * ```ts
- * import { newSegment, recordTip } from "./segment.js";
+ * import { newSegment, recordTip } from "./segment.ts";
  * recordTip(newSegment(0), 1_000).lastTipAt; // 1_000
  * ```
  */
@@ -422,8 +422,8 @@ export function recordTip(state: SegmentState, now: number): SegmentState {
  *
  * @example
  * ```ts
- * import { decideTip, newSegment, recordTip } from "./segment.js";
- * import { parseTopicId } from "./schema.js";
+ * import { decideTip, newSegment, recordTip } from "./segment.ts";
+ * import { parseTopicId } from "./schema.ts";
  * const p = parseTopicId("plan-mode");
  * if (p.ok) {
  *   let state = newSegment(0);

@@ -2,10 +2,10 @@
  * The PostCompact hook: a compaction only refreshes the activity time of the
  * current segment; it never starts a new one. It never prints anything.
  */
-import { touchActivity } from "../../internal/segment.js";
-import { loadState, saveState } from "../../internal/store.js";
-import { payloadSession } from "../common.js";
-import type { HookHandler } from "../runtime.js";
+import { touchActivity } from "../../internal/segment.ts";
+import { loadState, saveState } from "../../internal/store.ts";
+import { payloadSession } from "../common.ts";
+import type { HookHandler } from "../runtime.ts";
 
 /**
  * Handles `PostCompact`: moves the segment's `lastActivityAt` forward to now
@@ -16,8 +16,8 @@ import type { HookHandler } from "../runtime.js";
  *
  * @example
  * ```ts
- * import { runHook } from "./process-shell.js";
- * import { postCompactHandler } from "./handlers/post-compact.js";
+ * import { runHook } from "./process-shell.ts";
+ * import { postCompactHandler } from "./handlers/post-compact.ts";
  * await runHook("PostCompact", postCompactHandler);
  * ```
  */

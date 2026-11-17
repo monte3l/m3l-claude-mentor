@@ -15,7 +15,7 @@ import {
   type Parsed,
   type Style,
   type TopicId,
-} from "./schema.js";
+} from "./schema.ts";
 
 /**
  * A learner's adjustments to one catalog topic. Every field is optional and
@@ -23,7 +23,7 @@ import {
  *
  * @example
  * ```ts
- * import type { CatalogOverride } from "./catalog.js";
+ * import type { CatalogOverride } from "./catalog.ts";
  * const o: CatalogOverride = { enabled: false };
  * ```
  */
@@ -41,7 +41,7 @@ export interface CatalogOverride {
  *
  * @example
  * ```ts
- * import { parseUserCatalog, type UserCatalog } from "./catalog.js";
+ * import { parseUserCatalog, type UserCatalog } from "./catalog.ts";
  * const r = parseUserCatalog({ overrides: { "plan-mode": { enabled: false } } });
  * const user: UserCatalog | undefined = r.ok ? r.value : undefined;
  * ```
@@ -149,7 +149,7 @@ function parseEntries(
  *
  * @example
  * ```ts
- * import { parseCatalog } from "./catalog.js";
+ * import { parseCatalog } from "./catalog.ts";
  * const r = parseCatalog(JSON.parse(text) as unknown);
  * if (!r.ok) console.error(r.reason);
  * ```
@@ -233,7 +233,7 @@ function parseOverrides(
  *
  * @example
  * ```ts
- * import { parseUserCatalog } from "./catalog.js";
+ * import { parseUserCatalog } from "./catalog.ts";
  * const r = parseUserCatalog({
  *   overrides: { "plan-mode": { targetLevel: "Fluent" } },
  *   custom: [],
@@ -290,7 +290,7 @@ function applyOverride(
  *
  * @example
  * ```ts
- * import { mergeCatalog, parseCatalog, parseUserCatalog } from "./catalog.js";
+ * import { mergeCatalog, parseCatalog, parseUserCatalog } from "./catalog.ts";
  * const bundled = parseCatalog(bundledJson);
  * const user = parseUserCatalog(userJson);
  * if (bundled.ok && user.ok) {
@@ -404,7 +404,7 @@ function containsWord(text: string, keyword: string): boolean {
  *
  * @example
  * ```ts
- * import { matchTopics } from "./catalog.js";
+ * import { matchTopics } from "./catalog.ts";
  * const hits = matchTopics(catalog, "How do I enter plan mode?");
  * hits.map((e) => e.id); // e.g. ["plan-mode"]
  * ```

@@ -1,27 +1,27 @@
-import { MentorStateError } from "../internal/errors.js";
+import { MentorStateError } from "../internal/errors.ts";
 import {
   exportBundleToFile,
   importBundleFromFile,
   type ImportSummary,
-} from "../internal/export.js";
+} from "../internal/export.ts";
 import {
   describeData,
   purgeData,
   type DataSummary,
   type PurgeResult,
-} from "../internal/purge.js";
-import { CHANNELS, parseEvidence, type TopicId } from "../internal/schema.js";
+} from "../internal/purge.ts";
+import { CHANNELS, parseEvidence, type TopicId } from "../internal/schema.ts";
 import {
   isChangelogVersion,
   type MentorState,
-} from "../internal/state-schema.js";
+} from "../internal/state-schema.ts";
 import {
   appendEvidence,
   loadGoals,
   loadState,
   saveGoals,
   saveState,
-} from "../internal/store.js";
+} from "../internal/store.ts";
 import {
   CliUsageError,
   requireAbsolutePath,
@@ -29,12 +29,12 @@ import {
   requireTopicId,
   requireValue,
   type ParsedArgs,
-} from "./args.js";
+} from "./args.ts";
 import {
   loadMergedCatalog,
   requireCatalogEntry,
   type CommandEnv,
-} from "./env.js";
+} from "./env.ts";
 
 /** The positional of an on/off command as a boolean. */
 function onOff(args: ParsedArgs): boolean {
@@ -68,7 +68,7 @@ async function updateState(
  *
  * @example
  * ```ts
- * import { show } from "./data-commands.js";
+ * import { show } from "./data-commands.ts";
  * const summary = await show(env);
  * ```
  */
@@ -84,7 +84,7 @@ export function show(env: CommandEnv): Promise<DataSummary> {
  *
  * @example
  * ```ts
- * import { recordEvidence } from "./data-commands.js";
+ * import { recordEvidence } from "./data-commands.ts";
  * await recordEvidence(args, env); // { recorded: true }
  * ```
  */
@@ -117,7 +117,7 @@ export async function recordEvidence(
  *
  * @example
  * ```ts
- * import { setMute } from "./data-commands.js";
+ * import { setMute } from "./data-commands.ts";
  * await setMute(args, env); // { muted: true }
  * ```
  */
@@ -139,7 +139,7 @@ export async function setMute(
  *
  * @example
  * ```ts
- * import { setTopicMute } from "./data-commands.js";
+ * import { setTopicMute } from "./data-commands.ts";
  * await setTopicMute(args, env); // { topic: "plan-mode", muted: true }
  * ```
  */
@@ -168,7 +168,7 @@ export async function setTopicMute(
  *
  * @example
  * ```ts
- * import { excludeProject } from "./data-commands.js";
+ * import { excludeProject } from "./data-commands.ts";
  * await excludeProject(args, env); // { excludedProjects: 1 }
  * ```
  */
@@ -191,7 +191,7 @@ export async function excludeProject(
  *
  * @example
  * ```ts
- * import { getGoals } from "./data-commands.js";
+ * import { getGoals } from "./data-commands.ts";
  * const { goals } = await getGoals(env);
  * ```
  */
@@ -208,7 +208,7 @@ export async function getGoals(
  *
  * @example
  * ```ts
- * import { setGoals } from "./data-commands.js";
+ * import { setGoals } from "./data-commands.ts";
  * await setGoals(args, env); // { bytes: 11 }
  * ```
  */
@@ -233,7 +233,7 @@ export async function setGoals(
  *
  * @example
  * ```ts
- * import { setChangelogVersion } from "./data-commands.js";
+ * import { setChangelogVersion } from "./data-commands.ts";
  * await setChangelogVersion(args, env); // { lastChangelogVersion: "1.2.3" }
  * ```
  */
@@ -257,7 +257,7 @@ export async function setChangelogVersion(
  *
  * @example
  * ```ts
- * import { exportData } from "./data-commands.js";
+ * import { exportData } from "./data-commands.ts";
  * await exportData(args, env); // { exported: true, evidenceSkipped: 0 }
  * ```
  */
@@ -279,7 +279,7 @@ export async function exportData(
  *
  * @example
  * ```ts
- * import { importData } from "./data-commands.js";
+ * import { importData } from "./data-commands.ts";
  * const summary = await importData(args, env);
  * ```
  */
@@ -305,7 +305,7 @@ export async function importData(
  *
  * @example
  * ```ts
- * import { purge } from "./data-commands.js";
+ * import { purge } from "./data-commands.ts";
  * const { deleted } = await purge(args, env);
  * ```
  */

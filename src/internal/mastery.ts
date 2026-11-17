@@ -3,7 +3,7 @@ import {
   type Channel,
   type Dimension,
   type Evidence,
-} from "./schema.js";
+} from "./schema.ts";
 
 /**
  * Default per-channel weights used by {@link topicScore}. Self-report carries
@@ -11,7 +11,7 @@ import {
  *
  * @example
  * ```ts
- * import { DEFAULT_WEIGHTS } from "./mastery.js";
+ * import { DEFAULT_WEIGHTS } from "./mastery.ts";
  * DEFAULT_WEIGHTS.observed; // 0.4
  * ```
  */
@@ -29,7 +29,7 @@ export const DEFAULT_WEIGHTS: Readonly<Record<Channel, number>> = Object.freeze(
  *
  * @example
  * ```ts
- * import { NEGATIVE_MULTIPLIER } from "./mastery.js";
+ * import { NEGATIVE_MULTIPLIER } from "./mastery.ts";
  * NEGATIVE_MULTIPLIER; // 1.5
  * ```
  */
@@ -40,7 +40,7 @@ export const NEGATIVE_MULTIPLIER = 1.5;
  *
  * @example
  * ```ts
- * import { DEFAULT_HALF_LIFE_DAYS } from "./mastery.js";
+ * import { DEFAULT_HALF_LIFE_DAYS } from "./mastery.ts";
  * DEFAULT_HALF_LIFE_DAYS; // 30
  * ```
  */
@@ -51,7 +51,7 @@ export const DEFAULT_HALF_LIFE_DAYS = 30;
  *
  * @example
  * ```ts
- * import { DIMENSION_THRESHOLD } from "./mastery.js";
+ * import { DIMENSION_THRESHOLD } from "./mastery.ts";
  * DIMENSION_THRESHOLD; // 0.5
  * ```
  */
@@ -62,7 +62,7 @@ export const DIMENSION_THRESHOLD = 0.5;
  *
  * @example
  * ```ts
- * import { FLUENCY_SESSIONS } from "./mastery.js";
+ * import { FLUENCY_SESSIONS } from "./mastery.ts";
  * FLUENCY_SESSIONS; // 3
  * ```
  */
@@ -73,7 +73,7 @@ export const FLUENCY_SESSIONS = 3;
  *
  * @example
  * ```ts
- * import { DAY_MS } from "./mastery.js";
+ * import { DAY_MS } from "./mastery.ts";
  * const week = 7 * DAY_MS;
  * ```
  */
@@ -88,7 +88,7 @@ const FLUENCY_SPAN_DAYS = 1;
  *
  * @example
  * ```ts
- * import { FLUENCY_SPAN_MS } from "./mastery.js";
+ * import { FLUENCY_SPAN_MS } from "./mastery.ts";
  * FLUENCY_SPAN_MS; // 86_400_000
  * ```
  */
@@ -107,7 +107,7 @@ const DIMENSION_CHANNEL = {
  *
  * @example
  * ```ts
- * import { CHANNEL_DIMENSION } from "./mastery.js";
+ * import { CHANNEL_DIMENSION } from "./mastery.ts";
  * CHANNEL_DIMENSION.quiz; // "recall"
  * CHANNEL_DIMENSION["self-report"]; // null
  * ```
@@ -126,7 +126,7 @@ export const CHANNEL_DIMENSION: Readonly<Record<Channel, Dimension | null>> =
  *
  * @example
  * ```ts
- * import { REVIEW_INTERVAL_DAYS } from "./mastery.js";
+ * import { REVIEW_INTERVAL_DAYS } from "./mastery.ts";
  * REVIEW_INTERVAL_DAYS[0]; // 1
  * ```
  */
@@ -143,7 +143,7 @@ const LONGEST_INTERVAL_DAYS = Math.max(...REVIEW_INTERVAL_DAYS);
  *
  * @example
  * ```ts
- * import { checkFinite } from "./mastery.js";
+ * import { checkFinite } from "./mastery.ts";
  * checkFinite("changedAt", changedAt);
  * ```
  */
@@ -160,7 +160,7 @@ export function checkFinite(name: string, value: number): void {
  *
  * @example
  * ```ts
- * import { checkCount } from "./mastery.js";
+ * import { checkCount } from "./mastery.ts";
  * checkCount("passes", passes);
  * ```
  */
@@ -266,7 +266,7 @@ function scoreChannel(
  *
  * @example
  * ```ts
- * import { DAY_MS, recencyFactor } from "./mastery.js";
+ * import { DAY_MS, recencyFactor } from "./mastery.ts";
  * recencyFactor(30 * DAY_MS); // 0.5
  * ```
  */
@@ -284,7 +284,7 @@ export function recencyFactor(ageMs: number, halfLifeDays?: number): number {
  *
  * @example
  * ```ts
- * import { confidenceFactor } from "./mastery.js";
+ * import { confidenceFactor } from "./mastery.ts";
  * confidenceFactor(3); // 0.6
  * ```
  */
@@ -298,7 +298,7 @@ export function confidenceFactor(count: number): number {
  *
  * @example
  * ```ts
- * import type { ScoreOptions } from "./mastery.js";
+ * import type { ScoreOptions } from "./mastery.ts";
  * const options: ScoreOptions = { halfLifeDays: 14 };
  * ```
  */
@@ -323,7 +323,7 @@ export interface ScoreOptions {
  *
  * @example
  * ```ts
- * import { channelScore } from "./mastery.js";
+ * import { channelScore } from "./mastery.ts";
  * const score = channelScore(events, "quiz", Date.now());
  * ```
  */
@@ -345,7 +345,7 @@ export function channelScore(
  *
  * @example
  * ```ts
- * import { dimensionScore } from "./mastery.js";
+ * import { dimensionScore } from "./mastery.ts";
  * const recall = dimensionScore(events, "recall", Date.now());
  * ```
  */
@@ -364,7 +364,7 @@ export function dimensionScore(
  *
  * @example
  * ```ts
- * import { isSatisfied } from "./mastery.js";
+ * import { isSatisfied } from "./mastery.ts";
  * isSatisfied(0.5); // true
  * ```
  */
@@ -377,7 +377,7 @@ export function isSatisfied(score: number): boolean {
  *
  * @example
  * ```ts
- * import type { TopicScoreOptions } from "./mastery.js";
+ * import type { TopicScoreOptions } from "./mastery.ts";
  * const options: TopicScoreOptions = {
  *   weights: { observed: 1, "explain-back": 1, quiz: 1, "self-report": 0 },
  * };
@@ -423,7 +423,7 @@ function resolveWeights(
  *
  * @example
  * ```ts
- * import { topicScore } from "./mastery.js";
+ * import { topicScore } from "./mastery.ts";
  * const overall = topicScore(events, Date.now());
  * ```
  */
@@ -453,7 +453,7 @@ export function topicScore(
  *
  * @example
  * ```ts
- * import { reviewIntervalMs } from "./mastery.js";
+ * import { reviewIntervalMs } from "./mastery.ts";
  * reviewIntervalMs(2); // 7 days in ms
  * ```
  */
@@ -472,7 +472,7 @@ export function reviewIntervalMs(passes: number): number {
  *
  * @example
  * ```ts
- * import { isReviewDue } from "./mastery.js";
+ * import { isReviewDue } from "./mastery.ts";
  * const due = isReviewDue(lastPassAt, 2, Date.now());
  * ```
  */

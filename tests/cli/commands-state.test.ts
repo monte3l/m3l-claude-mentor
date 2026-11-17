@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { describeData } from "../../src/internal/purge.js";
+import { describeData } from "../../src/internal/purge.ts";
 import {
   defaultProfile,
   type Profile,
-} from "../../src/internal/state-schema.js";
-import { saveProfile } from "../../src/internal/store.js";
+} from "../../src/internal/state-schema.ts";
+import { saveProfile } from "../../src/internal/store.ts";
 import {
   NOW,
   makeSandbox,
@@ -14,7 +14,7 @@ import {
   run,
   runOk,
   type Sandbox,
-} from "./helpers.js";
+} from "./helpers.ts";
 
 let sb: Sandbox;
 beforeEach(() => {

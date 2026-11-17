@@ -19,7 +19,7 @@ import {
   parseBundle,
   serializeBundle,
   type Bundle,
-} from "../../src/internal/export.js";
+} from "../../src/internal/export.ts";
 import {
   loadCatalogFile,
   loadGoals,
@@ -27,15 +27,15 @@ import {
   loadState,
   readEvidence,
   appendEvidence,
-} from "../../src/internal/store.js";
-import { MentorStateError } from "../../src/internal/errors.js";
+} from "../../src/internal/store.ts";
+import { MentorStateError } from "../../src/internal/errors.ts";
 import {
   NOW,
   evidenceAt,
   expectCode,
   seed,
   snapshot,
-} from "./fixtures/export-data.js";
+} from "./fixtures/export-data.ts";
 
 let sandbox = "";
 let src = "";

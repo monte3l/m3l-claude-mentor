@@ -1,10 +1,10 @@
 import { existsSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { postCompactHandler } from "../../../src/hooks/handlers/post-compact.js";
-import { userPromptSubmitHandler } from "../../../src/hooks/handlers/user-prompt-submit.js";
-import { stopHandler } from "../../../src/hooks/handlers/stop.js";
-import { loadState } from "../../../src/internal/store.js";
-import { newSegment } from "../../../src/internal/segment.js";
+import { postCompactHandler } from "../../../src/hooks/handlers/post-compact.ts";
+import { userPromptSubmitHandler } from "../../../src/hooks/handlers/user-prompt-submit.ts";
+import { stopHandler } from "../../../src/hooks/handlers/stop.ts";
+import { loadState } from "../../../src/internal/store.ts";
+import { newSegment } from "../../../src/internal/segment.ts";
 import {
   BAD_SESSIONS,
   NOW,
@@ -16,7 +16,7 @@ import {
   topicId,
   withSession,
   type Sandbox,
-} from "./helpers.js";
+} from "./helpers.ts";
 
 let sb: Sandbox;
 beforeEach(() => {

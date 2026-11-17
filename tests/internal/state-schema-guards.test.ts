@@ -5,7 +5,7 @@ import {
   parseProfile,
   parseSegmentState,
   parseState,
-} from "../../src/internal/state-schema.js";
+} from "../../src/internal/state-schema.ts";
 
 const MARK = "ZZ_UNIQUE_MARKER_42";
 

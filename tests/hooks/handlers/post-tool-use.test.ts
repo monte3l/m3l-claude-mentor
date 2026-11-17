@@ -1,10 +1,10 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { postToolUseHandler } from "../../../src/hooks/handlers/post-tool-use.js";
-import { parseCatalog } from "../../../src/internal/catalog.js";
-import { parseEvidence } from "../../../src/internal/schema.js";
-import { appendEvidence, readEvidence } from "../../../src/internal/store.js";
+import { postToolUseHandler } from "../../../src/hooks/handlers/post-tool-use.ts";
+import { parseCatalog } from "../../../src/internal/catalog.ts";
+import { parseEvidence } from "../../../src/internal/schema.ts";
+import { appendEvidence, readEvidence } from "../../../src/internal/store.ts";
 import {
   BAD_SESSIONS,
   CATALOG,
@@ -19,7 +19,7 @@ import {
   topicId,
   withSession,
   type Sandbox,
-} from "./helpers.js";
+} from "./helpers.ts";
 
 let sb: Sandbox;
 beforeEach(() => {

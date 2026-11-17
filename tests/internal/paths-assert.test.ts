@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { assertValidDataDir } from "../../src/internal/paths.js";
-import { MentorStateError } from "../../src/internal/errors.js";
+import { assertValidDataDir } from "../../src/internal/paths.ts";
+import { MentorStateError } from "../../src/internal/errors.ts";
 
 function thrown(dir: unknown): unknown {
   try {

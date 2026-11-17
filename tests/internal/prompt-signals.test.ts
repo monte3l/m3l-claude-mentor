@@ -1,11 +1,11 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
-import { parseCatalog } from "../../src/internal/catalog.js";
+import { parseCatalog } from "../../src/internal/catalog.ts";
 import {
   detectPromptSignals,
   MAX_PROMPT_CHARS,
   MAX_PROMPT_SIGNALS,
-} from "../../src/internal/prompt-signals.js";
+} from "../../src/internal/prompt-signals.ts";
 
 const parsedCatalog = parseCatalog(
   JSON.parse(readFileSync("data/topic-catalog.json", "utf8")),
