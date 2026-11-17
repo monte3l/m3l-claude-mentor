@@ -30,11 +30,6 @@ minor release.
 - **Reach the OpenSSF Silver badge and the Baseline levels the project can
   honestly meet.** See [Governance](GOVERNANCE.md#gold-level-criteria-this-project-does-not-meet)
   for what Gold needs and why it is out of reach.
-- **First signed release asset.** The release workflow now attaches a source
-  tarball and its Sigstore bundle. The next release is the first to carry them,
-  and it is the check that the job works end to end. `signed_releases` in
-  `.bestpractices.json` flips to Met once a release has been verified with
-  `gh attestation verify` (see [`SECURITY.md`](../SECURITY.md#verifying-releases)).
 - **Grow the set of people who can run the project.** See
   [Governance](GOVERNANCE.md#bus-factor). It needs contributors from outside the
   organization. There is no committed timeline.
