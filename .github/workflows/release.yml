@@ -53,8 +53,9 @@ jobs:
       RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
 
   # Attaches a source tarball and its Sigstore bundle to the draft. The
-  # tarball is what the monte3l/m3l-plugins catalog clones, so the signed asset
-  # is the artifact users actually install. The bundle is an asset because
+  # monte3l/m3l-plugins catalog does not install this tarball: it clones the
+  # repository at a pinned tag and commit. The tarball is a signed copy of that
+  # same commit that anyone can verify. The bundle is an asset because
   # OpenSSF Scorecard's Signed-Releases check only looks at release assets
   # (`*.sigstore.json`), never at GitHub's attestation store. Verify with
   # `gh attestation verify <tarball> --bundle <tarball>.sigstore.json

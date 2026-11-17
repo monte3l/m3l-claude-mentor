@@ -131,8 +131,10 @@ A pass means the file is byte-for-byte what the release workflow built from this
 repository, and `--signer-workflow` pins the expected identity: that workflow
 file in this repository, and nothing else.
 
-Installing through the catalog pins the same tag and commit over HTTPS, so the
-commit it resolves to is the one the tag points at.
+Installing through the catalog does not use the tarball. It clones this
+repository over HTTPS at a pinned tag and commit, so the commit it resolves to
+is the one the tag points at. The tarball is a signed copy of that same commit,
+for anyone who wants to check a release independently.
 
 ## Accepted OpenSSF Scorecard findings
 
