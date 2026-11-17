@@ -110,6 +110,30 @@ is revoked when the new one is in place.
 and the provider's audit log for use, and clean up the history. Publish an
 advisory if anything was released or deployed with it.
 
+## Verifying releases
+
+A release has a git tag named `m3l-claude-mentor--vX.Y.Z`, and the org tags
+ruleset stops a tag from being moved or deleted. From the first release after
+`0.2.0` it also carries a source tarball (`m3l-claude-mentor-X.Y.Z.tar.gz`) and
+its Sigstore bundle (`m3l-claude-mentor-X.Y.Z.tar.gz.sigstore.json`). `0.1.0` and
+`0.2.0` were published without assets, so only their tags can be checked.
+
+**Integrity and authenticity of the tarball.** Download both assets, then run:
+
+```zsh
+gh attestation verify m3l-claude-mentor-X.Y.Z.tar.gz \
+  --bundle m3l-claude-mentor-X.Y.Z.tar.gz.sigstore.json \
+  -R monte3l/m3l-claude-mentor \
+  --signer-workflow monte3l/m3l-claude-mentor/.github/workflows/release.yml
+```
+
+A pass means the file is byte-for-byte what the release workflow built from this
+repository, and `--signer-workflow` pins the expected identity: that workflow
+file in this repository, and nothing else.
+
+Installing through the catalog pins the same tag and commit over HTTPS, so the
+commit it resolves to is the one the tag points at.
+
 ## Accepted OpenSSF Scorecard findings
 
 Background, not policy: this explains the Scorecard results for anyone who
