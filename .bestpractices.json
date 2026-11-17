@@ -222,5 +222,9 @@
   "hardening_status": "N/A",
   "hardening_justification": "The plugin is a set of local hooks, a CLI and Markdown skills, not a web application that serves headers. The static docs site does send security headers (a CSP and HSTS) from its _headers file.",
   "assurance_case_status": "Met",
-  "assurance_case_justification": "https://github.com/monte3l/m3l-claude-mentor/blob/main/docs/assurance-case.md."
+  "assurance_case_justification": "https://github.com/monte3l/m3l-claude-mentor/blob/main/docs/assurance-case.md.",
+  "know_secure_design_status": "Met",
+  "know_secure_design_justification": "The maintainers apply the secure design principles and have written down how, with where each is enforced: https://github.com/monte3l/m3l-claude-mentor/blob/main/docs/assurance-case.md#secure-design-principles-applied covers economy of mechanism, fail-safe defaults, complete mediation, open design, separation of privilege, least privilege, least common mechanism and psychological acceptability. https://github.com/monte3l/m3l-claude-mentor/blob/main/docs/assurance-case.md#threat-model and https://github.com/monte3l/m3l-claude-mentor/blob/main/DESIGN.md (section 10, state and privacy) show the design built on them.",
+  "know_common_errors_status": "Met",
+  "know_common_errors_justification": "The maintainers know the common kinds of errors for this kind of software (a TypeScript plugin that parses JSON, runs local hooks and a CLI, and fetches pages) and one counter for each: https://github.com/monte3l/m3l-claude-mentor/blob/main/docs/assurance-case.md#common-implementation-weaknesses-countered lists information exposure (CWE-200), improper input validation (CWE-20), command and code injection (CWE-78, CWE-94), path traversal (CWE-22), time-of-check to time-of-use (CWE-367), prompt injection through fetched text (CWE-77), hard-coded credentials (CWE-798) and untrusted components (CWE-1357 and CWE-829), each with the mitigation and where it is enforced."
 }
