@@ -68,7 +68,7 @@ Each topic has a level, from Unseen up to Fluent, computed per competency
 dimension from your own evidence: quiz answers, explain-back answers, observed
 use and self-reports. A self-report never counts for more than Claimed. A tip
 needs a topic you have not mastered, that relates to the current task, and a
-quiet gap since the last tip. The full design is in [`DESIGN.md`](DESIGN.md).
+quiet gap since the last tip. The full design is in [`docs/spec.md`](docs/spec.md).
 
 State lives in the plugin data directory, outside your projects. Only
 feature-usage signals are stored, such as "created a skill", never conversation
@@ -229,7 +229,7 @@ agent workflow. The code of conduct and support are the
 - [Documentation site](https://claude-mentor.monte3l.com) -- these pages and
   the skill and agent prompts, built from the repository's Markdown. A page is
   on it only if it is listed in `docs.config.mjs`.
-- [`DESIGN.md`](DESIGN.md) -- the design spec: mastery model, ambient engine,
+- [`docs/spec.md`](docs/spec.md) -- the specification: mastery model, ambient engine,
   state and privacy, evaluation, and the decisions behind them.
 - [`CLAUDE.md`](CLAUDE.md) -- the commands, conventions and agent operating
   model, written for Claude Code.

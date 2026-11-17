@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 // Fails when the documentation and the code disagree: the skills the README
-// and DESIGN.md list against skills/, the README settings table against the
+// and docs/spec.md list against skills/, the README settings table against the
 // manifest's userConfig (names and defaults), and the Node version the README
 // names against .node-version.
 //
@@ -29,7 +29,7 @@ export const skillNames = (root) =>
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name);
 
-/** Skill names a DESIGN.md section writes as `/m3l-claude-mentor:<name>`. */
+/** Skill names a docs/spec.md section writes as `/m3l-claude-mentor:<name>`. */
 export const designSkillNames = (text) => [
   ...new Set(
     [...text.matchAll(/\/m3l-claude-mentor:([a-z][a-z-]*)/g)].map(
@@ -42,7 +42,7 @@ export const designSkillNames = (text) => [
 export default function check({ root }) {
   const problems = [];
   const readme = read(root, "README.md");
-  const design = read(root, "DESIGN.md");
+  const design = read(root, "docs/spec.md");
   const manifest = JSON.parse(read(root, ".claude-plugin/plugin.json"));
   const skills = skillNames(root);
 
@@ -59,11 +59,11 @@ export default function check({ root }) {
   }
 
   const lessons = section(design, "7. On-demand lessons and reference");
-  if (lessons === null) problems.push("DESIGN.md has no section 7");
+  if (lessons === null) problems.push("docs/spec.md has no section 7");
   else {
     problems.push(
       ...assertSameSet(
-        "DESIGN.md section 7 skills",
+        "docs/spec.md section 7 skills",
         designSkillNames(lessons),
         skills,
       ),

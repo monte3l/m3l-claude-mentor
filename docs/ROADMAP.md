@@ -3,7 +3,7 @@
 What this project intends to do, and not do, over roughly the next year. It is
 kept in a file rather than in GitHub Issues so it survives outside any one tool.
 It lists what is still ahead. What has shipped is in the git history and the
-GitHub releases, and the design behind it is in [`DESIGN.md`](../DESIGN.md).
+GitHub releases, and the design behind it is in [`spec.md`](spec.md).
 
 ## Now: the 0.x series
 
@@ -18,7 +18,7 @@ minor release.
   not yet confirmed in a real session: the narrower permission rules in the
   [README](../README.md#permissions), `PostToolUse` evidence recording in a
   tool-using session, and the tip dial at 0. Each gets a live check and a note
-  in [`DESIGN.md`](../DESIGN.md#15-open-questions).
+  in [`spec.md`](spec.md#15-open-questions).
 - **Cover the tip behaviour with evals.** The rate limit and the silence on a
   mastered topic have no eval yet, because the eval docs do not say how to seed
   `CLAUDE_PLUGIN_DATA` or pass `userConfig` to hooks. They go ahead once that is

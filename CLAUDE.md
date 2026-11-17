@@ -5,7 +5,7 @@ This file provides guidance to Claude Code when working in this repository.
 ## What this is
 
 **m3l-claude-mentor** — a Claude Code plugin that mentors one learner on
-Claude and Claude Code, adapting to their mastery level (see `DESIGN.md`).
+Claude and Claude Code, adapting to their mastery level (see `docs/spec.md`).
 It installs at user scope and ships through a plugin manifest, not npm.
 Bootstrapped by [m3l-groundwork](https://github.com/monte3l/m3l-groundwork)
 and tailored with `/customize` for the plugin kind on Node.
