@@ -13,3 +13,6 @@ CHANGELOG.md
 design/source/
 design/tokens.css
 design/SHA256SUMS
+
+# Prettier would pad the tables in design/README.md, which the siblings keep compact.
+design/README.md

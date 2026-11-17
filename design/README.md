@@ -26,15 +26,15 @@ release with its content unchanged. To move to a newer version, run
 `source/`, `tokens.css` and `SHA256SUMS`, rewrites the version line above and
 never touches this README's text.
 
-| Path                             | What it holds                                                                                        |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `source/dtcg/`                   | The canonical DTCG 2025.10 token source. It wins whenever it disagrees with `source/tokens.json`     |
-| `source/tokens.json`             | The system's own flattened copy of the tokens. Nothing here reads it                                 |
-| `source/components/`             | The v1 components as plain HTML and CSS, with each README's markup, tokens and contrast table        |
-| `source/foundations/contrast.md` | Every text and UI pairing per theme, all passing WCAG 2.2 AA                                         |
-| `source/fonts/`                  | Atkinson Hyperlegible Next and Mono, variable weight 200-800, under OFL-1.1 (see `source/licenses/`) |
-| `source/brand-book.md`           | The full design brief: personality, colour, type, shape, motion, accessibility, governance           |
-| `source/docs-kit/`               | The docs site builder and its gates. Its README documents the config and the checks                  |
+| Path | What it holds |
+| --- | --- |
+| `source/dtcg/` | The canonical DTCG 2025.10 token source. It wins whenever it disagrees with `source/tokens.json` |
+| `source/tokens.json` | The system's own flattened copy of the tokens. Nothing here reads it |
+| `source/components/` | The v1 components as plain HTML and CSS, with each README's markup, tokens and contrast table |
+| `source/foundations/contrast.md` | Every text and UI pairing per theme, all passing WCAG 2.2 AA |
+| `source/fonts/` | Atkinson Hyperlegible Next and Mono, variable weight 200-800, under OFL-1.1 (see `source/licenses/`) |
+| `source/brand-book.md` | The full design brief: personality, colour, type, shape, motion, accessibility, governance |
+| `source/docs-kit/` | The docs site builder and its gates. Its README documents the config and the checks |
 
 ## `tokens.css` is vendored too
 
@@ -58,10 +58,10 @@ holds it to `var(--token)` values only.
 
 These apply to every Markdown file in the repository.
 
-| Rule                                                                                                               | Why                                                            |
-| ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
-| **Bold**, not italics or underlines, for emphasis                                                                  | Italics and underlines make text run together                  |
+| Rule | Why |
+| --- | --- |
+| **Bold**, not italics or underlines, for emphasis | Italics and underlines make text run together |
 | A GitHub alert (`> [!NOTE]`, `[!WARNING]`, `[!CAUTION]`) matched to severity for anything the reader must not miss | Each severity has its own glyph, so it survives without colour |
-| Never stack more than two alerts, and never use `[!CAUTION]` except for data loss or anything irreversible         | The Callout component's own rule                               |
-| Plain, direct sentences                                                                                            | Part of the system's voice                                     |
-| Tabular data goes in a table                                                                                       | Easier to scan than a list pretending to be one                |
+| Never stack more than two alerts, and never use `[!CAUTION]` except for data loss or anything irreversible | The Callout component's own rule |
+| Plain, direct sentences | Part of the system's voice |
+| Tabular data goes in a table | Easier to scan than a list pretending to be one |

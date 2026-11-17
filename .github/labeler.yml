@@ -1,0 +1,19 @@
+# Path rules for .github/workflows/labeler.yml (actions/labeler). The four
+# area labels are shared by every org repository and come from the org
+# blueprint (blueprint/labels.json); they already exist on GitHub.
+
+"area:ci":
+  - changed-files:
+      - any-glob-to-any-file: [".github/**", "lefthook.yml"]
+
+"area:docs":
+  - changed-files:
+      - any-glob-to-any-file: ["docs/**", "*.md", "docs.config.mjs"]
+
+"area:design":
+  - changed-files:
+      - any-glob-to-any-file: ["design/**"]
+
+"area:harness":
+  - changed-files:
+      - any-glob-to-any-file: [".claude/**"]
