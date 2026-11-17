@@ -28,13 +28,20 @@ async function readStdin(): Promise<string> {
   return Buffer.concat(chunks).toString("utf8");
 }
 
+/** Swallows an output-stream write error: there is no channel left to report it on. */
+function ignoreStreamError(): void {
+  // Intentionally empty.
+}
+
 /**
  * The hook process wrapper: reads all of stdin, runs {@link runHookCore}
  * with `process.env`, `Date.now()` and `options`, writes its output, and sets
  * `process.exitCode = 0`. It never calls `process.exit()`, so pending writes
  * flush, and never rejects: `runHookCore` never throws, and a stdin read
  * failure becomes one fixed stderr line (the error is not echoed, as its
- * message could carry input).
+ * message could carry input). An `'error'` on stdout or stderr (e.g. `EPIPE`
+ * when the reader has gone) is ignored, so it neither crashes the process
+ * nor changes the exit code.
  *
  * @param name - The hook event name used in stderr notes and output.
  * @param handler - The event handler.
@@ -73,6 +80,10 @@ export async function runHook(
           handler,
           options,
         );
+  // A write error (EPIPE when the reader closed early) has nowhere useful to
+  // be reported, and an unhandled stream 'error' would crash the process.
+  process.stdout.on("error", ignoreStreamError);
+  process.stderr.on("error", ignoreStreamError);
   process.stdout.write(result.stdout);
   process.stderr.write(result.stderr);
   process.exitCode = 0;

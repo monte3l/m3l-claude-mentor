@@ -130,9 +130,11 @@ export declare function writeTextAtomic(dir: string, file: DataFile, text: strin
 export declare function appendLineAtomic(dir: string, file: DataFile, line: string): Promise<void>;
 /**
  * Reads the last `tailBytes` bytes of a data file and splits them into
- * lines. When the read starts after offset 0 the first line is always
- * dropped, since it may be partial (or begin inside a multibyte character).
- * Empty lines are omitted; an unterminated last line is kept.
+ * lines. The window's first line is dropped only when it may be partial
+ * (or begin inside a multibyte character): when the window starts after
+ * offset 0 and the byte immediately before it is not `"\n"`. A window that
+ * starts exactly on a line boundary keeps its first line. Empty lines are
+ * omitted; an unterminated last line is kept.
  *
  * @param dir - The data directory.
  * @param file - Which data file.
