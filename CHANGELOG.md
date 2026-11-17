@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/monte3l/m3l-claude-mentor/compare/m3l-claude-mentor--v0.2.0...m3l-claude-mentor--v0.2.1) (2026-11-17)
+
+
+### Continuous Integration
+
+* correct the release tarball wording to match how the catalog installs ([48583d3](https://github.com/monte3l/m3l-claude-mentor/commit/48583d3b47a925224af3541d0e849dbb582123d5))
+
 ## [0.2.0](https://github.com/monte3l/m3l-claude-mentor/compare/m3l-claude-mentor--v0.1.0...m3l-claude-mentor--v0.2.0) (2026-11-14)
 
 
