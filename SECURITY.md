@@ -113,10 +113,10 @@ advisory if anything was released or deployed with it.
 ## Verifying releases
 
 A release has a git tag named `m3l-claude-mentor--vX.Y.Z`, and the org tags
-ruleset stops a tag from being moved or deleted. From the first release after
-`0.2.0` it also carries a source tarball (`m3l-claude-mentor-X.Y.Z.tar.gz`) and
-its Sigstore bundle (`m3l-claude-mentor-X.Y.Z.tar.gz.sigstore.json`). `0.1.0` and
-`0.2.0` were published without assets, so only their tags can be checked.
+ruleset stops a tag from being moved or deleted. From `0.2.1` on it also carries
+a source tarball (`m3l-claude-mentor-X.Y.Z.tar.gz`) and its Sigstore bundle
+(`m3l-claude-mentor-X.Y.Z.tar.gz.sigstore.json`). `0.1.0` and `0.2.0` were
+published without assets, so only their tags can be checked.
 
 **Integrity and authenticity of the tarball.** Download both assets, then run:
 
