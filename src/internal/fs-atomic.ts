@@ -354,9 +354,11 @@ export async function appendLineAtomic(
 
 /**
  * Reads the last `tailBytes` bytes of a data file and splits them into
- * lines. When the read starts after offset 0 the first line is always
- * dropped, since it may be partial (or begin inside a multibyte character).
- * Empty lines are omitted; an unterminated last line is kept.
+ * lines. The window's first line is dropped only when it may be partial
+ * (or begin inside a multibyte character): when the window starts after
+ * offset 0 and the byte immediately before it is not `"\n"`. A window that
+ * starts exactly on a line boundary keeps its first line. Empty lines are
+ * omitted; an unterminated last line is kept.
  *
  * @param dir - The data directory.
  * @param file - Which data file.
@@ -383,20 +385,26 @@ export async function readTailLines(
   checkByteCount(tailBytes, "tailBytes", 1);
   const handle = await openForRead(dir, file);
   if (handle === null) return null;
-  let start: number;
+  let partialFirst: boolean;
   let bytes: Buffer;
   try {
     const { size } = await handle.stat();
-    start = Math.max(0, size - tailBytes);
-    const buffer = Buffer.alloc(size - start);
-    const total = await readInto(handle, buffer, start);
-    bytes = buffer.subarray(0, total);
+    const start = Math.max(0, size - tailBytes);
+    // One extra preceding byte (when there is one) tells whether the window
+    // starts on a line boundary.
+    const readFrom = Math.max(0, start - 1);
+    const buffer = Buffer.alloc(size - readFrom);
+    const total = await readInto(handle, buffer, readFrom);
+    const read = buffer.subarray(0, total);
+    const lead = start - readFrom;
+    partialFirst = lead > 0 && read[0] !== NEWLINE[0];
+    bytes = read.subarray(Math.min(lead, read.length));
     await handle.close();
   } catch (cause) {
     await closeQuietly(handle);
     throw readFailed(file, cause);
   }
   const lines = bytes.toString("utf8").split("\n");
-  if (start > 0) lines.shift();
+  if (partialFirst) lines.shift();
   return lines.filter((line) => line.length > 0);
 }

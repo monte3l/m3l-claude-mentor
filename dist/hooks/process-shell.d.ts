@@ -10,7 +10,9 @@ import { type HookHandler, type HookRunOptions } from "./runtime.js";
  * `process.exitCode = 0`. It never calls `process.exit()`, so pending writes
  * flush, and never rejects: `runHookCore` never throws, and a stdin read
  * failure becomes one fixed stderr line (the error is not echoed, as its
- * message could carry input).
+ * message could carry input). An `'error'` on stdout or stderr (e.g. `EPIPE`
+ * when the reader has gone) is ignored, so it neither crashes the process
+ * nor changes the exit code.
  *
  * @param name - The hook event name used in stderr notes and output.
  * @param handler - The event handler.
