@@ -25,6 +25,7 @@ import {
 import { requireOneOf, requireTopicId, type ParsedArgs } from "./args.ts";
 import {
   loadMergedCatalog,
+  lockedState,
   requireCatalogEntry,
   type CommandEnv,
 } from "./env.ts";
@@ -243,8 +244,12 @@ export function optionalClaim(args: ParsedArgs): Level | undefined {
  *
  * Known limitations: only the evidence tail window `readEvidence` returns
  * (its default `maxEvents`) is read, so a topic's oldest events can fall out
- * of it on a long history; and the profile update is a read-modify-write
- * with no lock, so two concurrent writers race and the last one wins.
+ * of it on a long history. The profile's load, recompute and save run under
+ * the data lock ({@link lockedState}), so a concurrent writer cannot
+ * interleave.
+ * The catalog is read before the data lock, so a concurrent
+ * `set-topic-override` or import can change it in between; the next
+ * `recompute` repairs any effect on the level.
  *
  * @throws CliUsageError for a malformed or unknown topic or a bad claim.
  *
@@ -262,21 +267,27 @@ export async function recompute(
   const claimedLevel = optionalClaim(args);
   const { file, entries } = await loadMergedCatalog(env);
   const entry = requireCatalogEntry(entries, topic);
-  const stored = await loadProfile(env.dir, env.now);
-  const { profile, view } = await recomputeTopic(
-    env,
-    file,
-    entry,
-    stored,
-    claimedLevel,
-  );
-  await saveProfile(env.dir, profile);
-  return view;
+  return lockedState(env, async () => {
+    const stored = await loadProfile(env.dir, env.now);
+    const { profile, view } = await recomputeTopic(
+      env,
+      file,
+      entry,
+      stored,
+      claimedLevel,
+    );
+    await saveProfile(env.dir, profile);
+    return view;
+  });
 }
 
 /**
  * `introduce --topic <id>`: marks the topic introduced, raising its level to
- * `Introduced` when it is lower and never lowering it.
+ * `Introduced` when it is lower and never lowering it. The profile's load
+ * and save run under the data lock ({@link lockedState}).
+ * The catalog is read before the data lock, so a concurrent
+ * `set-topic-override` or import can change it in between; the next
+ * `recompute` repairs any effect on the level.
  *
  * @throws CliUsageError for a malformed or unknown topic.
  *
@@ -293,16 +304,23 @@ export async function introduce(
   const topic = requireTopicId(args);
   const { entries } = await loadMergedCatalog(env);
   requireCatalogEntry(entries, topic);
-  const profile = await loadProfile(env.dir, env.now);
-  const previous = existingTopic(profile, topic) ?? UNSEEN_TOPIC;
-  const level: Level =
-    compareLevels(previous.level, "Introduced") >= 0
-      ? previous.level
-      : "Introduced";
-  await saveProfile(
-    env.dir,
-    withTopic(profile, topic, { ...previous, introduced: true, level }),
-  );
+  const level = await lockedState(env, async () => {
+    const profile = await loadProfile(env.dir, env.now);
+    const previous = existingTopic(profile, topic) ?? UNSEEN_TOPIC;
+    const raised: Level =
+      compareLevels(previous.level, "Introduced") >= 0
+        ? previous.level
+        : "Introduced";
+    await saveProfile(
+      env.dir,
+      withTopic(profile, topic, {
+        ...previous,
+        introduced: true,
+        level: raised,
+      }),
+    );
+    return raised;
+  });
   return { topic, level };
 }
 
@@ -336,7 +354,11 @@ export function applyPass(
 /**
  * `record-pass --topic <id> --result <pass|fail>`: a pass increments
  * `passes` and stamps `lastPassAt = now`; a fail resets `passes` to 0 and
- * leaves `lastPassAt` alone.
+ * leaves `lastPassAt` alone. The profile's load and save run under the
+ * data lock ({@link lockedState}).
+ * The catalog is read before the data lock, so a concurrent
+ * `set-topic-override` or import can change it in between; the next
+ * `recompute` repairs any effect on the level.
  *
  * @throws CliUsageError for a malformed or unknown topic or a bad result.
  *
@@ -354,12 +376,15 @@ export async function recordPass(
   const result = requireOneOf(args, "result", ["pass", "fail"] as const);
   const { entries } = await loadMergedCatalog(env);
   requireCatalogEntry(entries, topic);
-  const { profile, passes } = applyPass(
-    await loadProfile(env.dir, env.now),
-    topic,
-    result,
-    env.now,
-  );
-  await saveProfile(env.dir, profile);
+  const passes = await lockedState(env, async () => {
+    const { profile, passes: next } = applyPass(
+      await loadProfile(env.dir, env.now),
+      topic,
+      result,
+      env.now,
+    );
+    await saveProfile(env.dir, profile);
+    return next;
+  });
   return { topic, passes };
 }

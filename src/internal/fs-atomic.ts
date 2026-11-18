@@ -212,18 +212,103 @@ export async function readTextBounded(
 }
 
 /**
- * Replaces a data file: creates `dir` if needed (mode `0o700`), writes
- * `text` to a uniquely named temp file in the same directory (flag `wx`, mode
- * `0o600`), fsyncs and closes it, then renames it over the target. A reader
- * therefore sees either the old or the new content, never a torn file. This
- * function does not lock: two concurrent writers of one file are
- * last-writer-wins, so callers take `withStateLock` (`./lock.ts`)
- * around a whole read-modify-write. The directory is not fsynced, so after a power loss the rename may be lost
- * and the old content remain. A read-only target is still replaced, because
- * rename permission comes from the directory. On a failure the handle is
- * closed and the temp file removed (best effort, so a cleanup error cannot
- * hide the primary one); a process killed mid-write can still leave a stale
- * `.<file>.<pid>.<uuid>.tmp` behind, which purge removes.
+ * A data file's new content, written and fsynced to a temp file next to it
+ * but not yet in place. See {@link stageTextAtomic}.
+ *
+ * @example
+ * ```ts
+ * import { stageTextAtomic, type StagedText } from "./fs-atomic.ts";
+ * const staged: StagedText = await stageTextAtomic("/var/data/m3l", "goals", "Learn hooks\n");
+ * await staged.commit();
+ * ```
+ */
+export interface StagedText {
+  /** The temp file's full path, `<dir>/.<file>.<pid>.<uuid>.tmp`. */
+  readonly temp: string;
+  /**
+   * Renames the temp file over the target. On failure the temp file is
+   * removed (best effort) and `WRITE_FAILED` is thrown with the fs error as
+   * `cause`.
+   */
+  commit(): Promise<void>;
+}
+
+/**
+ * Stages a data file's replacement: creates `dir` if needed (mode `0o700`),
+ * writes `text` to a uniquely named temp file in the same directory (flag
+ * `wx`, mode `0o600`), fsyncs and closes it. The target is not touched until
+ * {@link StagedText.commit} renames the temp over it, so a caller replacing
+ * several files can stage them all before changing any. A caller that
+ * abandons a staged file deletes `temp` itself. On a staging failure the
+ * handle is closed and the temp file removed (best effort, so a cleanup error
+ * cannot hide the primary one); a process killed mid-write can still leave a
+ * stale `.<file>.<pid>.<uuid>.tmp` behind, which purge removes.
+ *
+ * @param dir - The data directory.
+ * @param file - Which data file.
+ * @param text - The full new content, written as UTF-8.
+ * @returns The staged temp file and its `commit`.
+ * @throws MentorStateError `WRITE_FAILED` with the primary fs error as
+ * `cause`.
+ * @throws MentorStateError `DATA_DIR_INVALID` (before any other check or
+ * I/O) when `dir` fails {@link assertValidDataDir}.
+ *
+ * @example
+ * ```ts
+ * import { stageTextAtomic } from "./fs-atomic.ts";
+ * const staged = await stageTextAtomic("/var/data/m3l", "goals", "Learn hooks\n");
+ * await staged.commit();
+ * ```
+ */
+export async function stageTextAtomic(
+  dir: string,
+  file: DataFile,
+  text: string,
+): Promise<StagedText> {
+  assertValidDataDir(dir);
+  const target = dataFilePath(dir, file);
+  const temp = path.join(
+    dir,
+    `.${DATA_FILES[file]}.${String(process.pid)}.${randomUUID()}.tmp`,
+  );
+  await ensureDir(dir, file);
+  let handle: FileHandle | undefined;
+  let created = false;
+  try {
+    handle = await open(temp, "wx", FILE_MODE);
+    created = true;
+    await handle.writeFile(text, "utf8");
+    await handle.sync();
+    const opened = handle;
+    handle = undefined;
+    await opened.close();
+  } catch (cause) {
+    if (handle !== undefined) await closeQuietly(handle);
+    if (created) await unlinkQuietly(temp);
+    throw writeFailed(file, cause);
+  }
+  return {
+    temp,
+    commit: async () => {
+      try {
+        await rename(temp, target);
+      } catch (cause) {
+        await unlinkQuietly(temp);
+        throw writeFailed(file, cause);
+      }
+    },
+  };
+}
+
+/**
+ * Replaces a data file: {@link stageTextAtomic} followed at once by its
+ * `commit`. A reader therefore sees either the old or the new content, never
+ * a torn file. This function does not lock: two concurrent writers of one
+ * file are last-writer-wins, so callers take `withStateLock` (`./lock.ts`)
+ * around a whole read-modify-write. The directory is not fsynced, so after a
+ * power loss the rename may be lost and the old content remain. A read-only
+ * target is still replaced, because rename permission comes from the
+ * directory. On any failure no temp file is left behind (best effort).
  *
  * @param dir - The data directory.
  * @param file - Which data file.
@@ -244,29 +329,8 @@ export async function writeTextAtomic(
   file: DataFile,
   text: string,
 ): Promise<void> {
-  assertValidDataDir(dir);
-  const target = dataFilePath(dir, file);
-  const temp = path.join(
-    dir,
-    `.${DATA_FILES[file]}.${String(process.pid)}.${randomUUID()}.tmp`,
-  );
-  await ensureDir(dir, file);
-  let handle: FileHandle | undefined;
-  let created = false;
-  try {
-    handle = await open(temp, "wx", FILE_MODE);
-    created = true;
-    await handle.writeFile(text, "utf8");
-    await handle.sync();
-    const opened = handle;
-    handle = undefined;
-    await opened.close();
-    await rename(temp, target);
-  } catch (cause) {
-    if (handle !== undefined) await closeQuietly(handle);
-    if (created) await unlinkQuietly(temp);
-    throw writeFailed(file, cause);
-  }
+  const staged = await stageTextAtomic(dir, file, text);
+  await staged.commit();
 }
 
 const NEWLINE = Buffer.from("\n", "utf8");

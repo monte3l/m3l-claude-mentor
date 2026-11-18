@@ -109,6 +109,22 @@ export interface LockOptions {
   readonly random?: () => number;
 }
 
+/**
+ * The trailing options argument of a function that takes the data lock
+ * itself (import, purge): `lock` is forwarded to {@link withStateLock}. Real
+ * callers pass nothing, or a CLI timeout.
+ *
+ * @example
+ * ```ts
+ * import { CLI_LOCK_TIMEOUT_MS, type LockedOptions } from "./lock.ts";
+ * const options: LockedOptions = { lock: { timeoutMs: CLI_LOCK_TIMEOUT_MS } };
+ * ```
+ */
+export interface LockedOptions {
+  /** Lock tuning forwarded to {@link withStateLock}. */
+  readonly lock?: LockOptions;
+}
+
 interface Timing {
   readonly timeoutMs: number;
   readonly staleMs: number;

@@ -1,6 +1,11 @@
 import { mergeCatalog } from "../internal/catalog.ts";
 import type { CatalogFile } from "../internal/catalog-file.ts";
 import { MentorStateError } from "../internal/errors.ts";
+import {
+  CLI_LOCK_TIMEOUT_MS,
+  withStateLock,
+  type LockOptions,
+} from "../internal/lock.ts";
 import type { CatalogEntry, SessionId, TopicId } from "../internal/schema.ts";
 import { loadCatalogFile } from "../internal/store.ts";
 import { CliUsageError } from "./args.ts";
@@ -19,6 +24,51 @@ export interface CommandEnv {
   readonly now: number;
   readonly session: SessionId;
   readonly bundled: readonly CatalogEntry[];
+  /**
+   * Lock tuning over the CLI defaults (a test seam); real callers leave it
+   * out. See {@link lockedState}.
+   */
+  readonly lock?: LockOptions;
+}
+
+/**
+ * The lock options a CLI command uses: {@link CLI_LOCK_TIMEOUT_MS} (longer
+ * than the stale threshold, so a crashed holder's lock is outlived and
+ * broken) overridden by `env.lock`.
+ *
+ * @example
+ * ```ts
+ * import { cliLockOptions } from "./env.ts";
+ * await importBundleFromFile(env.dir, from, { replace: true }, { lock: cliLockOptions(env) });
+ * ```
+ */
+export function cliLockOptions(env: CommandEnv): LockOptions {
+  return { timeoutMs: CLI_LOCK_TIMEOUT_MS, ...env.lock };
+}
+
+/**
+ * Runs `fn` under the data lock for `env.dir` (`withStateLock` in
+ * `../internal/lock.ts`) with {@link cliLockOptions}. Every CLI writer wraps
+ * its whole load-compute-save in this; validation and pure work stay
+ * outside, and read-only commands never call it. The store primitives never
+ * lock, so `fn` may call them freely, but must not call this again.
+ *
+ * @throws MentorStateError `LOCK_TIMEOUT` when the lock stays held, or
+ * `WRITE_FAILED` when it cannot be created; whatever `fn` throws, unchanged.
+ *
+ * @example
+ * ```ts
+ * import { lockedState } from "./env.ts";
+ * await lockedState(env, async () => {
+ *   await saveState(env.dir, { ...(await loadState(env.dir, env.now)), muted: true });
+ * });
+ * ```
+ */
+export function lockedState<T>(
+  env: CommandEnv,
+  fn: () => Promise<T>,
+): Promise<T> {
+  return withStateLock(env.dir, fn, cliLockOptions(env));
 }
 
 /**

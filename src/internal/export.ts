@@ -22,7 +22,8 @@ import {
   serializeBundle,
   type Bundle,
 } from "./export-bundle.ts";
-import { writeTextAtomic } from "./fs-atomic.ts";
+import { stageTextAtomic, type StagedText } from "./fs-atomic.ts";
+import { withStateLock, type LockedOptions } from "./lock.ts";
 import {
   DATA_FILES,
   assertValidDataDir,
@@ -375,26 +376,91 @@ function fileTexts(bundle: Bundle): Readonly<Record<DataFile, string>> {
   };
 }
 
+function importStopped(
+  file: DataFile,
+  replaced: readonly DataFile[],
+  cause: unknown,
+): MentorStateError {
+  const done = replaced.length === 0 ? "none" : replaced.join(", ");
+  return new MentorStateError(
+    "WRITE_FAILED",
+    `import stopped writing ${DATA_FILES[file]}; sections already replaced: ${done}`,
+    { cause },
+  );
+}
+
+/** One data file staged for import. */
+interface StagedFile {
+  readonly file: DataFile;
+  readonly staged: StagedText;
+}
+
+/** Removes staged temp files that will never be committed (best effort). */
+async function discardStaged(files: readonly StagedFile[]): Promise<void> {
+  for (const { staged } of files) await unlinkQuietly(staged.temp);
+}
+
 /**
- * Replaces every managed file from an already-validated bundle, in
- * {@link IMPORT_ORDER}. Each file (the evidence log included) is written to
- * a temp file and renamed, so the old log is replaced, never appended to.
+ * Stages every file in {@link IMPORT_ORDER}. A failure discards whatever was
+ * staged, so no managed file has changed and no temp file is left behind.
  */
-async function replaceAll(dir: string, bundle: Bundle): Promise<ImportSummary> {
-  const texts = fileTexts(bundle);
-  const replaced: DataFile[] = [];
+async function stageAll(
+  dir: string,
+  texts: Readonly<Record<DataFile, string>>,
+): Promise<readonly StagedFile[]> {
+  const staged: StagedFile[] = [];
   for (const file of IMPORT_ORDER) {
     try {
-      await writeTextAtomic(dir, file, texts[file]);
+      staged.push({
+        file,
+        staged: await stageTextAtomic(dir, file, texts[file]),
+      });
     } catch (cause) {
-      const done = replaced.length === 0 ? "none" : replaced.join(", ");
-      throw new MentorStateError(
-        "WRITE_FAILED",
-        `import stopped writing ${DATA_FILES[file]}; sections already replaced: ${done}`,
-        { cause },
-      );
+      await discardStaged(staged);
+      throw importStopped(file, [], cause);
+    }
+  }
+  return staged;
+}
+
+/** Renames every staged file over its target, in {@link IMPORT_ORDER}. */
+async function commitAll(files: readonly StagedFile[]): Promise<void> {
+  const replaced: DataFile[] = [];
+  for (const { file, staged } of files) {
+    try {
+      await staged.commit();
+    } catch (cause) {
+      throw importStopped(file, replaced, cause);
     }
     replaced.push(file);
+  }
+}
+
+/**
+ * Replaces every managed file from an already-validated bundle in two
+ * phases. First every file (the evidence log included, so the old log is
+ * replaced, never appended to) is staged to a fsynced temp file WITHOUT the
+ * data lock: the temps are private until renamed, and an import replaces the
+ * data wholesale, so nothing staged depends on what is stored. Only the
+ * renames, in {@link IMPORT_ORDER}, run under the lock; that keeps the lock
+ * short, so a large bundle on a slow disk cannot hold it across slow fsyncs
+ * for longer than the stale window. A staging failure changes nothing. If
+ * the lock cannot be taken, or a rename fails (a temp that vanished before
+ * its commit, say to a purge sweep, included), every temp not yet renamed is
+ * removed; a rename failure leaves the sections before it replaced.
+ */
+async function replaceAll(
+  dir: string,
+  bundle: Bundle,
+  options: LockedOptions,
+): Promise<ImportSummary> {
+  const files = await stageAll(dir, fileTexts(bundle));
+  try {
+    await withStateLock(dir, () => commitAll(files), options.lock);
+  } catch (error) {
+    // Already-renamed temps are gone, so this removes only the rest.
+    await discardStaged(files);
+    throw error;
   }
   return {
     state: true,
@@ -410,23 +476,31 @@ async function replaceAll(dir: string, bundle: Bundle): Promise<ImportSummary> {
  * `true` (there is no merge mode). The bundle is re-validated with
  * {@link parseBundle} and every file's new content is built before any
  * managed file changes, so an invalid bundle leaves the directory as it
- * was. Files are then written atomically one by one: evidence (the log is
- * rebuilt in a temp file and renamed, never appended to), goals, catalog,
- * profile, and `state` last. There is no rollback: if a write fails midway
- * the directory holds a mix, and the error says which sections were already
- * replaced.
+ * was. The replacement then runs in two phases. First every file is staged
+ * to a fsynced temp file (the evidence log is rebuilt, never appended to)
+ * without the data lock, so a large bundle on a slow disk never holds it
+ * across fsyncs; a staging failure removes the temps and leaves all five old
+ * files untouched. Then, under the data lock (`withStateLock` in
+ * `./lock.ts`), the temps are renamed over the targets: evidence, goals,
+ * catalog, profile, and `state` last. If the lock cannot be taken the temps
+ * are removed and nothing changes. There is no rollback of the rename phase:
+ * if a rename fails the directory holds a mix, the remaining temps are
+ * removed, and the error says which sections were already replaced.
  *
  * @param dir - The data directory; created (mode `0o700`) if missing.
  * @param bundle - The bundle to import.
  * @param options - `replace: true` confirms the replacement.
+ * @param lockOptions - Optional lock tuning; real callers pass nothing or a
+ * CLI timeout.
  * @returns What was replaced.
  * @throws MentorStateError `DATA_DIR_INVALID` (checked first) when `dir`
  * fails {@link assertValidDataDir}; `CONFIRMATION_REQUIRED` unless `replace`
  * is exactly `true`; `IMPORT_INVALID` for an invalid bundle;
- * `VALIDATION_FAILED` when a section does not serialize to JSON (none of
- * these writes anything); `WRITE_FAILED` naming the file that failed and the
- * sections already replaced (`none` when the first write fails), with the fs
- * error as `cause`.
+ * `VALIDATION_FAILED` when a section does not serialize to JSON;
+ * `LOCK_TIMEOUT` when the data lock stays held (none of these writes
+ * anything); `WRITE_FAILED` naming the file that failed and the sections
+ * already replaced (`none` for any staging failure), with the fs error as
+ * `cause`.
  *
  * @example
  * ```ts
@@ -439,12 +513,13 @@ export async function importBundle(
   dir: string,
   bundle: Bundle,
   options: { readonly replace: boolean },
+  lockOptions: LockedOptions = {},
 ): Promise<ImportSummary> {
   assertValidDataDir(dir);
   requireReplace(options);
   const parsed = parseBundle(bundle);
   if (!parsed.ok) throw invalidBundle(parsed.reason);
-  return replaceAll(dir, parsed.value);
+  return replaceAll(dir, parsed.value, lockOptions);
 }
 
 /**
@@ -456,13 +531,15 @@ export async function importBundle(
  * @param dir - The data directory; created (mode `0o700`) if missing.
  * @param sourcePath - Absolute path of the bundle file.
  * @param options - `replace: true` confirms the replacement.
+ * @param lockOptions - As in {@link importBundle}.
  * @returns What was replaced.
  * @throws MentorStateError `DATA_DIR_INVALID` (checked first) when `dir`
  * fails {@link assertValidDataDir}; `CONFIRMATION_REQUIRED`;
  * `VALIDATION_FAILED` for a relative path; `READ_FAILED` (a missing file included) with the fs error
  * as `cause`; `TOO_LARGE`; `IMPORT_INVALID` for malformed JSON (a fixed
- * message, no `cause`) or an invalid bundle; `WRITE_FAILED` as in
- * {@link importBundle} (including its `VALIDATION_FAILED`). Only
+ * message, no `cause`) or an invalid bundle; `LOCK_TIMEOUT` and
+ * `WRITE_FAILED` as in {@link importBundle} (including its
+ * `VALIDATION_FAILED`). Only
  * `WRITE_FAILED` can follow a change to the
  * directory.
  *
@@ -476,6 +553,7 @@ export async function importBundleFromFile(
   dir: string,
   sourcePath: string,
   options: { readonly replace: boolean },
+  lockOptions: LockedOptions = {},
 ): Promise<ImportSummary> {
   assertValidDataDir(dir);
   requireReplace(options);
@@ -493,5 +571,5 @@ export async function importBundleFromFile(
   }
   const parsed = parseBundle(raw);
   if (!parsed.ok) throw invalidBundle(parsed.reason);
-  return replaceAll(dir, parsed.value);
+  return replaceAll(dir, parsed.value, lockOptions);
 }

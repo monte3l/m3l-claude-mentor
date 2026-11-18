@@ -38,7 +38,9 @@ import {
   type ParsedArgs,
 } from "./args.ts";
 import {
+  cliLockOptions,
   loadMergedCatalog,
+  lockedState,
   requireCatalogEntry,
   type CommandEnv,
 } from "./env.ts";
@@ -57,17 +59,20 @@ function toggled<T>(list: readonly T[], item: T, add: boolean): readonly T[] {
 }
 
 /**
- * Loads the state, applies `change` and saves it. Not atomic across
- * processes: a concurrent writer between the load and the save is
- * overwritten (last writer wins), a known limitation.
+ * Loads the state, applies `change` and saves it, all under the data lock
+ * ({@link lockedState}), so a concurrent writer cannot interleave. `change`
+ * runs inside the lock: keep it quick, and do slow work (filesystem lookups
+ * such as `realpath`) before calling this, as {@link excludeProject} does.
  */
-async function updateState(
+function updateState(
   env: CommandEnv,
   change: (state: MentorState) => MentorState,
 ): Promise<MentorState> {
-  const next = change(await loadState(env.dir, env.now));
-  await saveState(env.dir, next);
-  return next;
+  return lockedState(env, async () => {
+    const next = change(await loadState(env.dir, env.now));
+    await saveState(env.dir, next);
+    return next;
+  });
 }
 
 /**
@@ -115,7 +120,7 @@ export async function recordEvidence(
   if (!parsed.ok) throw new CliUsageError();
   const { entries } = await loadMergedCatalog(env);
   requireCatalogEntry(entries, topic);
-  await appendEvidence(env.dir, parsed.value);
+  await lockedState(env, () => appendEvidence(env.dir, parsed.value));
   return { recorded: true };
 }
 
@@ -141,6 +146,9 @@ export async function setMute(
  * `set-topic-mute <on|off> --topic <id>`: adds the topic to or removes it
  * from `mutedTopics`. Muting requires a catalog topic; unmuting accepts any
  * well-formed id, so a topic dropped from the catalog can still be unmuted.
+ * The state update runs under the data lock; the catalog check for muting
+ * reads the catalog before it, so a concurrent `set-topic-override` or
+ * import can change the catalog in between.
  *
  * @throws CliUsageError for a malformed id, or an unknown one when muting.
  *
@@ -184,7 +192,10 @@ export async function setTopicMute(
  * too. On `darwin` and `win32` that comparison is case-insensitive
  * ({@link foldProjectCase}) and `add` keeps the latest spelling; elsewhere
  * it is case-sensitive, including on a Linux case-insensitive mount (a
- * known limit).
+ * known limit). Symlinks of the entries already stored are resolved before
+ * the data lock is taken (from an unlocked read of the state); under the
+ * lock the authoritative state is re-read and only entries added since then
+ * are resolved there.
  *
  * @param options - Optional `platform` (default `process.platform`) and
  *   `realpath` overrides; real callers pass nothing.
@@ -214,8 +225,16 @@ export async function excludeProject(
     forms.has(key(canonicalProject(entry, resolver)));
   const toStore =
     canonical.length > MAX_PROJECT_LENGTH ? normalized : canonical;
+  // Resolve the entries stored now outside the lock (realpath can be slow);
+  // inside, only an entry added concurrently since this read is resolved.
+  const before = await loadState(env.dir, env.now);
+  const known = new Map(
+    before.excludedProjects.map((entry) => [entry, sameProject(entry)]),
+  );
   const next = await updateState(env, (state) => {
-    const kept = state.excludedProjects.filter((entry) => !sameProject(entry));
+    const kept = state.excludedProjects.filter(
+      (entry) => !(known.get(entry) ?? sameProject(entry)),
+    );
     return { ...state, excludedProjects: add ? [...kept, toStore] : kept };
   });
   return { excludedProjects: next.excludedProjects.length };
@@ -252,16 +271,13 @@ export async function setGoals(
   env: CommandEnv,
 ): Promise<{ readonly bytes: number }> {
   const text = requireValue(args, "text");
-  await saveGoals(env.dir, text);
+  await lockedState(env, () => saveGoals(env.dir, text));
   return { bytes: Buffer.byteLength(text, "utf8") };
 }
 
 /**
  * `set-changelog-version --version <v>`: records the last changelog version
  * the learner was shown (1 to 64 ASCII letters, digits, `.`, `+` or `-`).
- *
- * Known limitation: the update is a read-modify-write of the state with no
- * lock, so two concurrent writers race and the last one wins.
  *
  * @throws CliUsageError when `--version` is missing or malformed (checked
  * before the state is read or written).
@@ -329,7 +345,13 @@ export async function importData(
       "import replaces all stored mentor data; pass --replace to confirm",
     );
   }
-  return importBundleFromFile(env.dir, from, { replace: true });
+  // importBundleFromFile takes the lock itself: never wrap it in lockedState.
+  return importBundleFromFile(
+    env.dir,
+    from,
+    { replace: true },
+    { lock: cliLockOptions(env) },
+  );
 }
 
 /**
@@ -354,5 +376,6 @@ export async function purge(
       "purge deletes all stored mentor data; pass --confirm to confirm",
     );
   }
-  return purgeData(env.dir, { confirm: true });
+  // purgeData takes the lock itself: never wrap it in lockedState.
+  return purgeData(env.dir, { confirm: true }, { lock: cliLockOptions(env) });
 }
