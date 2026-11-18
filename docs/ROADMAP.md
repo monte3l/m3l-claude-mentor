@@ -10,16 +10,11 @@ GitHub releases, and the design behind it is in [`spec.md`](spec.md).
 The contract in the [Versioning policy](../README.md#versioning-policy) is
 frozen from 1.0.0 on and changes only in a major release. The 0.x releases
 before that may still change it in a minor release. What is left before 1.0.0
-is the live check below. From then on fixes, docs and CI changes ship as patch
+is the release itself. From then on fixes, docs and CI changes ship as patch
 releases, and a new skill, option or topic ships as a minor release.
 
 ## Next 12 months
 
-- **Verify the open items live.** Three behaviours are covered by tests only and
-  not yet confirmed in a real session: the narrower permission rules in the
-  [README](../README.md#permissions), `PostToolUse` evidence recording in a
-  tool-using session, and the tip dial at 0. Each gets a live check and a note
-  in [`spec.md`](spec.md#15-open-questions).
 - **Run the evals in CI.** It needs a pinned model and a credential, and has no
   date. The tip rate limit and the silence on a mastered topic are not evals,
   because a `claude plugin eval` case cannot seed `CLAUDE_PLUGIN_DATA`, set

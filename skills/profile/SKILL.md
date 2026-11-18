@@ -133,8 +133,8 @@ the day-to-day commands only:
 }
 ```
 
-The narrower set has not been verified in a live session yet; if a command still
-prompts, approving it once is fine. This skill must never edit settings files itself
+The narrower set was checked in a live session on Claude Code 2.1.327; if a command
+still prompts, approving it once is fine. This skill must never edit settings files itself
 and never claims a rule is set; approving the one-off prompts is also fine.
 
 ## Export, import, delete

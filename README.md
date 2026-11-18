@@ -153,8 +153,9 @@ does not allow other commands. It does also cover the plugin's delete and
 import commands, so for those the `profile` skill's own confirmation question
 is then the only guard; remove the rule at any time. To keep native prompts on
 delete, import and export, allow only the day-to-day commands instead (these
-narrower rules are not yet verified in a live session, and an unmatched
-command simply prompts as before):
+narrower rules were checked in a live session on Claude Code 2.1.327, with the
+permission mode set to manual, and an unmatched command simply prompts as
+before):
 
 ```json
 {
@@ -191,7 +192,9 @@ lookup ever asks to fetch some other domain, deny it.
 ## Requirements
 
 - **Claude Code**, a version that supports plugins with `userConfig`. It was
-  developed against 2.1.322. `claude plugin eval` needs 2.1.269 or newer.
+  checked in a live session on 2.1.327. Older versions that support plugins with
+  `userConfig` are expected to work but are untested. `claude plugin eval` needs
+  2.1.269 or newer.
 - **Node 24.3 or newer** on your `PATH`, because the hooks and the CLI run as
   `node src/...ts`. Node removes the types itself, so nothing is built. Node
   24.0 to 24.2 print an experimental-feature warning every time they run
