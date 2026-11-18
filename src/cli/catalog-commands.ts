@@ -16,6 +16,7 @@ import {
 } from "./args.ts";
 import {
   loadMergedCatalog,
+  lockedState,
   requireCatalogEntry,
   type CommandEnv,
 } from "./env.ts";
@@ -153,8 +154,12 @@ function withoutTopic(
  * nothing when the topic has no override. Every argument is validated, and
  * the topic must be in the merged catalog, before anything is written.
  *
- * Known limitation: the update is a read-modify-write with no lock, so two
- * concurrent writers race and the last one wins.
+ * The arguments are validated first; then `catalog.json` is loaded, merged,
+ * changed and saved under the data lock ({@link lockedState}), so a
+ * concurrent writer cannot interleave (the topic check against the merged
+ * catalog runs inside the lock, on the catalog actually changed). So with a
+ * busy lock an unknown topic surfaces as `LOCK_TIMEOUT` (exit 1), not as a
+ * usage error (exit 2).
  *
  * @returns The topic and its stored override (`{}` after `--reset`).
  * @throws CliUsageError for a malformed or unknown topic, a bad value, no
@@ -174,25 +179,28 @@ export async function setTopicOverride(
 ): Promise<{ readonly topic: TopicId; readonly override: CatalogOverride }> {
   const topic = requireTopicId(args);
   const change = requestedChange(args);
-  const { file, entries } = await loadMergedCatalog(env);
-  requireCatalogEntry(entries, topic);
-  const overrides = file.user.overrides;
-  const existing = Object.hasOwn(overrides, topic)
-    ? overrides[topic]
-    : undefined;
-  if (change === null) {
-    if (existing !== undefined) {
-      await saveCatalogFile(env.dir, {
-        ...file,
-        user: { ...file.user, overrides: withoutTopic(overrides, topic) },
-      });
+  const override = await lockedState(env, async () => {
+    const { file, entries } = await loadMergedCatalog(env);
+    requireCatalogEntry(entries, topic);
+    const overrides = file.user.overrides;
+    const existing = Object.hasOwn(overrides, topic)
+      ? overrides[topic]
+      : undefined;
+    if (change === null) {
+      if (existing !== undefined) {
+        await saveCatalogFile(env.dir, {
+          ...file,
+          user: { ...file.user, overrides: withoutTopic(overrides, topic) },
+        });
+      }
+      return {};
     }
-    return { topic, override: {} };
-  }
-  const override: CatalogOverride = { ...existing, ...change };
-  await saveCatalogFile(env.dir, {
-    ...file,
-    user: { ...file.user, overrides: { ...overrides, [topic]: override } },
+    const merged: CatalogOverride = { ...existing, ...change };
+    await saveCatalogFile(env.dir, {
+      ...file,
+      user: { ...file.user, overrides: { ...overrides, [topic]: merged } },
+    });
+    return merged;
   });
   return { topic, override };
 }

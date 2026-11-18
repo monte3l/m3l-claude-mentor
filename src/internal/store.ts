@@ -146,9 +146,9 @@ export async function loadState(
 /**
  * Validates `state` and writes it atomically to `state.json` as
  * pretty-printed JSON, exactly as given (no clamping). Concurrent savers are
- * last-writer-wins; a reader never sees a torn file. Known limitation: there
- * is no locking, so concurrent read-modify-write cycles by different hooks
- * can lose an update without any error.
+ * last-writer-wins; a reader never sees a torn file. This function never
+ * locks: a caller doing a read-modify-write takes `withStateLock`
+ * (`./lock.ts`) around the whole load-compute-save.
  *
  * @param dir - The data directory; created (mode `0o700`) if missing.
  * @param state - The state to persist.
@@ -202,9 +202,9 @@ export async function loadProfile(dir: string, now: number): Promise<Profile> {
 /**
  * Validates `profile` and writes it atomically to `profile.json` as
  * pretty-printed JSON, exactly as given. Concurrent savers are
- * last-writer-wins; a reader never sees a torn file. Known limitation: there
- * is no locking, so concurrent read-modify-write cycles by different hooks
- * can lose an update without any error.
+ * last-writer-wins; a reader never sees a torn file. This function never
+ * locks: a caller doing a read-modify-write takes `withStateLock`
+ * (`./lock.ts`) around the whole load-compute-save.
  *
  * @param dir - The data directory; created (mode `0o700`) if missing.
  * @param profile - The profile to persist.
@@ -269,9 +269,9 @@ function catalogCandidate(file: CatalogFile): unknown {
 /**
  * Validates `file` and writes it atomically to `catalog.json` in its
  * serialized form (`scoring` omitted when empty). Concurrent savers are
- * last-writer-wins; a reader never sees a torn file. Known limitation: there
- * is no locking, so concurrent read-modify-write cycles by different hooks
- * can lose an update without any error.
+ * last-writer-wins; a reader never sees a torn file. This function never
+ * locks: a caller doing a read-modify-write takes `withStateLock`
+ * (`./lock.ts`) around the whole load-compute-save.
  *
  * @param dir - The data directory; created (mode `0o700`) if missing.
  * @param file - The catalog file to persist.
@@ -325,9 +325,9 @@ export async function loadGoals(dir: string): Promise<string> {
 
 /**
  * Writes `text` verbatim and atomically to `goals.md`. Concurrent savers are
- * last-writer-wins; a reader never sees a torn file. Known limitation: there
- * is no locking, so concurrent read-modify-write cycles by different hooks
- * can lose an update without any error.
+ * last-writer-wins; a reader never sees a torn file. This function never
+ * locks: a caller doing a read-modify-write takes `withStateLock`
+ * (`./lock.ts`) around the whole load-compute-save.
  *
  * @param dir - The data directory; created (mode `0o700`) if missing.
  * @param text - The goals; no NUL character and at most

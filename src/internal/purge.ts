@@ -4,10 +4,11 @@
  * files. Re-exported from `./export.ts`.
  */
 
-import { lstat, readdir, unlink } from "node:fs/promises";
+import { lstat, readdir, stat, unlink } from "node:fs/promises";
 import path from "node:path";
 import { MentorStateError } from "./errors.ts";
 import { checkNow, isConfirmed } from "./export-bundle.ts";
+import { LOCK_FILE_NAME, withStateLock, type LockedOptions } from "./lock.ts";
 import {
   DATA_FILES,
   assertValidDataDir,
@@ -183,8 +184,18 @@ async function unlinkEntry(target: string): Promise<UnlinkOutcome> {
   return { kind: "deleted" };
 }
 
-/** Whether `name` is `.<managed-name>.<something>.tmp`, a stale temp file. */
-function isManagedTemp(name: string): boolean {
+/** The prefix of a stale lock moved aside by `withStateLock` (`./lock.ts`). */
+const STALE_LOCK_PREFIX = `${LOCK_FILE_NAME}.stale.`;
+
+/**
+ * Whether `name` is a leftover to sweep: `.<managed-name>.<something>.tmp` (a
+ * stale temp file) or `.state.lock.stale.<something>` (a broken lock that was
+ * not removed). The live `.state.lock` itself never matches.
+ */
+function isLeftover(name: string): boolean {
+  if (name.startsWith(STALE_LOCK_PREFIX)) {
+    return name.length > STALE_LOCK_PREFIX.length;
+  }
   const suffix = ".tmp";
   return Object.values(DATA_FILES).some((managed) => {
     const prefix = `.${managed}.`;
@@ -209,7 +220,14 @@ async function listEntries(dir: string): Promise<readonly string[]> {
 /**
  * Deletes everything the mentor stores (design 13.2): the five managed files
  * by exact name, plus leftover temp files named `.<managed-name>.<anything>.tmp`
- * in `dir`. Each is removed with `unlink`, which never recurses and removes a
+ * and broken locks named `.state.lock.stale.<anything>` in `dir`. When `dir`
+ * exists the deletion runs under the data lock (`withStateLock` in
+ * `./lock.ts`), whose release removes `.state.lock` last, so purge leaves no
+ * lock file; a missing `dir` is not created (nothing is locked, and every
+ * file is `alreadyMissing`), and a `dir` that is a regular file is not
+ * locked either. Purging a missing directory without the lock can race a
+ * writer's first-ever write into it: that is the cost of a missing
+ * directory staying missing. Each is removed with `unlink`, which never recurses and removes a
  * symlink itself, not its target. Nothing else is touched: not the
  * directory, not a subdirectory, not any other file. Every entry is
  * attempted before a failure is reported, so one bad file does not leave
@@ -217,10 +235,17 @@ async function listEntries(dir: string): Promise<readonly string[]> {
  *
  * @param dir - The data directory.
  * @param options - `confirm` must be exactly `true` (an own property).
+ * @param lockOptions - Optional lock tuning; real callers pass nothing or a
+ * CLI timeout.
  * @returns Which managed files were deleted and which were already missing.
  * @throws MentorStateError `DATA_DIR_INVALID` (checked first) when `dir`
  * fails `assertValidDataDir`, and `CONFIRMATION_REQUIRED` unless `confirm` is
- * exactly `true` (neither deletes anything); one collected `WRITE_FAILED`
+ * exactly `true` (checked before the lock; neither deletes anything);
+ * `WRITE_FAILED` "could not inspect the data directory" (the `stat` error as
+ * `cause`, nothing deleted, no lock taken) when `dir` cannot be inspected for
+ * any reason other than not existing;
+ * `LOCK_TIMEOUT` when the data lock stays held, or the lock's `WRITE_FAILED`
+ * when it cannot be created (nothing deleted); one collected `WRITE_FAILED`
  * naming, as JSON-quoted base names, the entries that could not be deleted
  * (or "leftover temp files" when `dir` cannot be listed), thrown after every
  * other entry was attempted, with the fs errors as an `AggregateError`
@@ -235,6 +260,7 @@ async function listEntries(dir: string): Promise<readonly string[]> {
 export async function purgeData(
   dir: string,
   options: { readonly confirm: true },
+  lockOptions: LockedOptions = {},
 ): Promise<PurgeResult> {
   assertValidDataDir(dir);
   if (!isConfirmed(options, "confirm")) {
@@ -243,6 +269,35 @@ export async function purgeData(
       "purge deletes all stored mentor data; pass { confirm: true } to confirm",
     );
   }
+  if (!(await isDirectory(dir))) return purgeEntries(dir);
+  return withStateLock(dir, () => purgeEntries(dir), lockOptions.lock);
+}
+
+/**
+ * Whether `dir` is an existing directory (following a symlink). Missing
+ * (`ENOENT`, `ENOTDIR`) or a regular file is `false`: there is no data
+ * directory to protect, and the lock would create one.
+ *
+ * @throws MentorStateError `WRITE_FAILED` (fixed message, the `stat` error as
+ * `cause`) for any other `stat` failure: purge cannot tell whether there is
+ * data to protect, so it deletes nothing.
+ */
+async function isDirectory(dir: string): Promise<boolean> {
+  try {
+    return (await stat(dir)).isDirectory();
+  } catch (cause) {
+    const code = errorCode(cause);
+    if (code === "ENOENT" || code === "ENOTDIR") return false;
+    throw new MentorStateError(
+      "WRITE_FAILED",
+      "could not inspect the data directory",
+      { cause },
+    );
+  }
+}
+
+/** The purge itself; see {@link purgeData}. */
+async function purgeEntries(dir: string): Promise<PurgeResult> {
   const deleted: DataFile[] = [];
   const alreadyMissing: DataFile[] = [];
   const failed: string[] = [];
@@ -273,7 +328,7 @@ export async function purgeData(
   } catch (cause) {
     recordFailure("leftover temp files", cause);
   }
-  for (const name of names.filter(isManagedTemp)) {
+  for (const name of names.filter(isLeftover)) {
     const outcome = await unlinkEntry(path.join(dir, name));
     if (outcome.kind === "failed") {
       recordFailure(JSON.stringify(name), outcome.cause);

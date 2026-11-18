@@ -17,6 +17,7 @@ import {
 } from "./args.ts";
 import {
   loadMergedCatalog,
+  lockedState,
   requireCatalogEntry,
   type CommandEnv,
 } from "./env.ts";
@@ -121,8 +122,13 @@ export interface BatchView {
  * changes only with `--claim`); and the profile is saved once with all of
  * it.
  *
- * Known limitation: the profile update is a read-modify-write with no lock,
- * so two concurrent writers race and the last one wins.
+ * Validation and the catalog load happen before the data lock is taken, so
+ * a usage error never waits on it. From reading the profile to saving it,
+ * the appends included, the command holds the lock ({@link lockedState}), so
+ * a concurrent writer cannot interleave; `LOCK_TIMEOUT` means nothing was
+ * written. Because the catalog is read before the lock, a concurrent
+ * `set-topic-override` or import can change it in between; the next
+ * `recompute` repairs any effect on the level.
  *
  * @throws CliUsageError for a malformed or unknown topic, an events list
  * that is empty, longer than 10 or holds a bad token, or a bad `--pass` or
@@ -153,21 +159,17 @@ export async function recordBatch(
   const { file, entries } = await loadMergedCatalog(env);
   const entry = requireCatalogEntry(entries, topic);
 
-  const stored = await loadProfile(env.dir, env.now);
-
-  await appendAll(env, events);
-  const passed =
-    pass === undefined
-      ? stored
-      : applyPass(stored, topic, pass, env.now).profile;
-  const { profile, view, passes } = await recomputeTopic(
-    env,
-    file,
-    entry,
-    passed,
-    claimedLevel,
-  );
-  await saveProfile(env.dir, profile);
+  const { view, passes } = await lockedState(env, async () => {
+    const stored = await loadProfile(env.dir, env.now);
+    await appendAll(env, events);
+    const passed =
+      pass === undefined
+        ? stored
+        : applyPass(stored, topic, pass, env.now).profile;
+    const result = await recomputeTopic(env, file, entry, passed, claimedLevel);
+    await saveProfile(env.dir, result.profile);
+    return result;
+  });
   return {
     topic: view.topic,
     recorded: events.length,

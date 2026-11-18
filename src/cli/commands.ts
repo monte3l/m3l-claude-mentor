@@ -1,4 +1,5 @@
 import { MentorStateError } from "../internal/errors.ts";
+import type { LockOptions } from "../internal/lock.ts";
 import { parseSessionId, type CatalogEntry } from "../internal/schema.ts";
 import { CliUsageError, parseArgs, type CommandSpec } from "./args.ts";
 import { recordBatch } from "./batch-commands.ts";
@@ -125,6 +126,11 @@ export interface CliContext {
    * unknown topic: callers must pass it.
    */
   readonly bundled?: readonly CatalogEntry[];
+  /**
+   * Lock tuning over the CLI defaults, a test seam; real callers leave it
+   * out (see `lockedState` in `./env.ts`).
+   */
+  readonly lock?: LockOptions;
 }
 
 /**
@@ -157,6 +163,7 @@ function checkContext(ctx: CliContext): CommandEnv {
     now,
     session: session.value,
     bundled: ctx.bundled ?? [],
+    ...(ctx.lock !== undefined ? { lock: ctx.lock } : {}),
   };
 }
 
@@ -240,9 +247,10 @@ function mapError(error: unknown, usage: string): CliResult {
  * written to `stderr` by this module; a deeper layer's message is forwarded
  * as is (those messages are fixed text). Any other error is rethrown.
  *
- * Known limitation: commands that update state or the profile do a
- * read-modify-write with no lock, so two concurrent invocations race and the
- * last writer wins.
+ * Every command that changes stored data does its whole read-modify-write
+ * under the data lock (`../internal/lock.ts`), so concurrent invocations
+ * serialize; one that cannot get the lock in time fails with
+ * `LOCK_TIMEOUT` (exit 1) and changes nothing. Read-only commands never lock.
  *
  * @param argv - The command name followed by its arguments.
  * @param ctx - The data directory, clock, session and bundled catalog.

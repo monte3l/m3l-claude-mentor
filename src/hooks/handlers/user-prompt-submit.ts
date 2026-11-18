@@ -4,6 +4,7 @@
  * and a teach-next offer to the model's context.
  */
 import { matchTopics } from "../../internal/catalog.ts";
+import { isLockTimeout, withStateLock } from "../../internal/lock.ts";
 import {
   detectPromptSignals,
   type PromptSignal,
@@ -19,11 +20,17 @@ import {
   advanceSegment,
   decideTip,
   recordTip,
+  type TipDecision,
 } from "../../internal/segment.ts";
 import type { MentorState } from "../../internal/state-schema.ts";
 import { loadProfile, loadState, saveState } from "../../internal/store.ts";
 import { payloadField, payloadSession, topicTitle } from "../common.ts";
-import type { HookHandler } from "../runtime.ts";
+import {
+  describeError,
+  type HookDeps,
+  type HookHandler,
+  type HookOutput,
+} from "../runtime.ts";
 
 /** The most topics a learner may mute individually. */
 const MAX_MUTED_TOPICS = 500;
@@ -104,47 +111,35 @@ function teachOffer(catalog: readonly CatalogEntry[], id: TopicId): string {
   return `The learner asked to learn "${topicTitle(catalog, id)}" next: offer /m3l-claude-mentor:teach ${id} after answering.`;
 }
 
+/** What the locked phase decided and persisted. */
+interface Locked {
+  readonly decision: TipDecision;
+  readonly state: MentorState;
+  readonly notices: readonly string[];
+}
+
+/** The unlocked phase's view of the prompt. */
+interface PromptView {
+  readonly signals: readonly PromptSignal[];
+  readonly entry: CatalogEntry | undefined;
+  readonly level: Level;
+}
+
 /**
- * Handles `UserPromptSubmit`. A no-op (resolving `null`, touching nothing)
- * when the `session_id` is invalid or `prompt` is not a string. Otherwise:
- * applies "stop tips" / "resume tips" / "stop tips about <topic>" (the
- * topic mute list stops at 500) with a user-visible `systemMessage`; advances
- * the segment with the matched topic; asks {@link decideTip} whether a tip
- * is due and records it; saves the state only when it changed. The
- * `additionalContext` joins, in order, a style hint (when a topic matched or
- * the learner said "just tell me"), the tip directive, and a teach-next
- * offer. Resolves `null` when there is nothing to say, and when tips are
- * muted and no notice applies.
- *
- * @example
- * ```ts
- * import { runHook } from "./process-shell.ts";
- * import { userPromptSubmitHandler } from "./handlers/user-prompt-submit.ts";
- * await runHook("UserPromptSubmit", userPromptSubmitHandler);
- * ```
+ * The locked phase: re-reads the state (the locked read is authoritative),
+ * applies the prompt signals, advances the segment, decides and records a tip,
+ * and saves the state only when it changed.
  */
-export const userPromptSubmitHandler: HookHandler = async (payload, deps) => {
-  const session = payloadSession(payload);
-  const prompt = payloadField(payload, "prompt");
-  if (session === null || typeof prompt !== "string") return null;
+async function decideLocked(deps: HookDeps, view: PromptView): Promise<Locked> {
   const { dir, now, catalog } = deps;
-
+  const { entry, level } = view;
   const loaded = await loadState(dir, now);
-  const profile = await loadProfile(dir, now);
-  const signals = detectPromptSignals(prompt, catalog);
-  const { state, notices } = applySignals(loaded, signals, catalog);
-
-  const entry = matchTopics(catalog, prompt, 1)[0];
+  const { state, notices } = applySignals(loaded, view.signals, catalog);
   const advanced = advanceSegment(state.segment, {
     kind: "activity",
     at: now,
     ...(entry !== undefined ? { topic: entry.id } : {}),
   }).state;
-  const topicProfile =
-    entry !== undefined && Object.hasOwn(profile.topics, entry.id)
-      ? profile.topics[entry.id]
-      : undefined;
-  const level: Level = topicProfile?.level ?? "Unseen";
   const decision = decideTip({
     state: advanced,
     now,
@@ -161,13 +156,91 @@ export const userPromptSubmitHandler: HookHandler = async (payload, deps) => {
     topicMuted: entry !== undefined && state.mutedTopics.includes(entry.id),
   });
   const segment = decision.emit ? recordTip(advanced, now) : advanced;
-
   const next: MentorState = { ...state, segment };
   if (JSON.stringify(next) !== JSON.stringify(loaded)) {
     await saveState(dir, next);
   }
+  return { decision, state, notices };
+}
 
-  if (state.muted && notices.length === 0) return null;
+/** The locked phase's result, or (`locked: null`) a note when the lock timed out. */
+type LockedOrNote =
+  | { readonly locked: Locked; readonly note?: undefined }
+  | { readonly locked: null; readonly note: string };
+
+async function lockedOrNote(
+  deps: HookDeps,
+  view: PromptView,
+): Promise<LockedOrNote> {
+  try {
+    const locked = await withStateLock(
+      deps.dir,
+      () => decideLocked(deps, view),
+      deps.lockOptions,
+    );
+    return { locked };
+  } catch (error) {
+    if (!isLockTimeout(error)) throw error;
+    return { locked: null, note: describeError(error) };
+  }
+}
+
+/**
+ * Handles `UserPromptSubmit`. A no-op (resolving `null`, touching nothing)
+ * when the `session_id` is invalid or `prompt` is not a string. Otherwise it
+ * runs in two phases. Unlocked: detect the prompt signals, match the topic
+ * and load the profile (read only). Locked (`withStateLock`, the locked
+ * state read is authoritative): apply "stop tips" / "resume tips" / "stop
+ * tips about <topic>" (the topic mute list stops at 500) with a
+ * user-visible `systemMessage`; advance the segment with the matched topic;
+ * ask {@link decideTip} whether a tip is due and record it; save the state
+ * only when it changed. So parallel prompts in one segment emit at most one
+ * tip. The `additionalContext` joins, in order, a style hint (when a topic
+ * matched or the learner said "just tell me"), the tip directive, and a
+ * teach-next offer. Resolves `null` when there is nothing to say, and when
+ * tips are muted and no notice applies.
+ *
+ * On a lock timeout it fails closed: no tip directive and no mute/resume
+ * notice (neither could be persisted, and an unpersisted tip could allow a
+ * second one in the segment), but the style hint and teach offer, which do
+ * not depend on the state, are still returned, with a `note` (one
+ * `LOCK_TIMEOUT` stderr line); nothing is written. One unlocked read-only
+ * look at the state keeps a muted learner muted: then only the `note` is
+ * returned (stdout stays empty), and a failure of that read propagates. Any
+ * error other than the lock timeout propagates.
+ *
+ * @example
+ * ```ts
+ * import { runHook } from "./process-shell.ts";
+ * import { userPromptSubmitHandler } from "./handlers/user-prompt-submit.ts";
+ * await runHook("UserPromptSubmit", userPromptSubmitHandler);
+ * ```
+ */
+export const userPromptSubmitHandler: HookHandler = async (payload, deps) => {
+  const session = payloadSession(payload);
+  const prompt = payloadField(payload, "prompt");
+  if (session === null || typeof prompt !== "string") return null;
+  const { dir, now, catalog } = deps;
+
+  const profile = await loadProfile(dir, now);
+  const signals = detectPromptSignals(prompt, catalog);
+  const entry = matchTopics(catalog, prompt, 1)[0];
+  const topicProfile =
+    entry !== undefined && Object.hasOwn(profile.topics, entry.id)
+      ? profile.topics[entry.id]
+      : undefined;
+  const level: Level = topicProfile?.level ?? "Unseen";
+
+  const { locked, note } = await lockedOrNote(deps, { signals, entry, level });
+  if (locked === null) {
+    // Fail closed, but a learner who muted tips stays muted: one unlocked,
+    // read-only look at the state (its read errors propagate).
+    if ((await loadState(dir, now)).muted) return { note };
+  } else if (locked.state.muted && locked.notices.length === 0) {
+    return null;
+  }
+  const notices = locked?.notices ?? [];
+  const tip = locked?.decision.emit === true && entry !== undefined;
 
   const justTellMe = signals.some((s) => s.kind === "just-tell-me");
   const teach = signals.find((s) => s.kind === "teach-next");
@@ -175,15 +248,19 @@ export const userPromptSubmitHandler: HookHandler = async (payload, deps) => {
     ...(entry !== undefined || justTellMe
       ? [`Mentor style hint: ${styleFor(justTellMe, entry, level)}.`]
       : []),
-    ...(decision.emit && entry !== undefined ? [tipDirective(entry)] : []),
+    ...(tip ? [tipDirective(entry)] : []),
     ...(teach !== undefined ? [teachOffer(catalog, teach.topic)] : []),
   ];
-  if (parts.length === 0 && notices.length === 0) return null;
-  return {
+  if (parts.length === 0 && notices.length === 0) {
+    return note === undefined ? null : { note };
+  }
+  const output: HookOutput = {
     ...(notices.length > 0 ? { systemMessage: notices.join(" ") } : {}),
     hookSpecificOutput: {
       hookEventName: "UserPromptSubmit",
       ...(parts.length > 0 ? { additionalContext: parts.join("\n") } : {}),
     },
+    ...(note === undefined ? {} : { note }),
   };
+  return output;
 };

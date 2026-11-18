@@ -21,7 +21,8 @@ export type MentorErrorCode =
   | "WRITE_FAILED"
   | "TOO_LARGE"
   | "IMPORT_INVALID"
-  | "CONFIRMATION_REQUIRED";
+  | "CONFIRMATION_REQUIRED"
+  | "LOCK_TIMEOUT";
 
 /**
  * An error from the mentor's state layer, discriminated by {@link

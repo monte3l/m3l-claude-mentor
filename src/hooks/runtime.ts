@@ -8,6 +8,7 @@ import path from "node:path";
 import { loadBundledCatalog } from "../internal/bundled-catalog.ts";
 import { mergeCatalog } from "../internal/catalog.ts";
 import { isMentorStateError, MentorStateError } from "../internal/errors.ts";
+import type { LockOptions } from "../internal/lock.ts";
 import { resolveDataDir } from "../internal/paths.ts";
 import type { CatalogEntry } from "../internal/schema.ts";
 import { loadCatalogFile } from "../internal/store.ts";
@@ -32,8 +33,12 @@ export interface HookRunInput {
 }
 
 /**
- * The JSON a hook prints on stdout. `systemMessage` is shown to the user;
- * `additionalContext` reaches only the model.
+ * What a handler returns. `systemMessage` is shown to the user and
+ * `additionalContext` reaches only the model; both go to stdout as JSON.
+ * `note` never reaches stdout: it is written as one stderr line (see
+ * {@link hookNote}), so a handler that degraded (for example on a lock
+ * timeout) can still return its normal output and say why. With only a
+ * `note` set, stdout stays empty.
  *
  * @example
  * ```ts
@@ -53,6 +58,8 @@ export interface HookOutput {
     /** Text added to the model's context. */
     readonly additionalContext?: string;
   };
+  /** A one-line diagnostic for stderr; fixed text, never payload content. */
+  readonly note?: string;
 }
 
 /**
@@ -81,6 +88,14 @@ export interface HookDeps {
   readonly catalog: readonly CatalogEntry[];
   /** The payload's `cwd` when it is an absolute path, else `null`. */
   readonly cwd: string | null;
+  /**
+   * Lock tuning for the handler's `withStateLock` calls, a test seam; hooks
+   * otherwise use the lock defaults (a 2 s timeout, `LOCK_TIMEOUT_MS`).
+   * Which handlers lock, around what, and how each reacts to a lock
+   * timeout (propagate, or degrade to its output plus a `note`) is
+   * documented on each handler in `./handlers/`.
+   */
+  readonly lockOptions?: LockOptions;
 }
 
 /**
@@ -199,8 +214,18 @@ export function hookNote(name: string, text: string): string {
  * Describes a thrown value without echoing input: a MentorStateError gives
  * its code and fixed-text message; any other Error only its name (its
  * message may embed payload text); a non-Error a fixed label. Never throws.
+ * A handler that degrades on an error uses this text as its `note`.
+ *
+ * @param error - Any thrown value.
+ * @returns One line of fixed text.
+ *
+ * @example
+ * ```ts
+ * import { describeError } from "./runtime.ts";
+ * describeError(new TypeError("payload text")); // "TypeError: TypeError"
+ * ```
  */
-function describeError(error: unknown): string {
+export function describeError(error: unknown): string {
   try {
     if (isMentorStateError(error)) return `${error.code}: ${error.message}`;
     if (error instanceof Error) {
@@ -234,8 +259,8 @@ function cap(text: string): string {
 }
 
 /**
- * Projects the allowlisted output fields, capping the free-text ones and
- * forcing `hookEventName` to the running hook's `name`.
+ * Projects the allowlisted output fields (never `note`), capping the
+ * free-text ones and forcing `hookEventName` to the running hook's `name`.
  */
 function render(name: string, output: HookOutput): string {
   const specific = output.hookSpecificOutput;
@@ -316,7 +341,16 @@ async function runSteps(
     cwd: absoluteCwd(payload),
   };
   const output = await handler(payload, deps);
-  return { stdout: output === null ? "" : render(name, output), stderr: "" };
+  if (output === null) return { stdout: "", stderr: "" };
+  const note = output.note;
+  if (note === undefined) return { stdout: render(name, output), stderr: "" };
+  const noteOnly =
+    output.systemMessage === undefined &&
+    output.hookSpecificOutput === undefined;
+  return {
+    stdout: noteOnly ? "" : render(name, output),
+    stderr: hookNote(name, note),
+  };
 }
 
 /**
@@ -328,7 +362,9 @@ async function runSteps(
  * `null` result prints nothing; otherwise stdout is one JSON document with
  * `systemMessage` and `additionalContext` capped at
  * {@link MAX_CONTEXT_CHARS} (ending in "…" when cut) and
- * `hookSpecificOutput.hookEventName` forced to `name`. Never throws: any
+ * `hookSpecificOutput.hookEventName` forced to `name`; a `note` is written
+ * as one stderr line instead (and with nothing else set, stdout stays
+ * empty). Never throws: any
  * failure yields empty stdout and one stderr line
  * `m3l-claude-mentor: <name>: <CODE or ErrorName>: <detail>`, where the
  * detail is a MentorStateError's message or else the error name, so payload
