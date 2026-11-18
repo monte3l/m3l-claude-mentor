@@ -2,7 +2,6 @@
  * The PostToolUse hook: records observed usage of Claude Code features as
  * evidence. It never prints anything.
  */
-import path from "node:path";
 import {
   extractUsageSignals,
   signalToEvidence,
@@ -13,33 +12,12 @@ import {
   loadState,
   readEvidence,
 } from "../../internal/store.ts";
+import { isProjectExcluded } from "../../internal/project-exclusion.ts";
 import { payloadSession } from "../common.ts";
 import type { HookHandler } from "../runtime.ts";
 
 /** How many recent evidence events the per-session rate limit inspects. */
 const RATE_LIMIT_WINDOW = 500;
-
-/** `path.normalize` without a trailing separator (except for the root). */
-function normalizeDir(dir: string): string {
-  const normalized = path.normalize(dir);
-  return normalized.length > 1 && normalized.endsWith(path.sep)
-    ? normalized.slice(0, -path.sep.length)
-    : normalized;
-}
-
-/**
- * Whether `cwd` is `excluded` or lies beneath it, compared lexically on
- * normalised paths with a separator boundary (`/a/b` covers `/a/b/c` but
- * not `/a/bc`). Symlinks are not resolved, so an excluded project should be
- * stored by its real path.
- */
-function isWithin(excluded: string, cwd: string): boolean {
-  const base = normalizeDir(excluded);
-  const target = normalizeDir(cwd);
-  if (target === base) return true;
-  const prefix = base.endsWith(path.sep) ? base : base + path.sep;
-  return target.startsWith(prefix);
-}
 
 /**
  * Handles `PostToolUse`. A no-op (resolving `null` without touching disk)
@@ -47,7 +25,8 @@ function isWithin(excluded: string, cwd: string): boolean {
  * yields no usage signal for an enabled catalog topic. Otherwise it loads the
  * state and fails closed on project exclusion: when any project is excluded
  * and the payload `cwd` is unknown (`null`) or lies inside an excluded
- * project (lexical path match, symlinks not resolved), it records nothing.
+ * project (matched lexically and through resolved symlinks, see
+ * {@link isProjectExcluded}), it records nothing.
  * Else it appends one positive `observed` event per remaining signal,
  * skipping a topic that already has an `observed` event from the same
  * session among the last 500 events. That per-session rate limit is best
@@ -77,8 +56,7 @@ export const postToolUseHandler: HookHandler = async (payload, deps) => {
   const cwd = deps.cwd;
   if (
     excludedProjects.length > 0 &&
-    (cwd === null ||
-      excludedProjects.some((excluded) => isWithin(excluded, cwd)))
+    (cwd === null || isProjectExcluded(excludedProjects, cwd))
   ) {
     return null;
   }

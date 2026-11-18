@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, mkdirSync, realpathSync, symlinkSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { postToolUseHandler } from "../../../src/hooks/handlers/post-tool-use.ts";
@@ -142,6 +142,32 @@ describe("postToolUseHandler gating", () => {
       expect(existsSync(join(sb.dir, "evidence.jsonl"))).toBe(false);
     },
   );
+
+  test("records nothing when cwd reaches an excluded project through a symlink", async () => {
+    const real = realpathSync(sb.root);
+    const project = join(real, "proj");
+    const link = join(real, "link");
+    mkdirSync(join(project, "sub"), { recursive: true });
+    symlinkSync(project, link);
+    await seedState(sb.dir, { excludedProjects: [project] });
+    for (const cwd of [link, join(link, "sub")]) {
+      expect(
+        await postToolUseHandler(payload(SKILL), makeDeps(sb.dir, { cwd })),
+      ).toBeNull();
+    }
+    expect(existsSync(join(sb.dir, "evidence.jsonl"))).toBe(false);
+  });
+
+  test("an unrelated real cwd still records beside an excluded project", async () => {
+    const real = realpathSync(sb.root);
+    const project = join(real, "proj");
+    const other = join(real, "other");
+    mkdirSync(project, { recursive: true });
+    mkdirSync(other, { recursive: true });
+    await seedState(sb.dir, { excludedProjects: [project] });
+    await postToolUseHandler(payload(SKILL), makeDeps(sb.dir, { cwd: other }));
+    expect(await events()).toHaveLength(1);
+  });
 
   test("a sibling sharing a name prefix is not excluded", async () => {
     await seedState(sb.dir, { excludedProjects: ["/a/b"] });
