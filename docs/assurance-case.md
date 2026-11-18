@@ -91,8 +91,8 @@ The architecture is in [Architecture](architecture.md).
 | CWE-200 information exposure                 | Only feature names from a fixed allowlist are stored. The extractor never reads tool output and returns no part of the payload | `src/internal/signals.ts`, its tests           |
 | CWE-20 improper input validation             | Hook payloads, state files and import bundles are validated, and the CLI rejects relative paths and bad values                 | `src/internal/schema.ts`, `src/cli/`, tests    |
 | CWE-78 and CWE-94 command and code injection | No shell and no `eval` in the hooks or CLI. Learner text is single-quoted in skill commands. Workflows use `env:`              | Skill tests, zizmor, CodeQL                    |
-| CWE-22 path traversal                        | The data directory must be absolute, and project exclusion compares normalised absolute paths                                  | `src/cli/`, `src/internal/paths.ts`, tests     |
-| CWE-367 time-of-check to time-of-use         | Reads do not stat first, and writes are atomic (temporary file, then rename)                                                   | `src/internal/fs-atomic.ts`, CodeQL            |
+| CWE-22 path traversal                        | The data directory must be absolute, and project exclusion matches normalised absolute paths and their real paths              | `src/cli/`, `src/internal/paths.ts`, tests     |
+| CWE-367 time-of-check to time-of-use         | Reads do not stat first, writes are atomic (temporary file, then rename), and every write takes a short data-directory lock    | `src/internal/fs-atomic.ts`, `lock.ts`, CodeQL |
 | CWE-77 prompt injection through fetched text | Fetched pages and agent answers are data, never instructions, and the skills say so                                            | `agents/docs-researcher.md`, the skills' tests |
 | CWE-798 hard-coded credentials               | Secret scanning, push protection and Gitleaks on every push                                                                    | `.github/workflows/gitleaks.yml`               |
 | CWE-1357 untrusted components                | Actions are pinned by commit SHA, the CI tools by lockfile hash, and Dependabot proposes bumps after a cooldown                | `.github/dependabot.yml`, Scorecard            |
@@ -100,14 +100,39 @@ The architecture is in [Architecture](architecture.md).
 
 ## Residual risks
 
-- **No locking.** Two hooks or a hook and the CLI writing at once are
-  last-writer-wins, so a signal can be lost. The state is advisory, and nothing
-  depends on it for safety.
+- **The state lock is best effort at its edges.** Every write to the state files
+  takes one short lock on the data directory (`.state.lock`, in `src/internal/lock.ts`),
+  so two hooks, or a hook and the CLI, no longer lose each other's updates. A
+  holder that runs past the 5 s stale window loses exclusion, and two processes
+  breaking the same stale lock can briefly overlap. Both fall back to the old
+  last-writer-wins behaviour, never to something worse. Network filesystems with
+  large clock skew make the stale check approximate. `export` does not take the
+  lock, so an export racing a writer can mix generations of different files. The
+  state is advisory, and nothing depends on it for safety.
+- **A hook that cannot get the lock skips its write.** After 2 s it gives up with
+  one stderr line and exit 0, so it never blocks the learner. A skipped
+  `PostToolUse` write is one missed usage signal. A skipped `UserPromptSubmit`
+  write drops the tip rather than risk a second tip in one segment, and says
+  nothing at all to a learner who has muted tips.
+- **The evidence log is unbounded.** It grows by about 5 MiB a year of heavy use
+  and nothing rotates it. Reads see only the last 2 MiB, so scoring and export
+  ignore older history. Disk use is negligible.
+- **A broken install or an unwritable data directory is invisible to the
+  learner.** A hook then prints one stderr line per event and exits 0. Claude
+  Code shows that only in verbose output, and nothing else tells the learner.
 - **Heuristics.** Topic matching and prompt-signal detection are keyword based,
   so a tip can be off-topic or a signal missed. Neither can write more than a
   feature name.
-- **Lexical project exclusion.** Excluding a project compares paths as text and
-  does not follow symlinks or fold case.
+- **Project exclusion has edges.** Excluding a project matches the lexical path,
+  the real path (symlinks are followed) or a mix, case-insensitively on macOS and
+  Windows, and a deleted or unreadable working directory is resolved through its
+  nearest existing parent. It stays case-sensitive on Linux mounts that are
+  case-insensitive, and it does not fold Unicode normalisation forms. Resolving a
+  path on a hung network mount can block until the hook times out, which fails
+  safe because nothing is recorded.
+- **A known notice bug.** `UserPromptSubmit` can say "Mentor tips muted for X"
+  when the 500-topic cap stopped the mute from being saved. It predates the lock
+  and is not fixed yet.
 - **A plugin cannot ship permission rules.** The learner chooses the allow rules
   in the README, and the broad one also covers the delete and import commands.
 - **The accepted CI install script.** See [`SECURITY.md`](../SECURITY.md).

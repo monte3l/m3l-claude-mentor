@@ -73,7 +73,9 @@ quiet gap since the last tip. The full design is in [`docs/spec.md`](docs/spec.m
 State lives in the plugin data directory, outside your projects. Only
 feature-usage signals are stored, such as "created a skill", never conversation
 content. The hooks never block your work: if one fails, it exits with a single
-stderr line.
+stderr line. Writes go through a short lock on the data directory, so two
+sessions at once do not overwrite each other; a hook that cannot get the lock
+within 2 seconds skips that write instead of waiting.
 
 The `docs-researcher` agent uses Claude Code's web fetch tool on
 `code.claude.com` only, and `mastery-assessor` can only read files you name.

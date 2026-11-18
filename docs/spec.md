@@ -161,6 +161,8 @@ Notes:
 - Skills are namespaced by plugin: `/m3l-claude-mentor:teach`, not `/mentor teach`. State access from skills goes through a small CLI (`src/cli/mentor-state.ts`), so Markdown never hand-edits JSON.
 - Plugin agents ignore `hooks`, `mcpServers` and `permissionMode` frontmatter; hooks ship at plugin level.
 - The CLI commands are `show`, `get-profile`, `record-evidence`, `record-batch`, `recompute`, `introduce`, `record-pass`, `set-mute`, `set-topic-mute`, `exclude-project`, `get-goals`, `set-goals`, `topics`, `set-topic-override`, `set-changelog-version`, `export`, `import` and `purge`. A leading `--data-dir <absolute path>` beats the environment. `record-batch` takes 1 to 10 events, validates before the first write and saves once, so a lesson or quiz needs one save per answered group.
+- Every write to the state files takes one lock on the data directory, `.state.lock` (`src/internal/lock.ts`), created exclusively with a random token. A lock older than 5 s, judged by its modification time alone, is broken by exactly one waiter, and release removes the lock only if it is still ours. Hooks wait at most 2 s, well under their 10 s limit, and the CLI waits 6 s, longer than the stale window, so it always eventually succeeds. A lock that stays held ends in `LOCK_TIMEOUT` with fixed text, and an unwritable data directory fails at once with `WRITE_FAILED` instead of waiting. The store functions never lock; the callers do, around a whole load-compute-save. `import` stages all five files before taking the lock and holds it only for the renames, `purge` locks only an existing directory, and `export` and the read-only commands take no lock.
+- On a lock timeout `Stop`, `PostCompact` and `PostToolUse` skip the write with the usual single stderr line and exit 0. `SessionStart` computes the refreshed profile without the lock, takes it only when a level would be raised, and on a timeout injects its context from the stored profile. `UserPromptSubmit` fails closed: no tip, no mute or resume notice (nothing was saved), and nothing at all for a learner who has muted tips, though a learner who has not still gets the style hint and teach offer. A hook that degrades this way reports it through the optional `note` of its output, one stderr line that never reaches the JSON.
 - A skill's `allowed-tools` pre-approval lasts only for the turn the learner invokes it, and a plugin cannot ship permission rules. The README therefore documents a one-time user rule for the CLI and a narrower, still unverified, rule set. The `docs-researcher` agent prompts per domain for `WebFetch`, which the README also covers.
 - Skills dispatch the agents by the scoped name `m3l-claude-mentor:<agent>`, with a self-contained prompt because a subagent sees no conversation. The `assess` skill rebuilds the `record-batch` tokens itself from the verdicts and never takes a token string from the agent. Both dispatches were confirmed live by the evals.
 - Hook event names and payload fields must be re-verified against current docs at build time.
@@ -244,7 +246,7 @@ Confirmed by the user:
 3. **Weights and fluency:** 0.40/0.30/0.20/0.10 and "all required dimensions, 3+ sessions" are the shipped defaults, configurable in the catalog.
 4. **Segment:** task-based with a time floor. A segment ends at task completion or topic change, and at least about 15 minutes must have passed since the last tip.
 
-Defaults chosen by the designer (not asked; change freely): 5. **Name, license, publishing:** name TBD at project start; license follows the owner's stated stance (open source acceptable with authors and org credited); publishing deferred until the harness has been used privately. 6. **`mastery-assessor` memory:** none. It reads only the state files, so all learner state stays in one inspectable place. 7. **Output style:** opt-in, not forced for the plugin. Hooks and skills carry ambient behavior regardless, and the style is recommended during setup.
+Defaults chosen by the designer (not asked; change freely): 5. **Name, license, publishing:** the name is `m3l-claude-mentor`, the license is MIT, and the plugin is published through the `monte3l/m3l-plugins` catalog (not npm). 6. **`mastery-assessor` memory:** none. It reads only files the learner names, and the calling skill passes it the data it needs, so all learner state stays in the state files. 7. **Output style:** opt-in, not forced for the plugin. Hooks and skills carry ambient behavior regardless, and the style is recommended during setup.
 
 ## 14. Decisions from the design audit (2026-11-05)
 
@@ -259,10 +261,27 @@ Confirmed by the user after checking this spec against current official docs:
 14. **Topic matching:** no generic single-word keywords, slash keywords match only at a word start, and model keywords are Claude-specific.
 15. **Confirming a level:** three good events are needed in practice (see section 4.3).
 
+## 14a. Decisions for the 1.0.0 hardening (2026-11-18)
+
+Confirmed by the owner:
+
+16. **Plugin name:** it stays `m3l-claude-mentor`. `claude plugin validate` warns that the name reads as Anthropic's own because "claude" is a whole word in it. The warning is accepted: the name is part of the contract (every skill is invoked as `/m3l-claude-mentor:<name>`), the data directory, the catalog entry and the docs URL, so a rename is a migration, not a polish.
+17. **Stale locks recover by age only:** a lock older than 5 s is broken. There is no process-liveness check, because it can wrongly break a live lock when containers or WSL share a volume with different process namespaces. A crashed holder costs at most a few seconds of skipped hook writes.
+18. **`UserPromptSubmit` fails closed on a lock timeout:** no tip, because a tip that cannot be recorded could be followed by a second in the same segment.
+19. **`export` stays lock-free** (it works from a read-only data directory, and may mix generations when it races a writer), and **the evidence log stays unbounded** with the cost written down in section 15.
+20. **Hook output may carry a note:** an optional field that becomes one stderr line, so a hook that degrades keeps its normal output.
+
 ## 15. Open questions
 
-None blocking. Items 5-7 above are unconfirmed defaults. Still open:
+None blocking. Still open:
 
-- Not yet verified live: the narrower permission rules in the README, `PostToolUse` recording in a tool-using session, and dial 0 in a live session.
-- Evals for the tip rate limit and mastered-topic silence, and CI wiring for the evals (section 11).
-- Known limits: concurrent hooks and CLI calls are last-writer-wins (no locking), the evidence read uses a 2 MiB tail window, and project exclusion is lexical (no symlink or case folding).
+- Not yet verified live: the narrower permission rules in the README, `PostToolUse` recording in a tool-using session, dial 0 in a live session, and that the hooks fire on the minimum Claude Code version the plugin supports.
+- Evals for the tip rate limit and mastered-topic silence, and CI wiring for the evals (section 11). The eval case format has no way to seed the plugin data directory, so these are covered by tests that run the hooks as real processes.
+- Known limits, accepted for 1.0:
+  - The state lock is best effort at its edges: a holder that runs past the 5 s stale window loses exclusion, and two processes breaking the same stale lock can briefly overlap. Both fall back to last-writer-wins. Network filesystems with large clock skew are approximate.
+  - A hook that cannot get the lock within 2 s skips its write (see section 5).
+  - `export` can mix generations when it races a writer.
+  - `evidence.jsonl` grows without bound, about 5 MiB a year of heavy use, and only the last 2 MiB is read.
+  - Project exclusion follows symlinks and folds case on macOS and Windows. It stays case-sensitive on Linux mounts that are case-insensitive and does not fold Unicode normalisation forms. Resolving a path on a hung network mount can block until the hook times out, which fails safe.
+  - A broken install or an unwritable data directory makes a hook print one stderr line per event. Claude Code shows that only in verbose output, so the learner sees nothing. A `doctor` command could surface it and is not planned.
+  - `UserPromptSubmit` can say "Mentor tips muted for X" when the 500-topic cap stopped the mute from being saved. It predates the lock and is not fixed yet.
