@@ -505,3 +505,25 @@ export async function withStateLock<T>(
     await release(lockPath, content);
   }
 }
+
+/**
+ * Whether `error` is the {@link withStateLock} timeout (a
+ * `MentorStateError` with code `LOCK_TIMEOUT`). A caller that degrades on a
+ * busy lock checks this and rethrows every other error.
+ *
+ * @param error - Any thrown value.
+ * @returns `true` only for a `LOCK_TIMEOUT` `MentorStateError`.
+ *
+ * @example
+ * ```ts
+ * import { isLockTimeout, withStateLock } from "./lock.ts";
+ * try {
+ *   await withStateLock("/var/data/m3l", async () => {});
+ * } catch (error) {
+ *   if (!isLockTimeout(error)) throw error;
+ * }
+ * ```
+ */
+export function isLockTimeout(error: unknown): error is MentorStateError {
+  return error instanceof MentorStateError && error.code === "LOCK_TIMEOUT";
+}

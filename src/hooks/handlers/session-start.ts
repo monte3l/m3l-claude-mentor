@@ -5,6 +5,7 @@
  * raised; it never lowers a level (the explicit `recompute` CLI command
  * does) and never writes `state.json`.
  */
+import { isLockTimeout, withStateLock } from "../../internal/lock.ts";
 import { isReviewDue } from "../../internal/mastery.ts";
 import { recomputeProfile } from "../../internal/recompute.ts";
 import {
@@ -22,7 +23,7 @@ import {
   saveProfile,
 } from "../../internal/store.ts";
 import { payloadField, payloadSession } from "../common.ts";
-import type { HookDeps, HookHandler } from "../runtime.ts";
+import { describeError, type HookDeps, type HookHandler } from "../runtime.ts";
 
 const MAX_SUMMARY_CHARS = 2_000;
 const MAX_BELOW_TARGET = 8;
@@ -108,36 +109,86 @@ function fit(
   return text;
 }
 
+/** The profile to summarize, and a note when the refresh had to be skipped. */
+interface Refreshed {
+  readonly profile: Profile;
+  readonly note?: string;
+}
+
+/** The `catalog.json` scoring overrides, in `recomputeProfile`'s shape. */
+async function scoringOf(
+  dir: string,
+): Promise<{ halfLifeDays?: number; fluencySessions?: number }> {
+  const { halfLifeDays, fluencySessions } = (await loadCatalogFile(dir))
+    .scoring;
+  return {
+    ...(halfLifeDays !== undefined ? { halfLifeDays } : {}),
+    ...(fluencySessions !== undefined ? { fluencySessions } : {}),
+  };
+}
+
+/** Raise-only recompute of `profile` from the evidence now stored. */
+async function raised(
+  deps: HookDeps,
+  profile: Profile,
+  scoring: { halfLifeDays?: number; fluencySessions?: number },
+): Promise<ReturnType<typeof recomputeProfile>> {
+  const { events } = await readEvidence(deps.dir);
+  return recomputeProfile({
+    profile,
+    events,
+    catalog: deps.catalog,
+    scoring,
+    now: deps.now,
+    raiseOnly: true,
+  });
+}
+
 /**
  * Loads the profile and re-derives every evidenced topic's level with the
  * `catalog.json` scoring overrides, RAISE-ONLY: a level is raised (or a
  * topic gains an entry) but never lowered, since a truncated or decayed
- * evidence window must not undo a level the learner earned. `profile.json`
- * is saved only when something was raised. With no evidence nothing else is
- * read and nothing is written. Returns the up-to-date profile. Known
- * limitation: the profile update is a read-modify-write with no lock, so a
- * concurrent CLI `record-pass`, `introduce` or `recompute` racing it is
- * last-writer-wins and one update can be lost without any error.
+ * evidence window must not undo a level the learner earned. With no
+ * evidence nothing else is read and nothing is written.
+ *
+ * Optimistic: the recompute first runs without the lock, and only when it
+ * would raise something is the data lock taken; then the profile and the
+ * evidence are re-read (the locked read is authoritative), recomputed
+ * (raise-only, so repeating it is harmless) and saved. The scoring settings
+ * and `deps.catalog` are read before the lock and reused inside it, so a
+ * concurrent catalog edit is seen at the next event. With nothing to change
+ * no lock is taken and nothing waits. On `LOCK_TIMEOUT` (by code; any other
+ * error propagates) the profile as loaded is returned unrefreshed, with a
+ * `note`, so the context is still injected; nothing is written.
  */
-async function refreshedProfile(deps: HookDeps): Promise<Profile> {
+async function refreshedProfile(deps: HookDeps): Promise<Refreshed> {
   const profile = await loadProfile(deps.dir, deps.now);
   const { events } = await readEvidence(deps.dir);
-  if (events.length === 0) return profile;
-  const { halfLifeDays, fluencySessions } = (await loadCatalogFile(deps.dir))
-    .scoring;
-  const outcome = recomputeProfile({
-    profile,
-    events,
-    catalog: deps.catalog,
-    scoring: {
-      ...(halfLifeDays !== undefined ? { halfLifeDays } : {}),
-      ...(fluencySessions !== undefined ? { fluencySessions } : {}),
-    },
-    now: deps.now,
-    raiseOnly: true,
-  });
-  if (outcome.changed.length > 0) await saveProfile(deps.dir, outcome.profile);
-  return outcome.profile;
+  if (events.length === 0) return { profile };
+  const scoring = await scoringOf(deps.dir);
+  const outcome = await raised(deps, profile, scoring);
+  if (outcome.changed.length === 0) return { profile: outcome.profile };
+  try {
+    const saved = await withStateLock(
+      deps.dir,
+      async () => {
+        const locked = await raised(
+          deps,
+          await loadProfile(deps.dir, deps.now),
+          scoring,
+        );
+        if (locked.changed.length > 0) {
+          await saveProfile(deps.dir, locked.profile);
+        }
+        return locked.profile;
+      },
+      deps.lockOptions,
+    );
+    return { profile: saved };
+  } catch (error) {
+    if (!isLockTimeout(error)) throw error;
+    return { profile, note: describeError(error) };
+  }
 }
 
 /**
@@ -145,7 +196,11 @@ async function refreshedProfile(deps: HookDeps): Promise<Profile> {
  * and touches nothing. Otherwise it first re-derives the level of every
  * enabled topic that has evidence (also when tips are off, so levels stay
  * right), raising levels only (never lowering one), and writes
- * `profile.json` only when a level is raised. Then it
+ * `profile.json` only when a level is raised; that save runs under the data
+ * lock, taken only when something would be raised. If the lock times out,
+ * the stored profile is summarized unrefreshed and the output carries a
+ * `note` (one `LOCK_TIMEOUT` stderr line); any other failure propagates.
+ * Then it
  * resolves `null` when the learner muted the mentor or the dial is 0, and
  * otherwise returns, as
  * `additionalContext`, a plain-text summary of at most 2,000 chars: a header
@@ -165,10 +220,11 @@ async function refreshedProfile(deps: HookDeps): Promise<Profile> {
 export const sessionStartHandler: HookHandler = async (payload, deps) => {
   if (payloadSession(payload) === null) return null;
   const compact = isCompact(payload);
-  const profile = await refreshedProfile(deps);
-  if (deps.settings.dial === 0) return null;
+  const { profile, note } = await refreshedProfile(deps);
+  const silent = note === undefined ? null : { note };
+  if (deps.settings.dial === 0) return silent;
   const state = await loadState(deps.dir, deps.now);
-  if (state.muted) return null;
+  if (state.muted) return silent;
   const goals = headOf(await loadGoals(deps.dir), MAX_GOALS_CHARS);
 
   const muted = new Set<string>(state.mutedTopics);
@@ -195,5 +251,6 @@ export const sessionStartHandler: HookHandler = async (payload, deps) => {
       hookEventName: "SessionStart",
       additionalContext: fit(head, topics, tail),
     },
+    ...(note === undefined ? {} : { note }),
   };
 };

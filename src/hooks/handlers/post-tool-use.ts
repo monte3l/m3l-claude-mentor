@@ -7,6 +7,7 @@ import {
   signalToEvidence,
   type UsageSignal,
 } from "../../internal/signals.ts";
+import { withStateLock } from "../../internal/lock.ts";
 import {
   appendEvidence,
   loadState,
@@ -29,9 +30,14 @@ const RATE_LIMIT_WINDOW = 500;
  * {@link isProjectExcluded}), it records nothing.
  * Else it appends one positive `observed` event per remaining signal,
  * skipping a topic that already has an `observed` event from the same
- * session among the last 500 events. That per-session rate limit is best
- * effort: parallel `PostToolUse` calls can both pass the check and both
- * append. Always resolves `null`; never recomputes levels or writes state.
+ * session among the last 500 events. The rate-limit read and the appends run
+ * together under the data lock (`withStateLock`), so parallel `PostToolUse`
+ * calls for the same session and topic append exactly one event; the
+ * exclusion check's state read stays outside (read only), so an
+ * `exclude-project` committed while this hook runs can still be followed by
+ * one append, ordered as if the append had come first. A lock timeout
+ * propagates: one `LOCK_TIMEOUT` stderr line, nothing appended. Always
+ * resolves `null`; never recomputes levels or writes state.
  *
  * @example
  * ```ts
@@ -61,18 +67,27 @@ export const postToolUseHandler: HookHandler = async (payload, deps) => {
     return null;
   }
 
-  const { events } = await readEvidence(deps.dir, {
-    maxEvents: RATE_LIMIT_WINDOW,
-  });
-  const seen = new Set<string>(
-    events
-      .filter((e) => e.channel === "observed" && e.session === session)
-      .map((e) => e.topic),
+  await withStateLock(
+    deps.dir,
+    async () => {
+      const { events } = await readEvidence(deps.dir, {
+        maxEvents: RATE_LIMIT_WINDOW,
+      });
+      const seen = new Set<string>(
+        events
+          .filter((e) => e.channel === "observed" && e.session === session)
+          .map((e) => e.topic),
+      );
+      for (const signal of signals) {
+        if (seen.has(signal.topic)) continue;
+        seen.add(signal.topic);
+        await appendEvidence(
+          deps.dir,
+          signalToEvidence(signal, session, deps.now),
+        );
+      }
+    },
+    deps.lockOptions,
   );
-  for (const signal of signals) {
-    if (seen.has(signal.topic)) continue;
-    seen.add(signal.topic);
-    await appendEvidence(deps.dir, signalToEvidence(signal, session, deps.now));
-  }
   return null;
 };

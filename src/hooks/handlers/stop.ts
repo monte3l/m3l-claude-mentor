@@ -7,6 +7,7 @@
  * never prints anything.
  */
 import { touchActivity } from "../../internal/segment.ts";
+import { withStateLock } from "../../internal/lock.ts";
 import { loadState, saveState } from "../../internal/store.ts";
 import { payloadSession } from "../common.ts";
 import type { HookHandler } from "../runtime.ts";
@@ -16,7 +17,9 @@ import type { HookHandler } from "../runtime.ts";
  * {@link touchActivity} (no boundary detection, so the segment, its tip
  * quota and its topic are kept even after a long turn) and saves the state.
  * Always resolves `null`: no context, no decision, no `continue`. An invalid
- * `session_id` makes it a no-op that touches nothing.
+ * `session_id` makes it a no-op that touches nothing. The load and save run
+ * under the data lock (`withStateLock`); a lock timeout propagates, so the
+ * runtime writes one `LOCK_TIMEOUT` stderr line and nothing is saved.
  *
  * @example
  * ```ts
@@ -27,8 +30,14 @@ import type { HookHandler } from "../runtime.ts";
  */
 export const stopHandler: HookHandler = async (payload, deps) => {
   if (payloadSession(payload) === null) return null;
-  const state = await loadState(deps.dir, deps.now);
-  const segment = touchActivity(state.segment, deps.now);
-  await saveState(deps.dir, { ...state, segment });
+  await withStateLock(
+    deps.dir,
+    async () => {
+      const state = await loadState(deps.dir, deps.now);
+      const segment = touchActivity(state.segment, deps.now);
+      await saveState(deps.dir, { ...state, segment });
+    },
+    deps.lockOptions,
+  );
   return null;
 };
