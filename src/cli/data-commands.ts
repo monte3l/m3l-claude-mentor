@@ -10,9 +10,16 @@ import {
   type DataSummary,
   type PurgeResult,
 } from "../internal/purge.ts";
+import {
+  canonicalProject,
+  foldProjectCase,
+  normalizeProjectPath,
+  type ProjectPathOptions,
+} from "../internal/project-exclusion.ts";
 import { CHANNELS, parseEvidence, type TopicId } from "../internal/schema.ts";
 import {
   isChangelogVersion,
+  MAX_PROJECT_LENGTH,
   type MentorState,
 } from "../internal/state-schema.ts";
 import {
@@ -162,8 +169,25 @@ export async function setTopicMute(
 
 /**
  * `exclude-project <add|remove> --path <absolute path>`: adds the project
- * to or removes it from `excludedProjects` (the path is stored as given).
+ * to or removes it from `excludedProjects`.
  *
+ * `add` stores the canonical form ({@link canonicalProject}: the real path
+ * with symlinks resolved, or the normalised path when it cannot be
+ * resolved). When that canonical form is longer than
+ * {@link MAX_PROJECT_LENGTH}, the lexically normalised given path is stored
+ * instead; it still excludes the project, since the hook compares real forms
+ * when it runs. A project is never listed twice: `add` first drops every
+ * stored entry naming the same project, and `remove` drops exactly those.
+ * A stored entry names the same project when its normalised or canonical
+ * form equals the canonical form, the normalised given path or the path as
+ * given, so a legacy entry (a trailing separator, a symlink path) is matched
+ * too. On `darwin` and `win32` that comparison is case-insensitive
+ * ({@link foldProjectCase}) and `add` keeps the latest spelling; elsewhere
+ * it is case-sensitive, including on a Linux case-insensitive mount (a
+ * known limit).
+ *
+ * @param options - Optional `platform` (default `process.platform`) and
+ *   `realpath` overrides; real callers pass nothing.
  * @throws CliUsageError for a missing or non-absolute path.
  *
  * @example
@@ -175,14 +199,25 @@ export async function setTopicMute(
 export async function excludeProject(
   args: ParsedArgs,
   env: CommandEnv,
+  options: ProjectPathOptions = {},
 ): Promise<{ readonly excludedProjects: number }> {
   const add = args.positional === "add";
   if (!add && args.positional !== "remove") throw new CliUsageError();
   const project = requireAbsolutePath(args, "path");
-  const next = await updateState(env, (state) => ({
-    ...state,
-    excludedProjects: toggled(state.excludedProjects, project, add),
-  }));
+  const resolver: Pick<ProjectPathOptions, "realpath"> = options;
+  const key = (p: string): string => foldProjectCase(p, options.platform);
+  const canonical = canonicalProject(project, resolver);
+  const normalized = normalizeProjectPath(project);
+  const forms = new Set([canonical, normalized, project].map(key));
+  const sameProject = (entry: string): boolean =>
+    forms.has(key(normalizeProjectPath(entry))) ||
+    forms.has(key(canonicalProject(entry, resolver)));
+  const toStore =
+    canonical.length > MAX_PROJECT_LENGTH ? normalized : canonical;
+  const next = await updateState(env, (state) => {
+    const kept = state.excludedProjects.filter((entry) => !sameProject(entry));
+    return { ...state, excludedProjects: add ? [...kept, toStore] : kept };
+  });
   return { excludedProjects: next.excludedProjects.length };
 }
 

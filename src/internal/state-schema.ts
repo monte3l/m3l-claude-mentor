@@ -108,7 +108,16 @@ export const MAX_TOPICS: number = 500;
 
 const MAX_MUTED_TOPICS = 500;
 const MAX_EXCLUDED_PROJECTS = 200;
-const MAX_PROJECT_LENGTH = 1024;
+/**
+ * The longest excluded-project path the state accepts, in UTF-16 code units.
+ *
+ * @example
+ * ```ts
+ * import { MAX_PROJECT_LENGTH } from "./state-schema.ts";
+ * MAX_PROJECT_LENGTH; // 1024
+ * ```
+ */
+export const MAX_PROJECT_LENGTH: number = 1024;
 const MAX_VERSION_LENGTH = 64;
 const VERSION_PATTERN = /^[0-9A-Za-z.+-]+$/;
 const MAX_PASSES = 1_000_000_000;
