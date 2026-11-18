@@ -221,8 +221,9 @@ Transcript reading (chosen by the user) is a sensitive capability. Proposed safe
 ## 11. Evaluation
 
 - Plugin evals via `claude plugin eval` (Claude Code 2.1.269 or later). Cases live in `evals/<group>/<case>/case.yaml` with inline graders. By default each case also runs without the plugin, but the skill and agent graders are `with-only` indicators, so those cases score only with `--ablation none`.
-- Covered now (7 cases, all 3 of 3 on the last live run, about $3.50 in total): skill triggers for natural phrasing (quiz, teach, assess, whats-new), a verification probe on an over-claim (an `llm` grader), and agent dispatch by `ask` and `assess`.
-- Deferred: the tip rate limit and mastered-topic silence cases, because the eval docs do not say how to seed `CLAUDE_PLUGIN_DATA` or pass `userConfig` to hooks; and CI wiring, which needs a pinned `--model` and `--judge-model` and a credential. Evals call a real model, so they run locally under `--max-cost-usd`.
+- Covered now (7 cases, all 3 of 3 on the last live run, 2026-11-18 against Claude Code 2.1.327, $2.83 in total): skill triggers for natural phrasing (quiz, teach, assess, whats-new), a verification probe on an over-claim (an `llm` grader), and agent dispatch by `ask` and `assess`.
+- Not an eval, by platform limit: the tip rate limit and mastered-topic silence. As of Claude Code 2.1.327 a case is one live prompt in an empty workspace with a fresh configuration, cannot pre-seed `CLAUDE_PLUGIN_DATA`, cannot set `userConfig` values (only `EVAL_*` environment variables), and no grader can read the data directory. These behaviours are covered by tests that run the real hooks as processes with a seeded data directory, the plugin options in the environment and parallel prompts; `evals/README.md` lists them. An eval stays the right tool for what the hooks cannot decide: how the model words a tip and which skill it picks.
+- Deferred: CI wiring, which needs a pinned `--model` and `--judge-model` and a credential. Evals call a real model, so they run locally under `--max-cost-usd`.
 - Learner-facing metrics: quiz retention over time, calibration score trend, tips dismissed vs. acted on.
 - Hypothesis to test: ambient plus Socratic teaching improves retention compared with Reference-only. Anthropic's study did not cover agentic use.
 
@@ -276,7 +277,7 @@ Confirmed by the owner:
 None blocking. Still open:
 
 - Not yet verified live: the narrower permission rules in the README, `PostToolUse` recording in a tool-using session, dial 0 in a live session, and that the hooks fire on the minimum Claude Code version the plugin supports.
-- Evals for the tip rate limit and mastered-topic silence, and CI wiring for the evals (section 11). The eval case format has no way to seed the plugin data directory, so these are covered by tests that run the hooks as real processes.
+- CI wiring for the evals (section 11). The tip rate limit and mastered-topic silence cannot be evals today, because the eval case format cannot seed the plugin data directory, set `userConfig` or run two live prompts; they are covered by tests that run the hooks as real processes. An upstream request for those three capabilities is optional and not filed.
 - Known limits, accepted for 1.0:
   - The state lock is best effort at its edges: a holder that runs past the 5 s stale window loses exclusion, and two processes breaking the same stale lock can briefly overlap. Both fall back to last-writer-wins. Network filesystems with large clock skew are approximate.
   - A hook that cannot get the lock within 2 s skips its write (see section 5).

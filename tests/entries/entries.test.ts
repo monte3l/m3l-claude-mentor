@@ -297,3 +297,33 @@ describe("corrupt user catalog.json", () => {
     expect(r.stderr.length).toBeGreaterThan(0);
   });
 });
+
+describe("dial 0 end to end", () => {
+  const env = { CLAUDE_PLUGIN_OPTION_DIAL: "0" };
+
+  test("SessionStart prints nothing and exits 0 (control: dial 2 prints)", () => {
+    const off = runScript(START, {
+      input: payload({ source: "startup" }),
+      dataDir: sb.dir,
+      env,
+    });
+    expect(off.status).toBe(0);
+    expect(off.stdout).toBe("");
+    const on = runScript(START, {
+      input: payload({ source: "startup" }),
+      dataDir: sb.dir,
+      env: { CLAUDE_PLUGIN_OPTION_DIAL: "2" },
+    });
+    expect(on.stdout).toContain("topics below target");
+  });
+
+  test("UserPromptSubmit exits 0 with no tip directive", () => {
+    const r = runScript(PROMPT, {
+      input: payload({ prompt: "how do I use plan mode" }),
+      dataDir: sb.dir,
+      env,
+    });
+    expect(r.status).toBe(0);
+    expect(r.stdout).not.toContain("Mentor tip");
+  });
+});
