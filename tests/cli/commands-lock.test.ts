@@ -2,7 +2,6 @@ import {
   existsSync,
   readdirSync,
   readFileSync,
-  statSync,
   utimesSync,
   writeFileSync,
 } from "node:fs";
@@ -291,7 +290,6 @@ describe("a stale foreign lock does not block a CLI writer", () => {
     seedForeignLock();
     const old = (Date.now() - 60_000) / 1000;
     utimesSync(join(sb.dir, LOCK), old, old);
-    expect(statSync(join(sb.dir, LOCK)).isFile()).toBe(true);
     const { lock, sleeps } = fakeLock();
     await expect(runOk(sb.dir, ["set-mute", "on"], { lock })).resolves.toEqual({
       muted: true,

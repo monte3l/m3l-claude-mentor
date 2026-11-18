@@ -8,7 +8,7 @@ import {
   readFileSync,
   realpathSync,
   rmSync,
-  statSync,
+  fstatSync,
   symlinkSync,
   openSync,
   closeSync,
@@ -73,6 +73,22 @@ function seed(content: string, ageMs: number): void {
   writeFileSync(lockPath, content);
   const when = (Date.now() - ageMs) / 1000;
   utimesSync(lockPath, when, when);
+}
+
+/**
+ * Content and mtime of the lock file from ONE descriptor, so there is no
+ * stat-then-read of the same path between the two observations.
+ */
+function observeLock(): { content: string; mtimeMs: number } {
+  const fd = openSync(lockPath, "r");
+  try {
+    return {
+      content: readFileSync(fd, "utf8"),
+      mtimeMs: fstatSync(fd).mtimeMs,
+    };
+  } finally {
+    closeSync(fd);
+  }
 }
 
 const FOREIGN = JSON.stringify({
@@ -145,7 +161,7 @@ describe("acquire and release", () => {
       return Promise.resolve();
     });
     expect(existedInside).toBe(true);
-    expect(existsSync(nested)).toBe(true);
+    // readdirSync throws unless the directory exists, so it also proves creation.
     expect(readdirSync(nested)).toEqual([]);
   });
 
@@ -167,7 +183,7 @@ describe("contention", () => {
     "a fresh foreign lock times out with LOCK_TIMEOUT (random=%s), untouched, bounded jittered backoff",
     async (rnd) => {
       seed(FOREIGN, 0);
-      const before = statSync(lockPath).mtimeMs;
+      const before = observeLock();
       const clock = makeClock();
       let thrown: unknown;
       try {
@@ -197,8 +213,9 @@ describe("contention", () => {
       });
       if (rnd === 0) expect(clock.sleeps[0]).toBeLessThan(20);
       else expect(clock.sleeps[0]).toBeGreaterThan(20);
-      expect(readFileSync(lockPath, "utf8")).toBe(FOREIGN);
-      expect(statSync(lockPath).mtimeMs).toBe(before);
+      const after = observeLock();
+      expect(after.content).toBe(FOREIGN);
+      expect(after.mtimeMs).toBe(before.mtimeMs);
     },
   );
 

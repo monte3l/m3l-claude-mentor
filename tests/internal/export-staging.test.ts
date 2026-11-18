@@ -7,7 +7,6 @@ import {
   readFileSync,
   realpathSync,
   rmSync,
-  statSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -59,9 +58,9 @@ afterEach(() => {
 
 function snapshot(dir: string): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const name of readdirSync(dir)) {
-    out[name] = statSync(join(dir, name)).isFile()
-      ? readFileSync(join(dir, name), "utf8")
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    out[entry.name] = entry.isFile()
+      ? readFileSync(join(dir, entry.name), "utf8")
       : "<dir>";
   }
   return out;
