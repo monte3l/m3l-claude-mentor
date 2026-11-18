@@ -16,6 +16,6 @@
     ".claude/hooks/**/*.mjs"
   ],
   "ignoreExportsUsedInFile": true,
-  "ignoreBinaries": ["wrangler"],
+  "ignoreBinaries": ["wrangler", "mkfifo"],
   "ignoreDependencies": ["@commitlint/config-conventional", "@commitlint/types"]
 }

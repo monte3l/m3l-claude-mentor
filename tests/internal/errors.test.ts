@@ -15,6 +15,7 @@ const CODES: readonly MentorErrorCode[] = [
   "TOO_LARGE",
   "IMPORT_INVALID",
   "CONFIRMATION_REQUIRED",
+  "LOCK_TIMEOUT",
 ];
 
 describe("MentorStateError", () => {

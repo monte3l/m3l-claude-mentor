@@ -215,9 +215,10 @@ export async function readTextBounded(
  * Replaces a data file: creates `dir` if needed (mode `0o700`), writes
  * `text` to a uniquely named temp file in the same directory (flag `wx`, mode
  * `0o600`), fsyncs and closes it, then renames it over the target. A reader
- * therefore sees either the old or the new content, never a torn file. Two
- * concurrent writers of one file are last-writer-wins; there is no locking.
- * The directory is not fsynced, so after a power loss the rename may be lost
+ * therefore sees either the old or the new content, never a torn file. This
+ * function does not lock: two concurrent writers of one file are
+ * last-writer-wins, so callers take `withStateLock` (`./lock.ts`)
+ * around a whole read-modify-write. The directory is not fsynced, so after a power loss the rename may be lost
  * and the old content remain. A read-only target is still replaced, because
  * rename permission comes from the directory. On a failure the handle is
  * closed and the temp file removed (best effort, so a cleanup error cannot
