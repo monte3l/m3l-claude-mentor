@@ -19,11 +19,12 @@ minor release.
   [README](../README.md#permissions), `PostToolUse` evidence recording in a
   tool-using session, and the tip dial at 0. Each gets a live check and a note
   in [`spec.md`](spec.md#15-open-questions).
-- **Cover the tip behaviour with evals.** The rate limit and the silence on a
-  mastered topic have no eval yet, because the eval docs do not say how to seed
-  `CLAUDE_PLUGIN_DATA` or pass `userConfig` to hooks. They go ahead once that is
-  possible. Running the evals in CI also needs a pinned model and a credential,
-  and has no date.
+- **Run the evals in CI.** It needs a pinned model and a credential, and has no
+  date. The tip rate limit and the silence on a mastered topic are not evals,
+  because a `claude plugin eval` case cannot seed `CLAUDE_PLUGIN_DATA`, set
+  `userConfig` or run two live prompts. Tests that run the real hooks cover
+  them (see [`evals/README.md`](../evals/README.md)). They would become evals if
+  those three capabilities arrive.
 - **Keep the lessons current.** Re-check the topic catalogue against the Claude
   Code docs when its behaviour changes. This is ordinary maintenance, not a
   milestone.
