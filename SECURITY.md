@@ -13,23 +13,24 @@ has.
 
 ## Supported versions
 
-| Version                 | Supported |
-| ----------------------- | --------- |
-| Latest `0.x` release    | Yes       |
-| Latest commit on `main` | Yes       |
-| Anything else           | No        |
+| Version                                                    | Supported |
+| ---------------------------------------------------------- | --------- |
+| Latest release                                             | Yes       |
+| Latest commit on `main`                                    | Yes       |
+| Last `0.x` release, for 90 days after `1.0.0` is published | Yes       |
+| Anything else                                              | No        |
 
-This is a small-team project below 1.0.0. Only the latest release and the
-latest commit on `main` get a fix.
+This is a small-team project. Only the latest release and the latest commit on
+`main` get a fix, apart from the 90-day window for the last `0.x` release below.
 
 ### Scope and duration of support
 
 Support has no fixed length. Each release is supported until the next release is
 published, and from then on it gets no security update. A fix ships as a new
-release on the current line, never as a backport. When a `1.0.0` release
-appears, the last `0.x` release is supported for 90 days after it, and the
-release notes state the date. Someone on an unsupported version should update to
-the latest release.
+release on the current line, never as a backport. When `1.0.0` is published, the
+last `0.x` release (`0.3.0` unless another `0.x` release comes first) is
+supported for 90 days after that date, and the `1.0.0` release notes state the
+end date. Someone on an unsupported version should update to the latest release.
 
 ## Response process
 

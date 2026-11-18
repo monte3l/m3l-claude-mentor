@@ -5,12 +5,13 @@ kept in a file rather than in GitHub Issues so it survives outside any one tool.
 It lists what is still ahead. What has shipped is in the git history and the
 GitHub releases, and the design behind it is in [`spec.md`](spec.md).
 
-## Now: the 0.x series
+## Now: the road to 1.0.0, then the 1.x series
 
-The contract in the [Versioning policy](../README.md#versioning-policy) can
-still change in a minor release while the version is below 1.0.0. Fixes, docs
-and CI changes ship as patch releases. A new skill, option or topic ships as a
-minor release.
+The contract in the [Versioning policy](../README.md#versioning-policy) is
+frozen from 1.0.0 on and changes only in a major release. The 0.x releases
+before that may still change it in a minor release. What is left before 1.0.0
+is the live check below. From then on fixes, docs and CI changes ship as patch
+releases, and a new skill, option or topic ships as a minor release.
 
 ## Next 12 months
 

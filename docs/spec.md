@@ -271,6 +271,7 @@ Confirmed by the owner:
 18. **`UserPromptSubmit` fails closed on a lock timeout:** no tip, because a tip that cannot be recorded could be followed by a second in the same segment.
 19. **`export` stays lock-free** (it works from a read-only data directory, and may mix generations when it races a writer), and **the evidence log stays unbounded** with the cost written down in section 15.
 20. **Hook output may carry a note:** an optional field that becomes one stderr line, so a hook that degrades keeps its normal output.
+21. **The 1.0.0 contract freeze:** from 1.0.0 the six skill names, the `dial` and `transcriptAnalysis` options, export format version 1 (every 1.x release imports it) and the guarantees in the ROADMAP's "What this project will not do" list change only in a major release. The hook internals, the `mentor-state` CLI and its path, the evals, the topic catalogue and the data directory layout beyond the export format are outside it, because the skills ship in the same plugin version as the CLI they call. A contract test and a committed version 1 export pin it, and adding a skill or an option is a minor release and does not fail them.
 
 ## 15. Open questions
 

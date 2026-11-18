@@ -263,18 +263,40 @@ agent workflow. The code of conduct and support are the
 
 ## Versioning policy
 
-Releases follow [Semantic Versioning](https://semver.org). While the version is
-below 1.0.0, a minor release may change any of the contract below. The public
-contract is the skill names (`/m3l-claude-mentor:<name>`), the plugin options
-`dial` and `transcriptAnalysis`, and the format `export` writes and `import`
-reads. The hook internals, the `mentor-state` CLI, the evals and the topic
-catalogue are not part of it.
+Releases follow [Semantic Versioning](https://semver.org). From 1.0.0 on, the
+public contract below changes only in a major release. The 0.x releases before
+that may still change any of it in a minor release.
 
-| Bump  | When                                                                                        |
-| ----- | ------------------------------------------------------------------------------------------- |
-| Major | A skill or option is removed or renamed, or an export from the previous major cannot import |
-| Minor | A new skill, option or topic, with existing ones unchanged                                  |
-| Patch | A fix, or a docs or CI change, with no change to the contract                               |
+**The contract** is:
+
+- the six skill names, invoked as `/m3l-claude-mentor:<name>` (`ask`, `assess`,
+  `profile`, `quiz`, `teach`, `whats-new`);
+- the two plugin options, `dial` and `transcriptAnalysis`, with their meaning and
+  ranges;
+- the export format that `export` writes and `import` reads. This is format
+  version 1, and every 1.x release imports a version 1 export. A later format
+  must keep reading version 1;
+- the guarantees in [What this project will not do](docs/ROADMAP.md#what-this-project-will-not-do):
+  only feature-usage signals are stored, nothing leaves your machine, and a hook
+  never blocks your work.
+
+**Not part of the contract:** the hook internals, the `mentor-state` CLI and its
+path, the evals, the topic catalogue, and the layout of the plugin data
+directory beyond the export format. The skills ship in the same plugin version
+as the CLI they call, so no skill ever calls a CLI from another version, and the
+CLI can change in any release. The CLI's path has already changed once.
+
+A contract test (`tests/contract/plugin-contract.test.ts`) and a committed
+version 1 export (`tests/internal/fixtures/bundle-v1.json`) pin the skill names,
+the options and the export format, so a rename or a format change fails CI
+instead of slipping into a minor release. Adding a skill or an option does not
+fail it, because that is a minor release.
+
+| Bump  | When                                                                                                                                  |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Major | A skill or option is removed or renamed, an export from the previous major cannot import, or a documented guarantee above is weakened |
+| Minor | A new skill, option or topic, with existing ones unchanged                                                                            |
+| Patch | A fix, or a docs or CI change, with no change to the contract                                                                         |
 
 Release-please opens one release pull request from the Conventional Commits.
 Merging it tags `m3l-claude-mentor--vX.Y.Z` and publishes a GitHub release, and
