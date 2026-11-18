@@ -31,6 +31,30 @@ releases, and a new skill, option or topic ships as a minor release.
   [Governance](GOVERNANCE.md#bus-factor). It needs contributors from outside the
   organization. There is no committed timeline.
 
+## Known issues and follow-ups
+
+Defects and decisions that are recorded here so they are not lost, with what
+would change them. The limits the project accepts for 1.0 are listed in
+[`spec.md`](spec.md#15-open-questions).
+
+- **Fix the false "tips muted" notice.** `UserPromptSubmit` can say "Mentor tips
+  muted for X" when the 500-topic cap stopped the mute from being saved. It
+  predates the state lock, and the fix starts with a failing test. There is no
+  date.
+- **File the upstream request for eval seeding.** Optional, and not filed yet. A
+  `claude plugin eval` case would need to seed the plugin data directory, set
+  `userConfig` values and run more than one prompt before the tip rate limit and
+  the silence on a mastered topic could become evals.
+- **Revisit the evidence log if it becomes a problem.** It is never rotated and
+  grows by about 5 MiB a year of heavy use, and only the last 2 MiB is read.
+  That is accepted for 1.0, and no size trigger is set. Add one if a report
+  shows it matters. A compaction step that keeps the last events, run under the
+  state lock, is the likely shape.
+- **Considered, not planned: a `doctor` command.** A broken install or an
+  unwritable data directory only shows in Claude Code's verbose output, so the
+  learner sees nothing. A command that checks the install could surface it. It
+  is not planned for 1.x.
+
 ## What this project will not do
 
 - **Store conversation content.** Only feature-usage signals are kept, never
