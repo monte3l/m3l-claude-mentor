@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0](https://github.com/monte3l/m3l-claude-mentor/compare/m3l-claude-mentor--v0.3.0...m3l-claude-mentor--v1.0.0) (2026-11-18)
+
+
+### Documentation
+
+* record the live verification on Claude Code 2.1.327 ([34553a2](https://github.com/monte3l/m3l-claude-mentor/commit/34553a2ab2ed4eff202383559a15fcd3a6546f47))
+
 ## [0.3.0](https://github.com/monte3l/m3l-claude-mentor/compare/m3l-claude-mentor--v0.2.2...m3l-claude-mentor--v0.3.0) (2026-11-18)
 
 
