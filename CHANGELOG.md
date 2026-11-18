@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.3.0](https://github.com/monte3l/m3l-claude-mentor/compare/m3l-claude-mentor--v0.2.2...m3l-claude-mentor--v0.3.0) (2026-11-18)
+
+
+### Features
+
+* add a data-directory lock for the state writers ([308af1c](https://github.com/monte3l/m3l-claude-mentor/commit/308af1c415e81fa9f8988fb4b4558d4030ec1c72))
+* lock the hook handlers, and degrade instead of blocking on a timeout ([4fc4d25](https://github.com/monte3l/m3l-claude-mentor/commit/4fc4d2553ed0aa4fdb4a9973a2df903c05876031))
+* serialize all state writes with a data-directory lock ([de2821b](https://github.com/monte3l/m3l-claude-mentor/commit/de2821b917a0dc5d9f901e21712e5e9854e77333))
+* serialize the CLI writers, import and purge with the state lock ([ea9913c](https://github.com/monte3l/m3l-claude-mentor/commit/ea9913ccb677cfbb18289e7974fb8672bae899ad))
+
+
+### Bug Fixes
+
+* keep an excluded project excluded through symlinks and case ([5700961](https://github.com/monte3l/m3l-claude-mentor/commit/570096115333b96fd1cb5db989c4da518d9ce012))
+* keep an excluded project excluded through symlinks and case ([022b218](https://github.com/monte3l/m3l-claude-mentor/commit/022b218ec527a343357459c38c44413352a59e1f))
+
 ## [0.2.2](https://github.com/monte3l/m3l-claude-mentor/compare/m3l-claude-mentor--v0.2.1...m3l-claude-mentor--v0.2.2) (2026-11-17)
 
 
