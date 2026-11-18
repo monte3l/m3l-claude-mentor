@@ -75,6 +75,12 @@ export default {
       label: "Architecture",
     },
     {
+      src: "evals/README.md",
+      out: "evals.html",
+      group: "Reference",
+      label: "Evals",
+    },
+    {
       src: "docs/GOVERNANCE.md",
       out: "GOVERNANCE.html",
       group: "Project",
