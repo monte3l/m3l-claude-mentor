@@ -23,6 +23,7 @@ import {
   saveProfile,
 } from "../internal/store.ts";
 import { loadBundledTracks } from "../internal/bundled-tracks.ts";
+import { excludeVoidedEvidence } from "../internal/voids.ts";
 import { requireOneOf, requireTopicId, type ParsedArgs } from "./args.ts";
 import {
   loadMergedCatalog,
@@ -180,12 +181,17 @@ export interface RecomputeView {
  * `introduced`, `passes` and `lastPassAt`), the `recompute` view, and the
  * topic's stored `passes`.
  * The calibration counts a `confirmed` or `refuted` outcome only when
- * `claimedLevel` is given. Reads evidence; writes nothing: the caller saves
- * the returned profile once.
+ * `claimedLevel` is given. Quiz evidence of a voided exam submission
+ * (`state.json` `voidedExams`) is not counted. Reads evidence and the state;
+ * writes nothing: the caller saves the returned profile once.
  *
  * Known limitation: only the evidence tail window `readEvidence` returns
  * (its default `maxEvents`) is read, so a topic's oldest events can fall out
  * of it on a long history.
+ *
+ * @throws MentorStateError when `state.json` cannot be read or is invalid
+ * (it is read for its void list): the recompute fails closed rather than
+ * counting voided evidence.
  *
  * @example
  * ```ts
@@ -208,10 +214,12 @@ export async function recomputeTopic(
   const topic = entry.id;
   const { halfLifeDays, fluencySessions } = file.scoring;
   const { events, skipped } = await readEvidence(env.dir);
+  const { voidedExams = [] } = await loadState(env.dir, env.now);
+  const counted = excludeVoidedEvidence(events, voidedExams);
   const previous = existingTopic(profile, topic) ?? UNSEEN_TOPIC;
   const result = reconcile({
     type: entry.type,
-    events: events.filter((event) => event.topic === topic),
+    events: counted.filter((event) => event.topic === topic),
     introduced: previous.introduced,
     now: env.now,
     ...(claimedLevel !== undefined ? { claimedLevel } : {}),
@@ -273,6 +281,9 @@ export function optionalClaim(args: ParsedArgs): Level | undefined {
  * `recompute` repairs any effect on the level.
  *
  * @throws CliUsageError for a malformed or unknown topic or a bad claim.
+ * @throws MentorStateError when `state.json` cannot be read or is invalid
+ * (its void list is needed): `recompute` fails closed rather than counting
+ * voided evidence.
  *
  * @example
  * ```ts

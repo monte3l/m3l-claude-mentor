@@ -13,6 +13,7 @@
 import type { Calibration } from "./reconcile.ts";
 import {
   LEVELS,
+  parseSessionId,
   parseTopicId,
   type Level,
   type Parsed,
@@ -20,6 +21,7 @@ import {
 } from "./schema.ts";
 import { newSegment, type SegmentState } from "./segment.ts";
 import { TRACK_CODE_PATTERN } from "./track-ids.ts";
+import { pairKey, type VoidedExam } from "./voids.ts";
 
 /**
  * The schema version this module reads and writes. A file with any other
@@ -59,6 +61,11 @@ export interface MentorState {
    * `CCAR-F`; absent (no own key) when none is set.
    */
   readonly activeTrack?: string;
+  /**
+   * Voided exam submissions, distinct `(session, at)` pairs, at most 100;
+   * absent (no own key) when none is voided.
+   */
+  readonly voidedExams?: readonly VoidedExam[];
 }
 
 /**
@@ -127,6 +134,16 @@ export const MAX_PROJECT_LENGTH: number = 1024;
 const MAX_VERSION_LENGTH = 64;
 const VERSION_PATTERN = /^[0-9A-Za-z.+-]+$/;
 const MAX_PASSES = 1_000_000_000;
+/**
+ * The most voided exam submissions `state.json` may hold.
+ *
+ * @example
+ * ```ts
+ * import { MAX_VOIDED_EXAMS } from "./state-schema.ts";
+ * MAX_VOIDED_EXAMS; // 100
+ * ```
+ */
+export const MAX_VOIDED_EXAMS: number = 100;
 
 function ok<T>(value: T): Parsed<T> {
   return { ok: true, value };
@@ -192,6 +209,45 @@ function parseDistinctList<T>(
     seen.add(parsed);
   }
   return ok([...seen]);
+}
+
+function voidOrNull(item: unknown): VoidedExam | null {
+  const record = asRecord(item);
+  if (record === null) return null;
+  const session = parseSessionId(ownField(record, "session"));
+  const at = ownField(record, "at");
+  return session.ok && isCount(at) ? { session: session.value, at } : null;
+}
+
+/**
+ * Validates `voidedExams`: an array of at most {@link MAX_VOIDED_EXAMS}
+ * distinct `{ session, at }` pairs, `at` a safe, non-negative integer.
+ */
+function parseVoidedExams(value: unknown): Parsed<readonly VoidedExam[]> {
+  if (!Array.isArray(value)) return fail("voidedExams must be an array");
+  const items: readonly unknown[] = value;
+  if (items.length > MAX_VOIDED_EXAMS) {
+    return fail(
+      `voidedExams may hold at most ${String(MAX_VOIDED_EXAMS)} items`,
+    );
+  }
+  const seen = new Set<string>();
+  const voids: VoidedExam[] = [];
+  for (let i = 0; i < items.length; i++) {
+    const parsed = Object.hasOwn(items, i) ? voidOrNull(items[i]) : null;
+    if (parsed === null) {
+      return fail(
+        `voidedExams[${String(i)}] must be a session id and a non-negative integer at`,
+      );
+    }
+    const key = pairKey(parsed.session, parsed.at);
+    if (seen.has(key)) {
+      return fail(`voidedExams[${String(i)}] is a duplicate`);
+    }
+    seen.add(key);
+    voids.push(parsed);
+  }
+  return ok(voids);
 }
 
 function topicOrNull(item: unknown): TopicId | null {
@@ -341,7 +397,10 @@ export function isChangelogVersion(value: unknown): value is string {
  * from a newer release is rejected rather than misread. Lists are returned
  * as fresh copies. `activeTrack` is optional: when absent the result has no
  * own `activeTrack` key, and when present it must be a track code (2 to 4
- * uppercase letters, a dash, 1 or 2 uppercase letters).
+ * uppercase letters, a dash, 1 or 2 uppercase letters). `voidedExams` is
+ * optional: when present it must be an array of at most 100 distinct
+ * `{ session, at }` pairs (`at` a safe, non-negative integer); an absent or
+ * empty list yields no own `voidedExams` key.
  *
  * @param value - Untrusted input, typically JSON-parsed `state.json`.
  * @returns A fresh {@link MentorState}, or a reason naming the bad field.
@@ -402,6 +461,14 @@ export function parseState(value: unknown): Parsed<MentorState> {
     activeTrack = rawTrack;
   }
 
+  const rawVoids = ownField(record, "voidedExams");
+  let voidedExams: readonly VoidedExam[] = [];
+  if (rawVoids !== undefined) {
+    const parsed = parseVoidedExams(rawVoids);
+    if (!parsed.ok) return fail(`state ${parsed.reason}`);
+    voidedExams = parsed.value;
+  }
+
   return ok({
     schemaVersion: SCHEMA_VERSION,
     muted,
@@ -410,6 +477,7 @@ export function parseState(value: unknown): Parsed<MentorState> {
     lastChangelogVersion: version,
     segment: segment.value,
     ...(activeTrack !== undefined ? { activeTrack } : {}),
+    ...(voidedExams.length > 0 ? { voidedExams } : {}),
   });
 }
 
@@ -589,6 +657,9 @@ export function clampStateToNow(state: MentorState, now: number): MentorState {
     },
     ...(state.activeTrack !== undefined
       ? { activeTrack: state.activeTrack }
+      : {}),
+    ...(state.voidedExams !== undefined && state.voidedExams.length > 0
+      ? { voidedExams: state.voidedExams }
       : {}),
   };
 }

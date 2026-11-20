@@ -22,6 +22,7 @@ import type { CommandEnv } from "./env.ts";
 import { examItems, readiness } from "./exam-report-commands.ts";
 import { examAnswer, examBegin } from "./exam-session-commands.ts";
 import { setTrack, tracks } from "./exam-track-commands.ts";
+import { examUnvoid, examVoid } from "./exam-void-commands.ts";
 import {
   getProfile,
   introduce,
@@ -107,6 +108,11 @@ const COMMANDS = {
   "exam-items": spec("exam-items [--track <code>] [--limit <n>]", [
     "track",
     "limit",
+  ]),
+  "exam-void": spec("exam-void [--at <ms> --session <id>]", ["at", "session"]),
+  "exam-unvoid": spec("exam-unvoid --at <ms> --session <id>", [
+    "at",
+    "session",
   ]),
 } as const satisfies Readonly<Record<string, CommandSpec>>;
 
@@ -241,6 +247,10 @@ function dispatch(
       return readiness(args, env);
     case "exam-items":
       return examItems(args, env);
+    case "exam-void":
+      return examVoid(args, env);
+    case "exam-unvoid":
+      return examUnvoid(args, env);
   }
 }
 

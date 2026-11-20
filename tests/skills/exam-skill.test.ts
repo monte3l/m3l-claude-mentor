@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 import { MAX_PENDING_ITEMS } from "../../src/internal/exam-schema.ts";
 import {
+  CLI_TOOL,
   SKILLS_DIR,
   bashLines,
   hasPhrase,
@@ -10,6 +11,7 @@ import {
   readSkill,
   sectionOf,
   skillMarkdownFiles,
+  toolEntries,
   usedCommands,
 } from "./helpers.ts";
 
@@ -242,9 +244,7 @@ describe("exam skill: answer-key risk disclosure and disputes", () => {
     "never defend it by assertion",
     "`m3l-claude-mentor:docs-researcher` agent on that one point",
     "When the docs support the learner, say so plainly",
-    "the recorded result for that question stays",
-    "there is no command to correct it yet",
-    "treat it as void",
+    "the recorded result can be voided",
     "Offer a fresh question on the same objective",
     "never your key",
   ])("integrity.md states: %s", (phrase) => {
@@ -269,6 +269,39 @@ describe("exam skill: answer-key risk disclosure and disputes", () => {
     ).toEqual([]);
   });
 
+  test.each([
+    ["SKILL.md", skill.body],
+    ["integrity.md", integrity],
+  ])("%s names the exam-void and exam-unvoid recovery commands", (_n, text) => {
+    expect(missing(text, ["exam-void", "exam-unvoid"])).toEqual([]);
+  });
+
+  test("the dispute recipe finds the (session, at) pair via exam-items submissions", () => {
+    expect(
+      missing(integrity, ["exam-items", "submissions", "session", "at"]),
+    ).toEqual([]);
+  });
+
+  test("the dispute recipe says voiding drops the whole submission, not one question", () => {
+    expect(
+      has(integrity, "whole submission") || has(integrity, "entire submission"),
+    ).toBe(true);
+    expect(has(integrity, "not one question")).toBe(true);
+  });
+
+  test("the dispute recipe relays a failed exam-void without claiming anything was voided", () => {
+    expect(has(integrity, "fails")).toBe(true);
+    expect(
+      has(integrity, "nothing was voided") ||
+        has(integrity, "do not say it was voided") ||
+        has(integrity, "without claiming"),
+    ).toBe(true);
+  });
+
+  test("allowed-tools stays exactly the one CLI Bash pattern", () => {
+    expect(toolEntries(skill.data["allowed-tools"])).toEqual([CLI_TOOL]);
+  });
+
   test("no skill file claims to have corrected, voided or reset a recorded result", () => {
     const claim =
       /\bI(?:'ve| have)?\s+(?:corrected|removed|reset|voided|deleted|undone|fixed)\b[^.\n]*\b(?:result|score|answer|record)/i;
@@ -278,10 +311,13 @@ describe("exam skill: answer-key risk disclosure and disputes", () => {
     expect(offenders).toEqual([]);
   });
 
-  test("no CLI command exists in the skill to correct, void or reset a result", () => {
+  test("no CLI command in the skill corrects, resets or deletes a result other than exam-void and exam-unvoid", () => {
     const used = files.flatMap((f) => usedCommands(f.body));
-    const offenders = used.filter((c) =>
-      /correct|void|reset|undo|delete|remove|amend|revoke/i.test(c),
+    const offenders = used.filter(
+      (c) =>
+        c !== "exam-void" &&
+        c !== "exam-unvoid" &&
+        /correct|void|reset|undo|delete|remove|amend|revoke/i.test(c),
     );
     expect(offenders).toEqual([]);
   });

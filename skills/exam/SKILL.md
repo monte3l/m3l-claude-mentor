@@ -56,6 +56,10 @@ The first docs lookup may ask the user to allow the docs domains (see the README
 - `exam-answer`: relay the message. No key has been revealed. Ask the learner to restate
   a malformed answer and retry once. When it says the exam was recorded, never retry.
 - `record-batch`: say the follow-up was not saved and go on.
+- `exam-void` or `exam-unvoid`: relay the message and claim nothing was voided or
+  restored. When it says the void list was saved but levels were not updated, it names
+  the topics to refresh with `recompute`. See "Answer keys can be wrong" in
+  `references/integrity.md` for when to void.
 - `readiness` or `exam-items`: say there is no view, and give no numbers.
 
 ## Start

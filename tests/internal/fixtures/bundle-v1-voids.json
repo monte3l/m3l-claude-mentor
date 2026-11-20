@@ -1,0 +1,97 @@
+{
+  "format": "m3l-claude-mentor-export",
+  "version": 1,
+  "exportedAt": 1700000000000,
+  "state": {
+    "schemaVersion": 1,
+    "muted": false,
+    "mutedTopics": ["hooks"],
+    "excludedProjects": ["/work/secret-project"],
+    "lastChangelogVersion": "2.1.0",
+    "segment": {
+      "segmentId": 4,
+      "startedAt": 1699990000000,
+      "lastActivityAt": 1699999000000,
+      "tipsEmitted": 1,
+      "lastTipAt": 1699995000000,
+      "lastTopic": "plan-mode"
+    },
+    "voidedExams": [
+      {
+        "session": "sess-1",
+        "at": 1699990000000
+      },
+      {
+        "session": "sess-2",
+        "at": 1699995000000
+      }
+    ]
+  },
+  "profile": {
+    "schemaVersion": 1,
+    "topics": {
+      "plan-mode": {
+        "introduced": true,
+        "level": "Recalled",
+        "lastPassAt": 1699999500000,
+        "passes": 2
+      },
+      "hooks": {
+        "introduced": true,
+        "level": "Introduced",
+        "lastPassAt": null,
+        "passes": 0
+      }
+    },
+    "calibration": {
+      "confirmed": 3,
+      "refuted": 1
+    }
+  },
+  "catalog": {
+    "overrides": {
+      "plan-mode": {
+        "targetLevel": "Fluent"
+      }
+    },
+    "custom": [
+      {
+        "id": "team-conventions",
+        "title": "Team conventions",
+        "type": "concept",
+        "dependencies": [],
+        "keywords": ["conventions", "team"],
+        "targetLevel": "Understood",
+        "enabled": true
+      }
+    ],
+    "scoring": {
+      "halfLifeDays": 45,
+      "fluencySessions": 4
+    }
+  },
+  "goals": "Learn hooks\nand plan mode\n",
+  "evidence": [
+    {
+      "channel": "quiz",
+      "topic": "plan-mode",
+      "result": "negative",
+      "at": 1699990000000,
+      "session": "sess-1"
+    },
+    {
+      "channel": "observed",
+      "topic": "plan-mode",
+      "result": "positive",
+      "at": 1699995000000,
+      "session": "sess-2"
+    },
+    {
+      "channel": "explain-back",
+      "topic": "hooks",
+      "result": "positive",
+      "at": 1699999000000,
+      "session": "sess-2"
+    }
+  ]
+}

@@ -3,6 +3,11 @@ import { readExamItems } from "../internal/exam-store.ts";
 import { computeReadiness, type Readiness } from "../internal/readiness.ts";
 import { loadProfile, loadState } from "../internal/store.ts";
 import type { Track } from "../internal/tracks.ts";
+import {
+  excludeVoidedItems,
+  pairKey,
+  type VoidedExam,
+} from "../internal/voids.ts";
 import type { ParsedArgs } from "./args.ts";
 import { loadMergedCatalog, type CommandEnv } from "./env.ts";
 import { optionalLimit, resolveTrack } from "./exam-shared.ts";
@@ -10,7 +15,8 @@ import { optionalLimit, resolveTrack } from "./exam-shared.ts";
 /**
  * `readiness [--track <code>]`: the exam readiness of the track named by
  * `--track`, or of the stored active track, computed over the stored
- * profile, the merged catalog and the exam item log. Read-only; never
+ * profile, the merged catalog and the exam item log, without the items of
+ * voided submissions (`state.json` `voidedExams`). Read-only; never
  * locks. The result is the {@link Readiness} object unchanged, so `index`
  * is absent when evidence is insufficient.
  *
@@ -38,7 +44,7 @@ export async function readiness(
     track,
     catalog: entries,
     profile,
-    items,
+    items: excludeVoidedItems(items, state.voidedExams ?? []),
     now: env.now,
   });
 }
@@ -83,28 +89,84 @@ export interface DomainItemsView {
 }
 
 /**
+ * One exam submission as listed by `exam-items`: the `(session, at)` pair
+ * its items share, how many of the track's items it holds, and whether it
+ * is voided.
+ *
+ * @example
+ * ```ts
+ * import type { SubmissionView } from "./exam-report-commands.ts";
+ * const s: SubmissionView = { session: "sess-1", at: 1_000, items: 3, voided: false };
+ * ```
+ */
+export interface SubmissionView {
+  readonly session: string;
+  readonly at: number;
+  readonly items: number;
+  readonly voided: boolean;
+}
+
+/**
  * The output of `exam-items`.
  *
  * @example
  * ```ts
  * import type { ExamItemsView } from "./exam-report-commands.ts";
- * const empty: ExamItemsView = { track: "CCAR-F", total: 0, domains: [] };
+ * const empty: ExamItemsView = {
+ *   track: "CCAR-F", total: 0, domains: [], submissions: [],
+ * };
  * ```
  */
 export interface ExamItemsView {
   readonly track: string;
-  /** How many items were counted (this track, known domain and objective). */
+  /**
+   * How many items were counted (this track, known domain and objective,
+   * not voided).
+   */
   readonly total: number;
   /** Every track domain, in track order. */
   readonly domains: readonly DomainItemsView[];
+  /**
+   * The track's submissions among the items read, most recent first, at
+   * most {@link MAX_SUBMISSIONS}; voided ones included and flagged.
+   */
+  readonly submissions: readonly SubmissionView[];
 }
+
+const MAX_SUBMISSIONS = 20;
 
 interface Tally {
   items: number;
   correct: number;
 }
 
-function countItems(track: Track, items: readonly ExamItem[]): ExamItemsView {
+function listSubmissions(
+  track: Track,
+  items: readonly ExamItem[],
+  voids: readonly VoidedExam[],
+): SubmissionView[] {
+  const voided = new Set(voids.map((v) => pairKey(v.session, v.at)));
+  const bySubmission = new Map<string, SubmissionView>();
+  for (const item of items) {
+    if (item.track !== track.code) continue;
+    const key = pairKey(item.session, item.at);
+    const count = bySubmission.get(key)?.items ?? 0;
+    bySubmission.set(key, {
+      session: item.session,
+      at: item.at,
+      items: count + 1,
+      voided: voided.has(key),
+    });
+  }
+  return [...bySubmission.values()]
+    .sort((a, b) => b.at - a.at)
+    .slice(0, MAX_SUBMISSIONS);
+}
+
+function countItems(
+  track: Track,
+  items: readonly ExamItem[],
+): Omit<ExamItemsView, "submissions"> {
   const tallies = new Map<string, Tally>();
   const lastAt = new Map<string, number>();
   const tally = (key: string, correct: boolean): void => {
@@ -149,7 +211,10 @@ function countItems(track: Track, items: readonly ExamItem[]): ExamItemsView {
  * per-objective item counts (no decay, no per-day cap) for the track named
  * by `--track` or the stored active track, over at most the newest `n` log
  * items. Items of other tracks, or whose domain or objective the track
- * lacks, are not counted. Read-only; never locks.
+ * lacks, or of a voided submission (`state.json` `voidedExams`), are not
+ * counted. `submissions` lists the track's submissions among those items,
+ * most recent first, at most {@link MAX_SUBMISSIONS}, voided ones flagged. Read-only; never
+ * locks.
  *
  * @throws CliUsageError when `--track` is malformed, or `--limit` is not an
  * integer from 1 to 5000.
@@ -160,7 +225,7 @@ function countItems(track: Track, items: readonly ExamItem[]): ExamItemsView {
  * @example
  * ```ts
  * import { examItems } from "./exam-report-commands.ts";
- * const { total, domains } = await examItems(args, env);
+ * const { total, domains, submissions } = await examItems(args, env);
  * ```
  */
 export async function examItems(
@@ -174,5 +239,9 @@ export async function examItems(
     env.dir,
     limit !== undefined ? { maxItems: limit } : undefined,
   );
-  return countItems(track, items);
+  const voids = state.voidedExams ?? [];
+  return {
+    ...countItems(track, excludeVoidedItems(items, voids)),
+    submissions: listSubmissions(track, items, voids),
+  };
 }

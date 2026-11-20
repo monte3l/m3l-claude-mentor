@@ -23,6 +23,7 @@ import {
   readEvidence,
   saveProfile,
 } from "../../internal/store.ts";
+import { excludeVoidedEvidence } from "../../internal/voids.ts";
 import { payloadField, payloadSession } from "../common.ts";
 import { describeError, type HookDeps, type HookHandler } from "../runtime.ts";
 
@@ -128,16 +129,20 @@ async function scoringOf(
   };
 }
 
-/** Raise-only recompute of `profile` from the evidence now stored. */
+/**
+ * Raise-only recompute of `profile` from the evidence now stored, without
+ * the quiz evidence of voided exam submissions (`state.json` `voidedExams`).
+ */
 async function raised(
   deps: HookDeps,
   profile: Profile,
   scoring: { halfLifeDays?: number; fluencySessions?: number },
 ): Promise<ReturnType<typeof recomputeProfile>> {
   const { events } = await readEvidence(deps.dir);
+  const { voidedExams = [] } = await loadState(deps.dir, deps.now);
   return recomputeProfile({
     profile,
-    events,
+    events: excludeVoidedEvidence(events, voidedExams),
     catalog: deps.catalog,
     scoring,
     now: deps.now,
@@ -196,11 +201,16 @@ async function refreshedProfile(deps: HookDeps): Promise<Refreshed> {
  * Handles `SessionStart`. With an invalid `session_id` it resolves `null`
  * and touches nothing. Otherwise it first re-derives the level of every
  * enabled topic that has evidence (also when tips are off, so levels stay
- * right), raising levels only (never lowering one), and writes
+ * right; quiz evidence of a voided exam submission is not counted), raising
+ * levels only (never lowering one), and writes
  * `profile.json` only when a level is raised; that save runs under the data
  * lock, taken only when something would be raised. If the lock times out,
  * the stored profile is summarized unrefreshed and the output carries a
  * `note` (one `LOCK_TIMEOUT` stderr line); any other failure propagates.
+ * An unreadable or invalid `state.json` (read for the mute flags and the
+ * void list) therefore drops the whole level refresh and the summary, even
+ * with dial 0, and nothing is written; the hook shell fails open (one
+ * stderr line, exit 0), so the session still starts.
  * Then it
  * resolves `null` when the learner muted the mentor or the dial is 0, and
  * otherwise returns, as
