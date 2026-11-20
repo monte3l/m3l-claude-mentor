@@ -279,14 +279,36 @@ function applyOverride(
 }
 
 /**
+ * The result of {@link mergeCatalog}: the merged entries plus the ids of any
+ * custom entries dropped because a bundled entry already uses that id.
+ *
+ * @example
+ * ```ts
+ * import { mergeCatalog, type MergedCatalog } from "./catalog.ts";
+ * const r = mergeCatalog(bundled, user);
+ * const merged: MergedCatalog | undefined = r.ok ? r.value : undefined;
+ * merged?.shadowedCustom; // e.g. ["plan-mode"]
+ * ```
+ */
+export interface MergedCatalog {
+  readonly entries: readonly CatalogEntry[];
+  /** Sorted, distinct ids of the dropped custom entries; may be empty. */
+  readonly shadowedCustom: readonly string[];
+}
+
+/**
  * Merges the bundled catalog with the learner's user catalog: bundled
  * entries in order with overrides applied, then custom entries in order
  * (overrides may also target a custom entry). Inputs are not mutated.
  *
- * Fails when an override names an unknown id, a custom id equals a bundled
- * id, or the merged list breaks a {@link parseCatalog} invariant (size cap,
- * duplicate ids, unknown dependency, cycle). Disabling a topic that another
- * enabled topic depends on is allowed.
+ * A custom entry whose id equals a bundled id is dropped (the bundled entry
+ * wins) and its id is reported in `shadowedCustom`; an override on that id
+ * applies to the bundled entry, and other custom entries may depend on it.
+ *
+ * Fails when two custom entries share an id, an override names an unknown
+ * id, or the final merged list breaks a {@link parseCatalog} invariant (size
+ * cap, unknown dependency, cycle). Disabling a topic that another enabled
+ * topic depends on is allowed.
  *
  * @example
  * ```ts
@@ -295,26 +317,28 @@ function applyOverride(
  * const user = parseUserCatalog(userJson);
  * if (bundled.ok && user.ok) {
  *   const merged = mergeCatalog(bundled.value, user.value);
+ *   if (merged.ok) merged.value.entries; // the merged topics
  * }
  * ```
  */
 export function mergeCatalog(
   bundled: readonly CatalogEntry[],
   user: UserCatalog,
-): Parsed<readonly CatalogEntry[]> {
+): Parsed<MergedCatalog> {
   const bundledIds = new Set<string>(bundled.map((e) => e.id));
   const customIds = new Set<string>();
+  const shadowed = new Set<string>();
+  const kept: CatalogEntry[] = [];
   for (const [i, entry] of user.custom.entries()) {
-    if (bundledIds.has(entry.id)) {
-      return fail(`custom entry ${String(i)} reuses a bundled id`);
-    }
     if (customIds.has(entry.id)) {
       return fail(`custom entry ${String(i)} duplicates an earlier custom id`);
     }
     customIds.add(entry.id);
+    if (bundledIds.has(entry.id)) shadowed.add(entry.id);
+    else kept.push(entry);
   }
 
-  const combined = [...bundled, ...user.custom];
+  const combined = [...bundled, ...kept];
   if (combined.length > MAX_ENTRIES) {
     return fail(`catalog may hold at most ${String(MAX_ENTRIES)} entries`);
   }
@@ -332,7 +356,8 @@ export function mergeCatalog(
     ),
   );
   const problem = graphProblem(merged);
-  return problem === null ? ok(merged) : fail(problem);
+  if (problem !== null) return fail(problem);
+  return ok({ entries: merged, shadowedCustom: [...shadowed].sort() });
 }
 
 const WORD_CHAR = /^[\p{L}\p{N}]$/u;
@@ -381,8 +406,26 @@ function containsWord(text: string, keyword: string): boolean {
   return false;
 }
 
+const NO_IDS: ReadonlySet<string> = new Set();
+
+/**
+ * Options for {@link matchTopics}.
+ *
+ * @example
+ * ```ts
+ * import { matchTopics, type MatchTopicsOptions } from "./catalog.ts";
+ * const options: MatchTopicsOptions = { includeAmbientOff: new Set(["x"]) };
+ * matchTopics(catalog, "text", 3, options);
+ * ```
+ */
+export interface MatchTopicsOptions {
+  /** Ids of `ambient: false` entries that may match anyway. */
+  readonly includeAmbientOff?: ReadonlySet<string>;
+}
+
 /**
  * Finds the enabled topics whose keywords occur in `text`, best first.
+ * Entries marked `ambient: false` are skipped unless opted in via `options`.
  *
  * Matching is case-insensitive and literal; a keyword must be bounded on both
  * sides by a character that is not a Unicode letter or digit (`_` counts as a
@@ -401,26 +444,35 @@ function containsWord(text: string, keyword: string): boolean {
  * @param catalog - Validated entries, e.g. from {@link mergeCatalog}.
  * @param text - Free text to scan.
  * @param limit - Maximum results (default 3); below 1 returns `[]`.
+ * @param options - `includeAmbientOff`: ids of `ambient: false` entries to
+ *   match anyway. Every other `ambient: false` entry is skipped, and a
+ *   disabled entry is skipped even when listed.
  *
  * @example
  * ```ts
  * import { matchTopics } from "./catalog.ts";
  * const hits = matchTopics(catalog, "How do I enter plan mode?");
  * hits.map((e) => e.id); // e.g. ["plan-mode"]
+ * matchTopics(catalog, "plan mode", 3, {
+ *   includeAmbientOff: new Set(["plan-mode"]),
+ * });
  * ```
  */
 export function matchTopics(
   catalog: readonly CatalogEntry[],
   text: string,
   limit: number = DEFAULT_MATCH_LIMIT,
+  options: MatchTopicsOptions = {},
 ): readonly CatalogEntry[] {
   const max = Math.floor(limit);
   if (!(max >= 1)) return [];
   const haystack = text.slice(0, MAX_MATCH_TEXT_LENGTH).toLowerCase();
+  const optedIn = options.includeAmbientOff ?? NO_IDS;
 
   const scored: { readonly entry: CatalogEntry; readonly score: number }[] = [];
   for (const entry of catalog) {
     if (!entry.enabled) continue;
+    if (entry.ambient === false && !optedIn.has(entry.id)) continue;
     let score = 0;
     for (const keyword of new Set(entry.keywords)) {
       if (containsWord(haystack, keyword)) score += 1;

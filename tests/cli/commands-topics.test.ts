@@ -73,7 +73,14 @@ describe("topics", () => {
           muted: false,
         },
       ],
+      shadowedCustom: [],
     });
+  });
+
+  test("shadowedCustom is always present, empty when nothing collides", async () => {
+    const out = (await runOk(sb.dir, ["topics"])) as Record<string, unknown>;
+    expect(Object.hasOwn(out, "shadowedCustom")).toBe(true);
+    expect(out["shadowedCustom"]).toEqual([]);
   });
 
   test("omits style when the entry has none", async () => {
@@ -85,6 +92,7 @@ describe("topics", () => {
   test("an absent bundled catalog yields an empty list", async () => {
     expect(await runOk(sb.dir, ["topics"], { bundled: [] })).toEqual({
       topics: [],
+      shadowedCustom: [],
     });
   });
 

@@ -292,7 +292,7 @@ async function loadCatalog(dir: string): Promise<readonly CatalogEntry[]> {
       `catalog.json does not merge with the bundled catalog: ${merged.reason}`,
     );
   }
-  return merged.value;
+  return merged.value.entries;
 }
 
 function absoluteCwd(

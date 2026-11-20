@@ -235,7 +235,10 @@ describe("mergeCatalog", () => {
 
   test("with an empty user catalog returns bundled unchanged", () => {
     const r = mergeCatalog(bundled, userOf({}));
-    expect(r).toEqual({ ok: true, value: bundled });
+    expect(r).toEqual({
+      ok: true,
+      value: { entries: bundled, shadowedCustom: [] },
+    });
   });
 
   test("applies overrides and appends custom after bundled", () => {
@@ -255,13 +258,13 @@ describe("mergeCatalog", () => {
     );
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(ids(r.value)).toEqual(["a", "b", "z", "y"]);
-    const a = r.value[0];
+    expect(ids(r.value.entries)).toEqual(["a", "b", "z", "y"]);
+    const a = r.value.entries[0];
     expect(a?.enabled).toBe(false);
     expect(a?.targetLevel).toBe("Fluent");
     expect(a?.style).toBe("socratic");
     expect(a?.keywords).toEqual(["beta"]);
-    expect(r.value[1]).toEqual(bundled[1]);
+    expect(r.value.entries[1]).toEqual(bundled[1]);
   });
 
   test("an override can target a custom entry", () => {
@@ -270,7 +273,7 @@ describe("mergeCatalog", () => {
       userOf({ custom: [raw("z")], overrides: { z: { enabled: false } } }),
     );
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.value[2]?.enabled).toBe(false);
+    if (r.ok) expect(r.value.entries[2]?.enabled).toBe(false);
   });
 
   test("does not mutate the bundled input", () => {
@@ -288,10 +291,121 @@ describe("mergeCatalog", () => {
     ).toBe(false);
   });
 
-  test("fails when a custom id equals a bundled id", () => {
-    expect(mergeCatalog(bundled, userOf({ custom: [raw("a")] })).ok).toBe(
-      false,
-    );
+  describe("a custom id equal to a bundled id", () => {
+    test("is dropped: the bundled entry wins and the id is reported", () => {
+      const r = mergeCatalog(
+        bundled,
+        userOf({
+          custom: [raw("a", { title: "Mine", keywords: ["mine"] }), raw("z")],
+        }),
+      );
+      expect(r.ok).toBe(true);
+      if (!r.ok) return;
+      expect(ids(r.value.entries)).toEqual(["a", "b", "z"]);
+      expect(r.value.entries[0]).toEqual(bundled[0]);
+      expect(r.value.shadowedCustom).toEqual(["a"]);
+    });
+
+    test("shadowedCustom is sorted and deduped", () => {
+      const r = mergeCatalog(bundled, userOf({ custom: [raw("b"), raw("a")] }));
+      expect(r.ok).toBe(true);
+      if (r.ok) expect(r.value.shadowedCustom).toEqual(["a", "b"]);
+    });
+
+    test("another custom entry may still depend on the shadowed id", () => {
+      const r = mergeCatalog(
+        bundled,
+        userOf({ custom: [raw("a"), raw("z", { dependencies: ["a"] })] }),
+      );
+      expect(r.ok).toBe(true);
+      if (r.ok) {
+        expect(ids(r.value.entries)).toEqual(["a", "b", "z"]);
+        expect(r.value.entries[2]?.dependencies).toEqual(["a"]);
+      }
+    });
+
+    test("an override targeting the shadowed id applies to the bundled entry", () => {
+      const r = mergeCatalog(
+        bundled,
+        userOf({
+          custom: [raw("a")],
+          overrides: { a: { enabled: false, targetLevel: "Fluent" } },
+        }),
+      );
+      expect(r.ok).toBe(true);
+      if (!r.ok) return;
+      expect(r.value.entries[0]).toEqual({
+        ...bundled[0],
+        enabled: false,
+        targetLevel: "Fluent",
+      });
+      expect(r.value.entries).toHaveLength(2);
+    });
+
+    test("a duplicate id among the custom entries is still an error", () => {
+      expect(
+        mergeCatalog(
+          bundled,
+          userOf({ custom: [raw("a"), raw("z"), raw("z")] }),
+        ).ok,
+      ).toBe(false);
+      // Two custom entries both shadowing the same bundled id also duplicate
+      // each other.
+      expect(
+        mergeCatalog(bundled, userOf({ custom: [raw("a"), raw("a")] })).ok,
+      ).toBe(false);
+    });
+
+    test("the shadowed entry does not count toward the 500 cap", () => {
+      const many = Array.from({ length: 499 }, (_, i) => raw(`c${String(i)}`));
+      // 2 bundled + 498 kept custom = 500 (the shadowed one is dropped before
+      // the cap is computed).
+      const r = mergeCatalog(
+        bundled,
+        userOf({ custom: [raw("a"), ...many.slice(0, 498)] }),
+      );
+      expect(r.ok).toBe(true);
+      if (r.ok) expect(r.value.entries).toHaveLength(500);
+      // 2 bundled + 499 kept custom = 501 still fails.
+      expect(
+        mergeCatalog(
+          bundled,
+          userOf({ custom: [raw("a"), ...many.slice(0, 499)] }),
+        ).ok,
+      ).toBe(false);
+    });
+
+    test("a cycle through the final merged set is still an error", () => {
+      const r = mergeCatalog(
+        bundled,
+        userOf({
+          custom: [
+            raw("a", { dependencies: ["z"] }),
+            raw("z", { dependencies: ["b"] }),
+          ],
+        }),
+      );
+      // a is dropped (bundled a has no dependencies), so z -> b -> a is not a
+      // cycle and the merge succeeds.
+      expect(r.ok).toBe(true);
+      const cyc = mergeCatalog(
+        bundled,
+        userOf({
+          custom: [
+            raw("a"),
+            raw("x", { dependencies: ["y"] }),
+            raw("y", { dependencies: ["x"] }),
+          ],
+        }),
+      );
+      expect(cyc.ok).toBe(false);
+    });
+
+    test("no collision reports an empty shadowedCustom", () => {
+      const r = mergeCatalog(bundled, userOf({ custom: [raw("z")] }));
+      expect(r.ok).toBe(true);
+      if (r.ok) expect(r.value.shadowedCustom).toEqual([]);
+    });
   });
 
   test("fails on duplicate custom ids", () => {
@@ -328,7 +442,7 @@ describe("mergeCatalog", () => {
       userOf({ overrides: { a: { enabled: false } } }),
     );
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.value[1]?.enabled).toBe(true);
+    if (r.ok) expect(r.value.entries[1]?.enabled).toBe(true);
   });
 });
 
@@ -367,6 +481,77 @@ describe("matchTopics", () => {
   test("ignores disabled entries", () => {
     const cat = [entry("off", ["plan"], false), entry("on", ["plan"])];
     expect(ids(matchTopics(cat, "plan"))).toEqual(["on"]);
+  });
+
+  describe("ambient: false entries", () => {
+    const quiet = parsed("quiet", { keywords: ["plan"], ambient: false });
+    const loud = parsed("loud", { keywords: ["plan"] });
+    const explicitLoud = parsed("explicit", {
+      keywords: ["plan"],
+      ambient: true,
+    });
+
+    test("are excluded by default, ambient and absent-ambient entries still match", () => {
+      expect(ids(matchTopics([quiet, loud, explicitLoud], "plan"))).toEqual([
+        "loud",
+        "explicit",
+      ]);
+      expect(matchTopics([quiet], "plan")).toEqual([]);
+    });
+
+    test("are included when listed in includeAmbientOff", () => {
+      const hits = matchTopics([quiet, loud], "plan", 3, {
+        includeAmbientOff: new Set(["quiet"]),
+      });
+      expect(ids(hits)).toEqual(["quiet", "loud"]);
+    });
+
+    test("only the listed ids are opted in", () => {
+      const other = parsed("other", { keywords: ["plan"], ambient: false });
+      const hits = matchTopics([quiet, other], "plan", 3, {
+        includeAmbientOff: new Set(["other"]),
+      });
+      expect(ids(hits)).toEqual(["other"]);
+    });
+
+    test("an opted-in entry that is disabled is still excluded", () => {
+      const off = parsed("off", {
+        keywords: ["plan"],
+        ambient: false,
+        enabled: false,
+      });
+      expect(
+        matchTopics([off], "plan", 3, {
+          includeAmbientOff: new Set(["off"]),
+        }),
+      ).toEqual([]);
+    });
+
+    test("an empty opt-in set behaves like no options", () => {
+      expect(
+        matchTopics([quiet, loud], "plan", 3, {
+          includeAmbientOff: new Set(),
+        }),
+      ).toEqual(matchTopics([quiet, loud], "plan"));
+    });
+  });
+
+  describe("override cannot set ambient", () => {
+    test("an ambient key in an override is ignored like any unknown key", () => {
+      const r = parseUserCatalog({
+        overrides: { a: { ambient: false, enabled: false } },
+      });
+      expect(r.ok).toBe(true);
+      if (!r.ok) return;
+      const bundledA = parsed("a");
+      const merged = mergeCatalog([bundledA], r.value);
+      expect(merged.ok).toBe(true);
+      if (!merged.ok) return;
+      expect(merged.value.entries[0]?.enabled).toBe(false);
+      expect(Object.hasOwn(merged.value.entries[0] ?? {}, "ambient")).toBe(
+        false,
+      );
+    });
   });
 
   test("excludes entries with zero matches", () => {

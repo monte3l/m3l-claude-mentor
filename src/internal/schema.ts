@@ -252,6 +252,11 @@ export interface CatalogEntry {
   /** Present only when supplied. */
   readonly style?: Style;
   readonly enabled: boolean;
+  /**
+   * `false` keeps the topic out of ambient keyword matching (prompt tips)
+   * unless a caller opts it in. Present only when supplied.
+   */
+  readonly ambient?: boolean;
 }
 
 const TOPIC_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -540,7 +545,8 @@ function parseDependencies(
 
 /**
  * Validates one catalog entry. Each field is read once from an own property;
- * extra keys are ignored. `style` is omitted from the result when absent.
+ * extra keys are ignored. `style` and `ambient` are omitted from the result
+ * when absent; a supplied `ambient` must be a boolean.
  *
  * @param value - Untrusted input.
  * @returns A fresh {@link CatalogEntry}, or a reason naming the bad field.
@@ -604,6 +610,12 @@ export function parseCatalogEntry(value: unknown): Parsed<CatalogEntry> {
     return fail("entry enabled must be a boolean");
   }
 
+  const hasAmbient = Object.hasOwn(record, "ambient");
+  const ambient = hasAmbient ? record["ambient"] : undefined;
+  if (hasAmbient && typeof ambient !== "boolean") {
+    return fail("entry ambient must be a boolean");
+  }
+
   return ok({
     id: id.value,
     title,
@@ -613,5 +625,6 @@ export function parseCatalogEntry(value: unknown): Parsed<CatalogEntry> {
     targetLevel,
     ...(isMember(STYLES, style) ? { style } : {}),
     enabled,
+    ...(typeof ambient === "boolean" ? { ambient } : {}),
   });
 }

@@ -62,20 +62,23 @@ export interface CatalogTopicView {
  * `topics`: every entry of the merged catalog (bundled entries with the
  * user's overrides applied, then custom topics), in catalog order, joined
  * with the profile and the state. Disabled entries are listed with
- * `enabled: false`. Nothing is written.
+ * `enabled: false`. `shadowedCustom` (always present, sorted, possibly
+ * empty) lists custom topic ids dropped because a bundled topic already uses
+ * them. Nothing is written.
  *
  * @throws MentorStateError when `catalog.json` fails to load or merge.
  *
  * @example
  * ```ts
  * import { topics } from "./catalog-commands.ts";
- * const { topics: rows } = await topics(env);
+ * const { topics: rows, shadowedCustom } = await topics(env);
  * ```
  */
-export async function topics(
-  env: CommandEnv,
-): Promise<{ readonly topics: readonly CatalogTopicView[] }> {
-  const { entries } = await loadMergedCatalog(env);
+export async function topics(env: CommandEnv): Promise<{
+  readonly topics: readonly CatalogTopicView[];
+  readonly shadowedCustom: readonly string[];
+}> {
+  const { entries, shadowedCustom } = await loadMergedCatalog(env);
   const profile = await loadProfile(env.dir, env.now);
   const state = await loadState(env.dir, env.now);
   const muted = new Set<string>(state.mutedTopics);
@@ -98,6 +101,7 @@ export async function topics(
         muted: muted.has(entry.id),
       };
     }),
+    shadowedCustom,
   };
 }
 

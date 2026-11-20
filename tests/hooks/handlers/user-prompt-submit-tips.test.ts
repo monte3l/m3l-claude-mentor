@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { userPromptSubmitHandler } from "../../../src/hooks/handlers/user-prompt-submit.ts";
 import { parseCatalog } from "../../../src/internal/catalog.ts";
+import type { CatalogEntry } from "../../../src/internal/schema.ts";
 import {
   CATALOG,
   NOW,
@@ -142,5 +143,36 @@ describe("userPromptSubmitHandler teach-next", () => {
     const text = await ctx("teach me about skills. let's learn plan mode");
     expect(text).toContain("/m3l-claude-mentor:teach skills after answering");
     expect(text).not.toContain("/m3l-claude-mentor:teach plan-mode");
+  });
+});
+
+describe("userPromptSubmitHandler ambient: false topics", () => {
+  const withAmbient = (ambientOff: boolean): readonly CatalogEntry[] => {
+    const p = parseCatalog(
+      CATALOG.map((e) => {
+        if (e.id === "plan-mode" && ambientOff) return { ...e, ambient: false };
+        return e;
+      }),
+    );
+    if (!p.ok) throw new Error("fixture");
+    return p.value;
+  };
+
+  test("an ambient: false topic never yields a tip even when its keyword appears", async () => {
+    const text = await ctx(
+      PLAN,
+      makeDeps(sb.dir, { catalog: withAmbient(true) }),
+    );
+    expect(text ?? "").not.toContain("Mentor tip due");
+    expect(text ?? "").not.toContain("plan-mode");
+    expect((await loadStateAt(sb.dir)).segment.tipsEmitted).toBe(0);
+  });
+
+  test("the same prompt does yield a tip while the topic is ambient", async () => {
+    const text = await ctx(
+      PLAN,
+      makeDeps(sb.dir, { catalog: withAmbient(false) }),
+    );
+    expect(text).toContain('Mentor tip due on "Plan mode" (plan-mode)');
   });
 });
