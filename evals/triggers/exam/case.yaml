@@ -1,0 +1,14 @@
+schema_version: "1.1"
+name: exam-trigger
+description: A learner naming a certification and asking for practice questions reaches the exam skill.
+runs: 3
+execution:
+  max_turns: 6
+  allowed_tools: [Skill, Agent]
+  prompt: "I'm sitting the Claude Certified Architect Foundations exam in three weeks. Can you give me some practice questions for it?"
+graders:
+  - name: skill-fired
+    type: tool_used
+    arm: with-only
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?exam"'

@@ -20,6 +20,12 @@ claude plugin eval . --trust-plugin --ablation none --max-cost-usd 5
 - `--max-cost-usd 5` stops before the next run starts once the list-price
   estimate passes the cap, and exits with code 2 and partial results. A case run
   costs roughly $0.20.
+- Cases tagged `needs-bash` call the plugin's CLI, so they need a `Bash` grant
+  from the operator, which a case's `allowed_tools` cannot give. Run them with
+  `--tag needs-bash --allow-tools 'Bash(node *)'`, and leave them out of a plain
+  run with `--case` globs (without the grant the exam skill stops at its first
+  CLI call and the case fails). Whether `CLAUDE_PLUGIN_DATA` is set inside a run
+  is not documented, and these cases have not been run.
 - Needs Claude Code 2.1.269 or newer. Results go to `evals/results/`, which is
   git-ignored. Add `--case '<glob>'` to run a subset.
 
@@ -28,15 +34,23 @@ claude plugin eval . --trust-plugin --ablation none --max-cost-usd 5
 Each case is `evals/<group>/<name>/case.yaml`, schema `1.1`, with `runs: 3` and
 inline graders.
 
-| Group      | Directory         | Prompt                                         | What it checks                                                        |
-| ---------- | ----------------- | ---------------------------------------------- | --------------------------------------------------------------------- |
-| `triggers` | `quiz`            | "quiz me on hooks"                             | natural phrasing fires the `quiz` skill                               |
-| `triggers` | `teach`           | "teach me plan mode"                           | natural phrasing fires the `teach` skill                              |
-| `triggers` | `assess`          | "I know MCP really well, so skip the basics."  | an over-claim of expertise fires the `assess` skill                   |
-| `triggers` | `whats-new`       | "what changed in Claude Code lately?"          | natural phrasing fires the `whats-new` skill                          |
-| `behavior` | `overclaim-probe` | "I'm advanced at hooks, skip the basics."      | the mentor probes the claim instead of accepting it (an `llm` grader) |
-| `dispatch` | `ask-docs`        | "Use the ask skill: how do subagents differ…?" | `ask` hands the lookup to the `docs-researcher` agent                 |
-| `dispatch` | `assess-judge`    | probe answers to judge                         | `assess` hands the judging to the `mastery-assessor` agent            |
+| Group      | Directory                   | Prompt                                         | What it checks                                                                        |
+| ---------- | --------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `triggers` | `quiz`                      | "quiz me on hooks"                             | natural phrasing fires the `quiz` skill                                               |
+| `triggers` | `teach`                     | "teach me plan mode"                           | natural phrasing fires the `teach` skill                                              |
+| `triggers` | `assess`                    | "I know MCP really well, so skip the basics."  | an over-claim of expertise fires the `assess` skill                                   |
+| `triggers` | `whats-new`                 | "what changed in Claude Code lately?"          | natural phrasing fires the `whats-new` skill                                          |
+| `triggers` | `exam`                      | "I'm sitting the Claude Certified Architect…"  | naming a certification and asking for practice fires the `exam` skill                 |
+| `triggers` | `exam-natural`              | casual "drill me" wording, no exam code        | wording that never names the skill still fires `exam`, not `quiz`                     |
+| `triggers` | `exam-negative`             | "…solutions architect… teach me subagents"     | a near-miss with the word architect does not fire `exam`                              |
+| `behavior` | `overclaim-probe`           | "I'm advanced at hooks, skip the basics."      | the mentor probes the claim instead of accepting it (an `llm` grader)                 |
+| `behavior` | `exam-refuses-real-items`   | asks for a remembered real exam question       | the mentor declines real exam content and offers original practice (an `llm` grader)  |
+| `behavior` | `exam-no-sample-reuse`      | asks to drill on the guide's sample questions  | the mentor writes original questions instead (an `llm` grader)                        |
+| `behavior` | `exam-readiness-disclaimer` | "how ready am I… my chance of passing?"        | no pass prediction or invented figure, on the no-evidence path only (an `llm` grader) |
+| `behavior` | `exam-key-before-display`   | one drill question (`needs-bash`)              | `exam-begin` runs before the question is shown and before `exam-answer`               |
+| `dispatch` | `ask-docs`                  | "Use the ask skill: how do subagents differ…?" | `ask` hands the lookup to the `docs-researcher` agent                                 |
+| `dispatch` | `exam-grounding`            | one drill question (`needs-bash`)              | `exam` dispatches `docs-researcher` before it fixes the key with `exam-begin`         |
+| `dispatch` | `assess-judge`              | probe answers to judge                         | `assess` hands the judging to the `mastery-assessor` agent                            |
 
 ## Case fields in use
 
@@ -94,3 +108,16 @@ Keep evals for what the hooks cannot decide: how the model words a tip, which
 skill it picks, whether it dispatches an agent. Grade those with an `llm`
 grader that tolerates variation, and keep the rate limit and the mastery rule in
 the hook tests.
+
+## What the exam cases cannot test
+
+- **Readiness numbers.** An index needs 15 practice items in the data directory,
+  which a case cannot seed, so only the no-evidence path is graded. The scoring
+  itself is covered by `tests/internal/readiness*.test.ts`.
+- **Answer-key correctness.** The model writes the questions and keys, and an
+  eval cannot check them against the docs. That is why each explanation links its
+  page and a disputed result can be voided (see
+  [`spec.md`](../docs/spec.md#16-certification-preparation)).
+- **Key shown late.** `exam-key-before-display` judges the first and last 12
+  messages of the run, so a long drill could hide the order. It asks for one
+  question to stay inside that window.

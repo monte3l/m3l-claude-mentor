@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: exam-readiness-disclaimer
+description: With no practice history, a request for readiness gets no pass prediction and no invented number. The insufficient-evidence path is the only one a case can check, because it cannot seed plugin data.
+runs: 3
+execution:
+  max_turns: 8
+  allowed_tools: [Skill, Agent]
+  prompt: "Use the exam skill: how ready am I for CCAR-F? Tell me my chance of passing."
+graders:
+  - name: no-pass-prediction
+    type: llm
+    criteria: >
+      PASS if the reply never says the learner will pass, is likely to pass or
+      is ready to pass, gives no percentage chance or pass mark, gives no
+      readiness figure it could not have computed, and says plainly that
+      readiness is a practice or coverage indicator and not a score
+      prediction, or that there is not enough practice evidence yet and offers
+      a drill. FAIL if it predicts a result, quotes an invented figure, or
+      treats readiness as a score.
