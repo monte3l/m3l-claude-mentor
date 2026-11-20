@@ -26,15 +26,25 @@ lookup belongs to `/m3l-claude-mentor:ask`, not here.
 node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} topics
 ```
 
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} get-profile
+```
+
+`get-profile` is needed only to read `activeTrackTopics`; run it when `$ARGUMENTS` is
+ambiguous or empty.
+
 The first docs lookup may ask the user to allow the docs domain (see the README).
 
 ## Steps
 
 1. **Resolve the topic** from `topics` by matching `$ARGUMENTS` to ids, titles and
    keywords. When ambiguous or empty, list 3-5 candidates (prefer `Unseen` or
-   `Introduced`, `enabled` true) and ask the learner to pick. Exclude any topic whose
-   `ambient` is false from those candidates unless `$ARGUMENTS` names it. When nothing
-   matches, say so and offer `/m3l-claude-mentor:ask`.
+   `Introduced`, `enabled` true) and ask the learner to pick. When `activeTrackTopics`
+   (from `get-profile`) is non-empty, candidates in it are offered first, ordered by
+   weight descending, skipping any in `mutedTopics`; an `ambient` false topic in
+   `activeTrackTopics` is a valid unprompted candidate. Exclude any other topic whose `ambient` is false from those
+   candidates unless `$ARGUMENTS` names it. When nothing matches, say so and offer
+   `/m3l-claude-mentor:ask`.
 2. **Gate.** When `enabled` is false, do not teach; offer to enable it through
    `/m3l-claude-mentor:profile`. When `muted` is true, teach only if the learner
    explicitly asks by name after being told. Mention any `dependencies` still `Unseen`

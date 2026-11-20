@@ -5,6 +5,7 @@
  * raised; it never lowers a level (the explicit `recompute` CLI command
  * does) and never writes `state.json`.
  */
+import { loadBundledTracks } from "../../internal/bundled-tracks.ts";
 import { isUnprompted } from "../../internal/catalog.ts";
 import { isLockTimeout, withStateLock } from "../../internal/lock.ts";
 import { isReviewDue } from "../../internal/mastery.ts";
@@ -14,7 +15,7 @@ import {
   type CatalogEntry,
   type Level,
 } from "../../internal/schema.ts";
-import type { Profile } from "../../internal/state-schema.ts";
+import type { MentorState, Profile } from "../../internal/state-schema.ts";
 import {
   loadCatalogFile,
   loadGoals,
@@ -23,6 +24,7 @@ import {
   readEvidence,
   saveProfile,
 } from "../../internal/store.ts";
+import { trackTopicWeights } from "../../internal/track-weights.ts";
 import { excludeVoidedEvidence } from "../../internal/voids.ts";
 import { payloadField, payloadSession } from "../common.ts";
 import { describeError, type HookDeps, type HookHandler } from "../runtime.ts";
@@ -48,31 +50,44 @@ function headOf(text: string, max: number): string {
   return head;
 }
 
-/**
- * Up to {@link MAX_BELOW_TARGET} `<id>: <level> (target <target>)` lines for
- * enabled, unmuted topics below target: touched topics (introduced or above
- * Unseen) first, then Unseen ones, each group in catalog order.
- */
-function belowTargetLines(
-  entries: readonly CatalogEntry[],
+/** The profile entry of topic `id`, or `undefined` when it has none. */
+function topicOf(
   profile: Profile,
-): string[] {
-  const touched: string[] = [];
-  const untouched: string[] = [];
-  for (const entry of entries) {
-    const topic = Object.hasOwn(profile.topics, entry.id)
-      ? profile.topics[entry.id]
-      : undefined;
-    const level: Level = topic?.level ?? "Unseen";
-    if (levelRank(level) >= levelRank(entry.targetLevel)) continue;
-    const line = `${entry.id}: ${level} (target ${entry.targetLevel})`;
-    if (topic?.introduced === true || levelRank(level) > 0) touched.push(line);
-    else untouched.push(line);
-  }
-  return [...touched, ...untouched].slice(0, MAX_BELOW_TARGET);
+  id: string,
+): Profile["topics"][string] | undefined {
+  return Object.hasOwn(profile.topics, id) ? profile.topics[id] : undefined;
 }
 
-/** Up to {@link MAX_REVIEWS} `review due: <id>` lines, in catalog order. */
+/**
+ * Up to {@link MAX_BELOW_TARGET} `<id>: <level> (target <target>)` lines for
+ * the topics below target: every `ranked` one first, in the given order,
+ * then the `others` that were touched (introduced or above Unseen), then
+ * the Unseen `others`, each of those two groups in catalog order.
+ */
+function belowTargetLines(
+  ranked: readonly CatalogEntry[],
+  others: readonly CatalogEntry[],
+  profile: Profile,
+): string[] {
+  const first: string[] = [];
+  const touched: string[] = [];
+  const untouched: string[] = [];
+  const add = (entry: CatalogEntry, isRanked: boolean): void => {
+    const topic = topicOf(profile, entry.id);
+    const level: Level = topic?.level ?? "Unseen";
+    if (levelRank(level) >= levelRank(entry.targetLevel)) return;
+    const line = `${entry.id}: ${level} (target ${entry.targetLevel})`;
+    if (isRanked) first.push(line);
+    else if (topic?.introduced === true || levelRank(level) > 0) {
+      touched.push(line);
+    } else untouched.push(line);
+  };
+  for (const entry of ranked) add(entry, true);
+  for (const entry of others) add(entry, false);
+  return [...first, ...touched, ...untouched].slice(0, MAX_BELOW_TARGET);
+}
+
+/** Up to {@link MAX_REVIEWS} `review due: <id>` lines, in `entries` order. */
 function reviewLines(
   entries: readonly CatalogEntry[],
   profile: Profile,
@@ -81,15 +96,72 @@ function reviewLines(
   const lines: string[] = [];
   for (const entry of entries) {
     if (lines.length >= MAX_REVIEWS) break;
-    const topic = Object.hasOwn(profile.topics, entry.id)
-      ? profile.topics[entry.id]
-      : undefined;
+    const topic = topicOf(profile, entry.id);
     if (topic === undefined || topic.lastPassAt === null) continue;
     if (isReviewDue(topic.lastPassAt, topic.passes, now)) {
       lines.push(`review due: ${entry.id}`);
     }
   }
   return lines;
+}
+
+/** The active exam track's code and its eligible topics, weight-ranked. */
+interface TrackFocus {
+  readonly code: string;
+  readonly ranked: readonly CatalogEntry[];
+}
+
+/** The track focus, if any, and a note when the tracks failed to load. */
+interface FocusResult {
+  readonly focus?: TrackFocus;
+  readonly note?: string;
+}
+
+/**
+ * The active exam track's focus, or no focus when `state.activeTrack` is
+ * unset or names a track that is no longer bundled. `ranked` holds the
+ * enabled, unmuted catalog topics the track maps (`ambient: false` ones
+ * included), by exam weight descending, then catalog order. A failure to
+ * load the bundled tracks degrades to no focus and is reported as a `note`
+ * (via `describeError`, so no stored data leaks), never dropped.
+ */
+function trackFocus(
+  state: MentorState,
+  catalog: readonly CatalogEntry[],
+  muted: ReadonlySet<string>,
+): FocusResult {
+  const code = state.activeTrack;
+  if (code === undefined) return {};
+  let tracks: ReturnType<typeof loadBundledTracks>;
+  try {
+    tracks = loadBundledTracks();
+  } catch (error) {
+    return { note: describeError(error) };
+  }
+  const track = tracks.find((t) => t.code === code);
+  if (track === undefined) return {};
+  const weights = new Map(Object.entries(trackTopicWeights(track)));
+  const weighted = catalog.flatMap((entry) => {
+    const weight = weights.get(entry.id);
+    return entry.enabled && !muted.has(entry.id) && weight !== undefined
+      ? [{ entry, weight }]
+      : [];
+  });
+  // Array#sort is stable, so equal weights keep catalog order.
+  weighted.sort((a, b) => b.weight - a.weight);
+  return { focus: { code, ranked: weighted.map(({ entry }) => entry) } };
+}
+
+/**
+ * Merges the notes of independent degradations into one `note`: the
+ * defined ones, in the order given, joined with `"; "`; `undefined` when
+ * none is defined.
+ */
+function mergeNotes(
+  ...notes: readonly (string | undefined)[]
+): string | undefined {
+  const defined = notes.filter((n): n is string => n !== undefined);
+  return defined.length === 0 ? undefined : defined.join("; ");
 }
 
 /**
@@ -219,7 +291,20 @@ async function refreshedProfile(deps: HookDeps): Promise<Refreshed> {
  * the dial, up to 8 below-target topics (touched ones first), up to 5 due
  * reviews, the first 400 chars of the learner's goals, and a pointer to the
  * profile command, all from the updated profile. Muted, disabled and
- * `ambient: false` topics are omitted;
+ * `ambient: false` topics are omitted. When `state.json` `activeTrack` names
+ * a bundled exam track, the head also carries an
+ * `Exam track: <code>, try /m3l-claude-mentor:exam <code> drill` line (never
+ * dropped to fit), and the topics that track maps (`ambient: false` ones
+ * included; still not muted or disabled ones) lead both the below-target
+ * and the review lines, by exam weight descending then catalog order,
+ * ahead of the other topics in their usual order, under the same caps; an
+ * unset or no longer bundled code changes nothing. If the bundled tracks
+ * cannot be loaded, the summary is built as if no track were active (no
+ * exam line, no track ordering, `ambient: false` topics omitted) and the
+ * output carries a `note` with `describeError`'s fixed text (never stored
+ * data), so the failure is reported, not swallowed. When both that and the
+ * `LOCK_TIMEOUT` note occur, `note` holds both, lock note first, joined
+ * with `"; "`;
  * evidence content is never included; `state.json` is never written.
  *
  * @example
@@ -232,23 +317,33 @@ async function refreshedProfile(deps: HookDeps): Promise<Refreshed> {
 export const sessionStartHandler: HookHandler = async (payload, deps) => {
   if (payloadSession(payload) === null) return null;
   const compact = isCompact(payload);
-  const { profile, note } = await refreshedProfile(deps);
-  const silent = note === undefined ? null : { note };
+  const { profile, note: lockNote } = await refreshedProfile(deps);
+  const silent = lockNote === undefined ? null : { note: lockNote };
   if (deps.settings.dial === 0) return silent;
   const state = await loadState(deps.dir, deps.now);
   if (state.muted) return silent;
   const goals = headOf(await loadGoals(deps.dir), MAX_GOALS_CHARS);
 
   const muted = new Set<string>(state.mutedTopics);
-  const entries = deps.catalog.filter(
-    (entry) => isUnprompted(entry) && !muted.has(entry.id),
+  const { focus, note: trackNote } = trackFocus(state, deps.catalog, muted);
+  const note = mergeNotes(lockNote, trackNote);
+  const ranked = focus?.ranked ?? [];
+  const inTrack = new Set(ranked.map((entry) => entry.id));
+  const others = deps.catalog.filter(
+    (entry) =>
+      isUnprompted(entry) && !muted.has(entry.id) && !inTrack.has(entry.id),
   );
-  const below = belowTargetLines(entries, profile);
-  const reviews = reviewLines(entries, profile, deps.now);
+  const below = belowTargetLines(ranked, others, profile);
+  const reviews = reviewLines([...ranked, ...others], profile, deps.now);
 
   const head = [
     `m3l-claude-mentor learner state (${compact ? "restored after compaction" : "session start"})`,
     `tip dial: ${String(deps.settings.dial)} (0 off, 5 most frequent)`,
+    ...(focus === undefined
+      ? []
+      : [
+          `Exam track: ${focus.code}, try /m3l-claude-mentor:exam ${focus.code} drill`,
+        ]),
   ];
   const topics = [
     ...(below.length > 0 ? ["topics below target:", ...below] : []),
