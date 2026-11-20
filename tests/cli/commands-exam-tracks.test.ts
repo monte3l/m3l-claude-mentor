@@ -20,7 +20,8 @@ afterEach(() => {
   sb.cleanup();
 });
 
-const TRACKS_USAGE = "usage: mentor-state tracks\n";
+const TRACKS_USAGE =
+  "usage: mentor-state tracks [--code <code> [--domain <id>]]\n";
 const SET_TRACK_USAGE =
   "usage: mentor-state set-track --code <code> | --clear\n";
 

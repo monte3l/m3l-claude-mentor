@@ -92,7 +92,7 @@ const COMMANDS = {
   "set-changelog-version": spec("set-changelog-version --version <version>", [
     "version",
   ]),
-  tracks: spec("tracks"),
+  tracks: spec("tracks [--code <code> [--domain <id>]]", ["code", "domain"]),
   "set-track": spec("set-track --code <code> | --clear", ["code"], {
     booleanFlags: ["clear"],
   }),
@@ -230,7 +230,7 @@ function dispatch(
     case "set-changelog-version":
       return setChangelogVersion(args, env);
     case "tracks":
-      return tracks(env);
+      return tracks(args, env);
     case "set-track":
       return setTrack(args, env);
     case "exam-begin":
