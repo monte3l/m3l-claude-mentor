@@ -1,9 +1,16 @@
+---
+reviewed: 2026-11-20
+---
+
 # Roadmap
 
-What this project intends to do, and not do, over roughly the next year. It is
-kept in a file rather than in GitHub Issues so it survives outside any one tool.
-It lists what is still ahead. What has shipped is in the git history and the
-GitHub releases, and the design behind it is in [`spec.md`](spec.md).
+What this project intends to do, and not do, over roughly the next year. It
+lists what is still ahead. What has shipped is in the git history and the
+GitHub releases, and the design behind it is in [`spec.md`](spec.md). Work that
+can be closed is a GitHub issue, linked from here. What stays true until
+something changes is written here, so it survives outside any one tool. The rule
+for which goes where is the org's [tracking
+policy](https://github.com/monte3l/.github/blob/main/blueprint/tracking.md).
 
 ## Now: the road to 1.0.0, then the 1.x series
 
@@ -13,47 +20,53 @@ before that may still change it in a minor release. What is left before 1.0.0
 is the release itself. From then on fixes, docs and CI changes ship as patch
 releases, and a new skill, option or topic ships as a minor release.
 
+Keep the lessons current. Re-check the topic catalogue against the Claude Code
+docs when its behaviour changes. This is ordinary maintenance, not a milestone.
+
 ## Next 12 months
 
 - **Run the evals in CI.** It needs a pinned model and a credential, and has no
-  date. The tip rate limit and the silence on a mastered topic are not evals,
-  because a `claude plugin eval` case cannot seed `CLAUDE_PLUGIN_DATA`, set
-  `userConfig` or run two live prompts. Tests that run the real hooks cover
-  them (see [`evals/README.md`](../evals/README.md)). They would become evals if
-  those three capabilities arrive.
-- **Keep the lessons current.** Re-check the topic catalogue against the Claude
-  Code docs when its behaviour changes. This is ordinary maintenance, not a
-  milestone.
+  date. What the evals cannot cover today is under Known limits.
 - **Reach the OpenSSF Silver badge and the Baseline levels the project can
-  honestly meet.** See [Governance](GOVERNANCE.md#gold-level-criteria-this-project-does-not-meet)
-  for what Gold needs and why it is out of reach.
-- **Grow the set of people who can run the project.** See
-  [Governance](GOVERNANCE.md#bus-factor). It needs contributors from outside the
-  organization. There is no committed timeline.
+  honestly meet.** Tracked in
+  [#67](https://github.com/monte3l/m3l-claude-mentor/issues/67). See
+  [Governance](GOVERNANCE.md#gold-level-criteria-this-project-does-not-meet) for
+  what Gold needs and why it is out of reach.
 
-## Known issues and follow-ups
+## Known limits
 
-Defects and decisions that are recorded here so they are not lost, with what
-would change them. The limits the project accepts for 1.0 are listed in
-[`spec.md`](spec.md#15-open-questions).
+The limits accepted for 1.0 are listed in
+[`spec.md`](spec.md#15-open-questions): the best-effort state lock, a skipped
+write after a 2 s lock wait, `export` racing a writer, and project exclusion on
+symlinks and case folding. The ones the roadmap adds:
 
-- **Fix the false "tips muted" notice.** `UserPromptSubmit` can say "Mentor tips
-  muted for X" when the 500-topic cap stopped the mute from being saved. It
-  predates the state lock, and the fix starts with a failing test. There is no
-  date.
-- **File the upstream request for eval seeding.** Optional, and not filed yet. A
-  `claude plugin eval` case would need to seed the plugin data directory, set
-  `userConfig` values and run more than one prompt before the tip rate limit and
-  the silence on a mastered topic could become evals.
-- **Revisit the evidence log if it becomes a problem.** It is never rotated and
-  grows by about 5 MiB a year of heavy use, and only the last 2 MiB is read.
-  That is accepted for 1.0, and no size trigger is set. Add one if a report
-  shows it matters. A compaction step that keeps the last events, run under the
-  state lock, is the likely shape.
-- **Considered, not planned: a `doctor` command.** A broken install or an
-  unwritable data directory only shows in Claude Code's verbose output, so the
-  learner sees nothing. A command that checks the install could surface it. It
-  is not planned for 1.x.
+- **Two behaviours are covered by tests, not evals.** The tip rate limit and the
+  silence on a mastered topic are not evals, because a `claude plugin eval` case
+  cannot seed `CLAUDE_PLUGIN_DATA`, set `userConfig` or run two live prompts.
+  Tests that run the real hooks cover them (see
+  [`evals/README.md`](../evals/README.md)). They would become evals if those
+  three capabilities arrive. An upstream request for them is optional and not
+  filed.
+- **The evidence log is never rotated.** It grows by about 5 MiB a year of heavy
+  use, and only the last 2 MiB is read. That is accepted for 1.0, and no size
+  trigger is set. Add one if a report shows it matters. A compaction step that
+  keeps the last events, run under the state lock, is the likely shape.
+- **A broken install shows the learner nothing.** A broken install or an
+  unwritable data directory only shows in Claude Code's verbose output. A
+  `doctor` command that checks the install could surface it. It is considered
+  and not planned for 1.x.
+- **The "tips muted" notice can be false.** `UserPromptSubmit` can say "Mentor
+  tips muted for X" when the 500-topic cap stopped the mute from being saved.
+  Tracked in [#66](https://github.com/monte3l/m3l-claude-mentor/issues/66).
+- **Few people can run the project.** See [Governance](GOVERNANCE.md#bus-factor).
+  It needs contributors from outside the organization. There is no committed
+  timeline.
+
+## Unverified
+
+| Claim                                                                                                                          | Source                                                                                 | Date       |
+| ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ---------- |
+| Claude Code versions other than 2.1.327 that support `userConfig` work. The minimum supported version has not been established | [`spec.md`](spec.md#15-open-questions), carried over and not re-tested for this change | 2026-11-20 |
 
 ## What this project will not do
 

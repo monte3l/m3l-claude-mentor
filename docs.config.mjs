@@ -93,6 +93,12 @@ export default {
       label: "Roadmap",
     },
     {
+      src: "docs/decisions/README.md",
+      out: "decisions.html",
+      group: "Project",
+      label: "Decisions",
+    },
+    {
       src: "CONTRIBUTING.md",
       out: "CONTRIBUTING.html",
       group: "Project",
@@ -124,6 +130,11 @@ export default {
     },
   ],
   exclude: [
+    {
+      glob: "docs/decisions/0000-template.md",
+      reason:
+        "decision-record skeleton with placeholders, copied rather than read",
+    },
     {
       glob: "CHANGELOG.md",
       reason: "release notes live on the GitHub releases page",
