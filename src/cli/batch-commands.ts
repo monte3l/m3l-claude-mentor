@@ -69,10 +69,26 @@ function parseEvents(
   return tokens.map((token) => parseEventToken(token, topic, env));
 }
 
-/** Appends `events` in order; reports how many were written on failure. */
-async function appendAll(
+/**
+ * Appends `events` in order to the evidence log.
+ *
+ * @param command - The command name that leads the failure message.
+ * @param notApplied - What the failure message says was skipped (fixed text).
+ * @throws MentorStateError `WRITE_FAILED` ("`<command>` recorded k of n
+ * events; `<notApplied>`") with the original error as `cause` when an append
+ * fails after `k` events were written.
+ *
+ * @example
+ * ```ts
+ * import { appendAll } from "./batch-commands.ts";
+ * await appendAll(env, events, "exam-answer", "no exam item was recorded");
+ * ```
+ */
+export async function appendAll(
   env: CommandEnv,
   events: readonly Evidence[],
+  command: string,
+  notApplied: string,
 ): Promise<void> {
   let recorded = 0;
   try {
@@ -83,7 +99,7 @@ async function appendAll(
   } catch (cause) {
     throw new MentorStateError(
       "WRITE_FAILED",
-      `record-batch recorded ${String(recorded)} of ${String(events.length)} events; no pass or recompute was applied`,
+      `${command} recorded ${String(recorded)} of ${String(events.length)} events; ${notApplied}`,
       { cause },
     );
   }
@@ -161,7 +177,12 @@ export async function recordBatch(
 
   const { view, passes } = await lockedState(env, async () => {
     const stored = await loadProfile(env.dir, env.now);
-    await appendAll(env, events);
+    await appendAll(
+      env,
+      events,
+      "record-batch",
+      "no pass or recompute was applied",
+    );
     const passed =
       pass === undefined
         ? stored
