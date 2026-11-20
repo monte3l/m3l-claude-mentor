@@ -1,0 +1,412 @@
+{
+  "schemaVersion": 1,
+  "code": "CCAR-P",
+  "title": "Claude Certified Architect – Professional",
+  "tier": "professional",
+  "assumes": "CCAR-F",
+  "guide": {
+    "version": "1.1",
+    "effective": "2026-12-07",
+    "sourceUrl": "https://anthropic-partners.skilljar.com/page/partner-certifications",
+    "reviewedAt": "2026-11-20"
+  },
+  "format": {
+    "minutes": 120,
+    "passScaled": 720,
+    "scaleMax": 1000,
+    "itemKinds": ["single", "multiple"]
+  },
+  "domains": [
+    {
+      "id": "D1",
+      "name": "Solution Design and Architecture",
+      "weight": 18,
+      "objectives": [
+        {
+          "id": "D1.1",
+          "summary": "Split a workflow into what Claude does, what people keep and what both share, weighing how reversible, how risky and who answers for it.",
+          "topics": [
+            "human-in-the-loop",
+            "org-agent-governance",
+            "workflow-vs-agent-patterns"
+          ]
+        },
+        {
+          "id": "D1.2",
+          "summary": "Review an intake-to-feedback design for scale, upkeep and access control; find the component likeliest to fail first under stress or misuse.",
+          "topics": [
+            "rate-limits-throughput",
+            "enterprise-identity-and-audit",
+            "durable-agent-state",
+            "observability-telemetry"
+          ]
+        },
+        {
+          "id": "D1.3",
+          "summary": "Choose among workflow, agent, augmented-LLM and Skill-based designs for given reuse, oversight and risk needs, and defend its handoff line.",
+          "topics": [
+            "workflow-vs-agent-patterns",
+            "skills",
+            "org-agent-governance"
+          ]
+        },
+        {
+          "id": "D1.4",
+          "summary": "Review an orchestrator-plus-subagents split against visibility and recovery needs, spotting where boundaries, flow or merging go wrong.",
+          "topics": [
+            "multi-agent-orchestration",
+            "subagents",
+            "observability-telemetry",
+            "production-reliability"
+          ]
+        },
+        {
+          "id": "D1.5",
+          "summary": "Pick the design that yields the most measurable business value within a cost or SLA cap, comparing proposed features against value goals.",
+          "topics": [
+            "cost-latency-optimization",
+            "model-selection",
+            "stakeholder-communication"
+          ]
+        },
+        {
+          "id": "D1.6",
+          "summary": "Choose where to deploy (first-party API or a cloud provider) and how to run the agent, trading off residency, hosting, state and custody.",
+          "topics": [
+            "deployment-surfaces",
+            "agent-runtimes",
+            "durable-agent-state",
+            "agent-sdk"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D2",
+      "name": "Claude Models, Prompting, and Context Engineering",
+      "weight": 13,
+      "objectives": [
+        {
+          "id": "D2.1",
+          "summary": "Choose the model tier meeting every hard limit on speed, spend and quality for a workload, and say why each other tier falls short.",
+          "topics": [
+            "model-selection",
+            "model-names-and-limits",
+            "cost-latency-optimization"
+          ]
+        },
+        {
+          "id": "D2.2",
+          "summary": "Diagnose why a system prompt gives erratic output; pick the revision that narrows scope and format yet leaves room for acceptable variation.",
+          "topics": ["prompt-design", "term-system-prompt", "failure-diagnosis"]
+        },
+        {
+          "id": "D2.3",
+          "summary": "Match a prompting technique to an observed failure and task difficulty without wasting tokens: examples, reasoning style, structured output.",
+          "topics": [
+            "few-shot-examples",
+            "extended-thinking",
+            "structured-output",
+            "prompt-design"
+          ]
+        },
+        {
+          "id": "D2.4",
+          "summary": "Study what fills the context and how caching behaves against a budget and call volume to find safe token savings.",
+          "topics": [
+            "context-window",
+            "prompt-caching",
+            "term-token",
+            "cost-latency-optimization"
+          ]
+        },
+        {
+          "id": "D2.5",
+          "summary": "Decide where cache breakpoints go and how to package shared material, Skills included, so repeated calls keep hitting the cache.",
+          "topics": ["prompt-caching", "skills", "prompt-design"]
+        },
+        {
+          "id": "D2.6",
+          "summary": "Set reasoning effort and pick a way to manage context over a long agent run, given latency and accuracy targets.",
+          "topics": [
+            "extended-thinking",
+            "context-editing-and-memory",
+            "compaction",
+            "durable-agent-state"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D3",
+      "name": "Integration",
+      "weight": 21,
+      "objectives": [
+        {
+          "id": "D3.1",
+          "summary": "Audit the tools handed to an agent or its helpers for least privilege; decide which to drop, narrow or swap for a lighter access pattern.",
+          "topics": [
+            "tool-design",
+            "permissions-model",
+            "mcp",
+            "progressive-discovery"
+          ]
+        },
+        {
+          "id": "D3.2",
+          "summary": "Assess how an integration handles credentials and authorization, find leak and escalation risks, and state the fix for each.",
+          "topics": [
+            "api-key-handling",
+            "enterprise-identity-and-audit",
+            "agent-threat-defense",
+            "permissions-model"
+          ]
+        },
+        {
+          "id": "D3.3",
+          "summary": "For a system limited chiefly by accuracy or latency, choose the tweak (retrieval depth, tier, caching, call shape) that eases it cheaply.",
+          "topics": [
+            "retrieval-architecture",
+            "model-selection",
+            "prompt-caching",
+            "cost-latency-optimization"
+          ]
+        },
+        {
+          "id": "D3.4",
+          "summary": "Trace why a failure in a large agent system went unseen, and choose the monitoring that would have caught it.",
+          "topics": [
+            "observability-telemetry",
+            "online-evaluation",
+            "incident-response",
+            "failure-diagnosis"
+          ]
+        },
+        {
+          "id": "D3.5",
+          "summary": "Choose between prebuilt RAG, agentic search and whole-corpus context for a corpus and query style; set contextual retrieval and fallbacks.",
+          "topics": [
+            "retrieval-architecture",
+            "grounding-and-citations",
+            "context-window"
+          ]
+        },
+        {
+          "id": "D3.6",
+          "summary": "Compare MCP, direct API or CLI calls, and handing work between agents, on speed, security and state needs, and pick the one that fits.",
+          "topics": [
+            "mcp",
+            "tool-use-api",
+            "mcp-server-development",
+            "multi-agent-orchestration"
+          ]
+        },
+        {
+          "id": "D3.7",
+          "summary": "Weigh revealing context step by step against loading everything first, given the task's context needs and latency tolerance.",
+          "topics": [
+            "progressive-discovery",
+            "skills",
+            "context-window",
+            "context-editing-and-memory"
+          ]
+        },
+        {
+          "id": "D3.8",
+          "summary": "Read live error logs and volume figures, then apply the right control (limits, backoff, idempotency, fallback) without double effects.",
+          "topics": [
+            "production-reliability",
+            "api-error-handling",
+            "rate-limits-throughput",
+            "batch-processing",
+            "durable-agent-state"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D4",
+      "name": "Evaluation, Testing, and Optimization",
+      "weight": 17,
+      "objectives": [
+        {
+          "id": "D4.1",
+          "summary": "Review an eval suite after a production miss to find the missing dimension or grading target; define the measure that would have caught it.",
+          "topics": ["eval-design", "online-evaluation", "failure-diagnosis"]
+        },
+        {
+          "id": "D4.2",
+          "summary": "Decide what slice of a business workflow makes a sound eval for a given decision, derive success criteria from outcomes, mix test methods.",
+          "topics": [
+            "eval-design",
+            "online-evaluation",
+            "stakeholder-communication"
+          ]
+        },
+        {
+          "id": "D4.3",
+          "summary": "Diagnose an LLM judge or rubric that disagrees with human reviewers and apply the fix matching the bias at fault.",
+          "topics": ["llm-as-judge", "eval-design"]
+        },
+        {
+          "id": "D4.4",
+          "summary": "Design a comparison of two prompt or model setups that stays readable under fixed sample size and spend, with enough repeats to beat noise.",
+          "topics": ["eval-design", "online-evaluation", "generation-mechanics"]
+        },
+        {
+          "id": "D4.5",
+          "summary": "From logs or traces, isolate whether the cause is prompt, retrieval, hallucination, a tool or helper fault, or model mismatch; then fix it.",
+          "topics": [
+            "failure-diagnosis",
+            "observability-telemetry",
+            "incident-response"
+          ]
+        },
+        {
+          "id": "D4.6",
+          "summary": "Read spend and delay telemetry, plus how often the cache is hit, to find where cost concentrates and cut it while holding a quality floor.",
+          "topics": [
+            "cost-latency-optimization",
+            "prompt-caching",
+            "observability-telemetry"
+          ]
+        },
+        {
+          "id": "D4.7",
+          "summary": "Judge readiness to move model versions from deprecation dates and regression results, then pin, retune, re-baseline or wait.",
+          "topics": [
+            "model-migration-and-change-management",
+            "model-names-and-limits",
+            "eval-design"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D5",
+      "name": "Governance, Safety, and Risk Management",
+      "weight": 16,
+      "objectives": [
+        {
+          "id": "D5.1",
+          "summary": "Check where guardrails sit relative to a given abuse route and choose the control that blocks it while keeping valid uses working.",
+          "topics": [
+            "agent-threat-defense",
+            "human-in-the-loop",
+            "permissions-model",
+            "hooks",
+            "guardrail-design"
+          ]
+        },
+        {
+          "id": "D5.2",
+          "summary": "Map where untrusted text (documents, tool output, MCP replies, outside Skills) enters context and set controls so it is never obeyed.",
+          "topics": [
+            "prompt-injection-defense",
+            "agent-threat-defense",
+            "mcp",
+            "skills"
+          ]
+        },
+        {
+          "id": "D5.3",
+          "summary": "Examine a planned deployment for attack exposure, failure modes, quota exhaustion and supply-chain weakness, and order them by severity.",
+          "topics": [
+            "agent-threat-defense",
+            "rate-limits-throughput",
+            "plugins",
+            "mcp"
+          ]
+        },
+        {
+          "id": "D5.4",
+          "summary": "Place human approval points around steps that are irreversible or carry heavy stakes so runs pause there but low-risk paths keep moving.",
+          "topics": [
+            "human-in-the-loop",
+            "hooks",
+            "permissions-model",
+            "org-agent-governance"
+          ]
+        },
+        {
+          "id": "D5.5",
+          "summary": "Match controls (residency, retention, PII redaction, audit logs, tenant separation) to a compliance duty; pick the set that proves it.",
+          "topics": [
+            "governance-compliance",
+            "deployment-surfaces",
+            "enterprise-identity-and-audit"
+          ]
+        },
+        {
+          "id": "D5.6",
+          "summary": "Weigh evidence of unequal outcomes between groups and choose a remedy fitting whether data, prompt framing or eval design is the cause.",
+          "topics": ["ai-risk-and-bias", "eval-design"]
+        }
+      ]
+    },
+    {
+      "id": "D6",
+      "name": "Stakeholder Communication and Lifecycle Management",
+      "weight": 7,
+      "objectives": [
+        {
+          "id": "D6.1",
+          "summary": "Spot a promise in early requirements or a proposed SLA the Claude design cannot keep; resolve it by clarifying needs or changing the design.",
+          "topics": ["stakeholder-communication", "production-reliability"]
+        },
+        {
+          "id": "D6.2",
+          "summary": "Critique a draft decision record that ignores a stakeholder constraint; revise it to state trade-offs and leftover risk without overstating.",
+          "topics": ["stakeholder-communication", "governance-compliance"]
+        },
+        {
+          "id": "D6.3",
+          "summary": "Find the hidden assumption, missing dependency or absent runbook step that blocks a new team from operating a Claude system; write the fix.",
+          "topics": [
+            "incident-response",
+            "observability-telemetry",
+            "stakeholder-communication"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D7",
+      "name": "Developer Productivity and Operational Enablement",
+      "weight": 8,
+      "objectives": [
+        {
+          "id": "D7.1",
+          "summary": "Plan bundling and company-wide rollout of a team-proven Claude Code workflow, deciding what is centrally enforced and what teams control.",
+          "topics": [
+            "plugins",
+            "skills",
+            "hooks",
+            "settings-scopes",
+            "org-agent-governance"
+          ]
+        },
+        {
+          "id": "D7.2",
+          "summary": "Configure Claude Code or the Agent SDK (modes, hooks, subagents, headless or CI runs) for a team flow inside safety and automation limits.",
+          "topics": [
+            "agent-sdk",
+            "claude-code-headless-ci",
+            "permissions-model",
+            "hooks",
+            "subagents"
+          ]
+        },
+        {
+          "id": "D7.3",
+          "summary": "Examine how a team reviews and owns AI-written code, and name the control that keeps people accountable for it.",
+          "topics": [
+            "review-ai-changes",
+            "verify-your-work",
+            "org-agent-governance"
+          ]
+        }
+      ]
+    }
+  ]
+}

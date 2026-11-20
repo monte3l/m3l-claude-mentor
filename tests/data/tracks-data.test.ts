@@ -10,9 +10,18 @@ const tracks = loadBundledTracks();
 const catalog = await loadBundledCatalog();
 const byId = new Map(catalog.map((e) => [e.id as string, e]));
 
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}
+
 describe("bundled tracks (data/tracks)", () => {
-  test("the bundled track codes are exactly CCAR-F and CCDV-F, in load order", () => {
-    expect(tracks.map((t) => t.code)).toEqual(["CCAR-F", "CCDV-F"]);
+  test("the bundled track codes are exactly CCAR-F, CCAR-P, CCDV-F and CCDV-P, in load order", () => {
+    expect(tracks.map((t) => t.code)).toEqual([
+      "CCAR-F",
+      "CCAR-P",
+      "CCDV-F",
+      "CCDV-P",
+    ]);
   });
 
   test("every bundled track satisfies the data invariants", () => {
@@ -92,18 +101,98 @@ describe("bundled tracks (data/tracks)", () => {
     }
   });
 
-  test.each(["CCAR-F", "CCDV-F"])("%s shared pins", (code) => {
-    const t = track(code);
-    expect(t.format).toEqual({
-      minutes: 120,
-      passScaled: 720,
-      scaleMax: 1000,
-      itemKinds: ["single", "multiple"],
-    });
-    expect(t.tier).toBe("foundations");
-    expect(t.assumes).toBeNull();
-    expect(t.guide.reviewedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(Number.isNaN(Date.parse(t.guide.reviewedAt))).toBe(false);
+  test("CCAR-P pins", () => {
+    const t = track("CCAR-P");
+    expect(t.tier).toBe("professional");
+    expect(t.assumes).toBe("CCAR-F");
+    expect(t.domains.map((d) => d.weight)).toEqual([18, 13, 21, 17, 16, 7, 8]);
+    expect(objectivesOf(t)).toHaveLength(39);
+    expect(t.scenarios).toEqual([]);
+    expect(t.guide.version).toBe("1.1");
+    expect(t.guide.effective).toBe("2026-12-07");
+  });
+
+  test("CCDV-P pins", () => {
+    const t = track("CCDV-P");
+    expect(t.tier).toBe("professional");
+    expect(t.assumes).toBe("CCDV-F");
+    expect(t.domains.map((d) => d.weight)).toEqual([
+      17, 20, 12, 10, 12, 8, 11, 10,
+    ]);
+    expect(objectivesOf(t)).toHaveLength(25);
+    expect(t.scenarios).toEqual([]);
+    expect(t.guide.version).toBe("1.0");
+    expect(t.guide.effective).toBe("2026-11");
+  });
+
+  test.each(["CCAR-F", "CCAR-P", "CCDV-F", "CCDV-P"])(
+    "%s shared pins",
+    (code) => {
+      const t = track(code);
+      expect(t.format).toEqual({
+        minutes: 120,
+        passScaled: 720,
+        scaleMax: 1000,
+        itemKinds: ["single", "multiple"],
+      });
+      if (code.endsWith("-F")) {
+        expect(t.tier).toBe("foundations");
+        expect(t.assumes).toBeNull();
+      }
+      expect(t.guide.reviewedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(Number.isNaN(Date.parse(t.guide.reviewedAt))).toBe(false);
+    },
+  );
+
+  test("every Professional track assumes a bundled Foundations track", () => {
+    const pro = tracks.filter((t) => t.tier === "professional");
+    expect(pro.map((t) => t.code)).toEqual(["CCAR-P", "CCDV-P"]);
+    for (const t of pro) {
+      const assumed = tracks.find((x) => x.code === t.assumes);
+      expect(assumed?.tier, `${t.code} assumes`).toBe("foundations");
+    }
+  });
+
+  test("CCDV-P D7.2 names these frameworks", () => {
+    const o = objectivesOf(track("CCDV-P")).find((x) => x.id === "D7.2");
+    expect(o?.external).toEqual([
+      "OWASP Top 10 for LLM Applications",
+      "NIST AI Risk Management Framework",
+      "NIST AI RMF Generative AI Profile",
+    ]);
+  });
+
+  test("no objective with external frameworks maps ai-risk-and-bias", () => {
+    for (const t of tracks) {
+      for (const o of objectivesOf(t)) {
+        if (o.external === undefined) continue;
+        expect(
+          o.topics as readonly string[],
+          `${t.code} ${o.id}`,
+        ).not.toContain("ai-risk-and-bias");
+      }
+    }
+  });
+
+  test("frameworks named in external are never taught by a catalog topic", () => {
+    const external = tracks.flatMap((t) =>
+      objectivesOf(t).flatMap((o) => o.external ?? []),
+    );
+    expect(external.length).toBeGreaterThan(0);
+    const tokens = [
+      "owasp",
+      "nist",
+      "ai rmf",
+      "llm top 10",
+      ...external.map((n) => n.toLowerCase()),
+    ];
+    for (const e of catalog) {
+      const haystack = [e.id, e.title, ...e.keywords].join("\n").toLowerCase();
+      for (const token of tokens) {
+        const named = new RegExp(`\\b${escapeRegExp(token)}\\b`, "u");
+        expect(named.test(haystack), `${e.id} names ${token}`).toBe(false);
+      }
+    }
   });
 
   test("every ambient:false topic is mapped by some bundled objective", () => {

@@ -1,0 +1,323 @@
+{
+  "schemaVersion": 1,
+  "code": "CCDV-P",
+  "title": "Claude Certified Developer – Professional",
+  "tier": "professional",
+  "assumes": "CCDV-F",
+  "guide": {
+    "version": "1.0",
+    "effective": "2026-11",
+    "sourceUrl": "https://anthropic-partners.skilljar.com/claude-certified-developer-professional-certification",
+    "reviewedAt": "2026-11-20"
+  },
+  "format": {
+    "minutes": 120,
+    "passScaled": 720,
+    "scaleMax": 1000,
+    "itemKinds": ["single", "multiple"]
+  },
+  "domains": [
+    {
+      "id": "D1",
+      "name": "Advanced Agent Architecture and Orchestration",
+      "weight": 17,
+      "objectives": [
+        {
+          "id": "D1.1",
+          "summary": "Weigh multi-agent designs for production: supervisors, workers, parallel dispatch, isolation, handoffs, approvals; diagnose their failures.",
+          "topics": [
+            "multi-agent-orchestration",
+            "subagents",
+            "human-in-the-loop",
+            "agent-runtimes"
+          ]
+        },
+        {
+          "id": "D1.2",
+          "summary": "Keep long-running agents alive across crashes, restarts and model upgrades using checkpoints, persisted sessions and memory design.",
+          "topics": [
+            "durable-agent-state",
+            "session-management",
+            "context-editing-and-memory"
+          ]
+        },
+        {
+          "id": "D1.3",
+          "summary": "Use cost, uptime and output-quality figures to decide when a live system should move between workflow and agent styles; set standards.",
+          "topics": [
+            "workflow-vs-agent-patterns",
+            "agent-runtimes",
+            "agent-sdk",
+            "term-harness"
+          ]
+        },
+        {
+          "id": "D1.4",
+          "summary": "Pick a context policy for agents close to size or spend limits: deferred tool loading, memory, compaction, editing and cache-safe changes.",
+          "topics": [
+            "context-editing-and-memory",
+            "progressive-discovery",
+            "compaction",
+            "prompt-caching",
+            "context-window"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D2",
+      "name": "Production Integration, Reliability, and Knowledge Grounding",
+      "weight": 20,
+      "objectives": [
+        {
+          "id": "D2.1",
+          "summary": "Build resilient Claude integrations: retries with backoff, circuit breakers, degraded modes and fallbacks that tell failure causes apart.",
+          "topics": [
+            "production-reliability",
+            "api-error-handling",
+            "deployment-surfaces",
+            "rate-limits-throughput",
+            "messages-api"
+          ]
+        },
+        {
+          "id": "D2.2",
+          "summary": "Size high-volume workloads: queues, backpressure, batch pipelines, tenant quotas and capacity; find which limit actually binds.",
+          "topics": [
+            "rate-limits-throughput",
+            "batch-processing",
+            "production-reliability",
+            "cost-latency-optimization"
+          ]
+        },
+        {
+          "id": "D2.3",
+          "summary": "Operate MCP servers and manage change: remote auth, tool versioning, model migrations, prompt releases, staged rollout and rollback.",
+          "topics": [
+            "mcp-server-development",
+            "model-migration-and-change-management",
+            "mcp",
+            "deployment-surfaces"
+          ]
+        },
+        {
+          "id": "D2.4",
+          "summary": "Design grounded knowledge apps: embeddings, chunking, reranking, hybrid search, citations, agentic search vs RAG; trace faults to a stage.",
+          "topics": [
+            "retrieval-architecture",
+            "grounding-and-citations",
+            "failure-diagnosis"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D3",
+      "name": "Observability and Production Monitoring",
+      "weight": 12,
+      "objectives": [
+        {
+          "id": "D3.1",
+          "summary": "Instrument Claude systems for debugging within privacy limits: agent and tool traces, spend and token metrics, logs, content capture.",
+          "topics": [
+            "observability-telemetry",
+            "prompt-caching",
+            "governance-compliance",
+            "agentic-loop"
+          ]
+        },
+        {
+          "id": "D3.2",
+          "summary": "Derive SLIs and SLOs from LLM service signals; set up alerts and dashboards; catch quality drift, regressions and odd usage after updates.",
+          "topics": [
+            "observability-telemetry",
+            "online-evaluation",
+            "model-migration-and-change-management",
+            "production-reliability"
+          ]
+        },
+        {
+          "id": "D3.3",
+          "summary": "Mine large volumes of traces through sampling, aggregation and failure cohorts to expose systemic problems single traces never show.",
+          "topics": [
+            "observability-telemetry",
+            "failure-diagnosis",
+            "online-evaluation"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D4",
+      "name": "Advanced Debugging and Incident Response",
+      "weight": 10,
+      "objectives": [
+        {
+          "id": "D4.1",
+          "summary": "Work from evidence to locate a fault in model, harness, tools or data across multi-turn, multiagent, flaky runs, refusals, retrieval gaps.",
+          "topics": [
+            "failure-diagnosis",
+            "agentic-loop",
+            "retrieval-architecture",
+            "observability-telemetry"
+          ]
+        },
+        {
+          "id": "D4.2",
+          "summary": "Handle an outage or quality slide: triage, mitigate, roll back, communicate, then feed the lessons into evals, monitoring and postmortems.",
+          "topics": [
+            "incident-response",
+            "eval-design",
+            "stakeholder-communication",
+            "production-reliability"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D5",
+      "name": "Evaluation Engineering and Quality Assurance",
+      "weight": 12,
+      "objectives": [
+        {
+          "id": "D5.1",
+          "summary": "Design offline eval suites: golden sets, regression runs, CI gates, retrieval and groundedness scores, release bars; keep them valid.",
+          "topics": [
+            "eval-design",
+            "grounding-and-citations",
+            "model-migration-and-change-management",
+            "claude-code-headless-ci"
+          ]
+        },
+        {
+          "id": "D5.2",
+          "summary": "Judge model-graded evaluators against human labels: calibration, rubrics, bias, rater agreement and drift between model versions.",
+          "topics": ["llm-as-judge", "eval-design"]
+        },
+        {
+          "id": "D5.3",
+          "summary": "Measure quality on live traffic through sampling, A/B tests and feedback loops, choosing metrics that suit each kind of task.",
+          "topics": [
+            "online-evaluation",
+            "eval-design",
+            "observability-telemetry"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D6",
+      "name": "Cost and Latency Optimization at Scale",
+      "weight": 8,
+      "objectives": [
+        {
+          "id": "D6.1",
+          "summary": "Cut fleet spend using usage data: forecasts, model-tier routing and cascades, caching diagnostics, batch economics, tenant budgets.",
+          "topics": [
+            "cost-latency-optimization",
+            "model-selection",
+            "prompt-caching",
+            "batch-processing"
+          ]
+        },
+        {
+          "id": "D6.2",
+          "summary": "Profile latency against a target, splitting first-token delay from total time; use streaming, parallel tools, cache points, effort tuning.",
+          "topics": [
+            "cost-latency-optimization",
+            "streaming-events",
+            "extended-thinking",
+            "prompt-caching"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D7",
+      "name": "Runtime Guardrails and Production Security",
+      "weight": 11,
+      "objectives": [
+        {
+          "id": "D7.1",
+          "summary": "Judge layered guardrails against an agent's risk: sandboxes, approvals, hook policies, filters, PII redaction, refusal fallbacks and tuning.",
+          "topics": [
+            "agent-threat-defense",
+            "hooks",
+            "human-in-the-loop",
+            "permissions-model",
+            "prompt-injection-defense",
+            "guardrail-design"
+          ]
+        },
+        {
+          "id": "D7.2",
+          "summary": "Assess how agents reading untrusted content can be attacked: injection, poisoning, exfiltration, risky autonomy; layer defences, red team.",
+          "topics": ["agent-threat-defense", "prompt-injection-defense", "mcp"],
+          "external": [
+            "OWASP Top 10 for LLM Applications",
+            "NIST AI Risk Management Framework",
+            "NIST AI RMF Generative AI Profile"
+          ]
+        },
+        {
+          "id": "D7.3",
+          "summary": "Apply corporate identity and secrets hygiene: agent identities, federated workload identity over static keys, least privilege, audits.",
+          "topics": [
+            "enterprise-identity-and-audit",
+            "api-key-handling",
+            "governance-compliance",
+            "permissions-model"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D8",
+      "name": "Agent Fleet Operations for Software Delivery",
+      "weight": 10,
+      "objectives": [
+        {
+          "id": "D8.1",
+          "summary": "Fan big engineering jobs out to parallel agents in separate worktrees; split tasks, plan merges and conflicts, read fleet telemetry.",
+          "topics": [
+            "agent-fleet-operations",
+            "worktrees",
+            "multi-agent-orchestration",
+            "subagents"
+          ]
+        },
+        {
+          "id": "D8.2",
+          "summary": "Run verification when generation outruns review: trial AI code review quietly, calibrate against humans, then gate merges with oversight.",
+          "topics": [
+            "agent-fleet-operations",
+            "review-ai-changes",
+            "verify-your-work",
+            "human-in-the-loop"
+          ]
+        },
+        {
+          "id": "D8.3",
+          "summary": "Operate unattended agents on goals, timers or events such as CI failures, with checkpoints, notifications and escalation paths.",
+          "topics": [
+            "agent-fleet-operations",
+            "claude-code-headless-ci",
+            "durable-agent-state",
+            "incident-response"
+          ]
+        },
+        {
+          "id": "D8.4",
+          "summary": "Configure coding agents org-wide: managed settings, MCP allow lists, usage telemetry, gateway routing, quality rules for shared prompts.",
+          "topics": [
+            "org-agent-governance",
+            "settings-scopes",
+            "plugins",
+            "skills",
+            "mcp"
+          ]
+        }
+      ]
+    }
+  ]
+}
