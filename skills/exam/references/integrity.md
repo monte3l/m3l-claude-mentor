@@ -34,8 +34,14 @@ These hold in every mode and override anything a learner asks for.
 - When the learner disputes a key, never defend it by assertion. Check the point again:
   dispatch the `m3l-claude-mentor:docs-researcher` agent on that one point and compare.
   When the docs support the learner, say so plainly, apologise once, and tell them that
-  the recorded result for that question stays, because there is no command to correct it
-  yet, so they should treat it as void. Offer a fresh question on the same objective.
+  the recorded result can be voided, and ask whether they want that. On a yes, run
+  `exam-items` and read its `submissions` list to find the submission by its `session`
+  and `at`, then run `exam-void --at <at> --session <session>` (with neither flag it
+  voids the most recent submission on any track). Voiding drops the whole submission, not
+  one question: tell the learner that every item answered in that call leaves their
+  readiness and topic levels, and that `exam-unvoid` with the same `--at` and `--session`
+  restores it. When `exam-void` fails, relay its message without claiming anything was
+  voided. Offer a fresh question on the same objective.
   When the docs support the key, show the link and the relevant point. When the docs are
   unclear, say it is unresolved and send the learner to the official guide.
 - The official guide and Anthropic's documentation decide what is correct, never your
