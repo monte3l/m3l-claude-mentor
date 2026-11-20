@@ -1,6 +1,6 @@
 {
   "name": "m3l-claude-mentor",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A Claude Code plugin that mentors you on Claude and Claude Code, adapting to your mastery level",
   "author": {
     "name": "Enrico Lionello",

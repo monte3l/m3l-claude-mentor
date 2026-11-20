@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0](https://github.com/monte3l/m3l-claude-mentor/compare/m3l-claude-mentor--v1.0.0...m3l-claude-mentor--v1.1.0) (2026-11-20)
+
+
+### Features
+
+* **catalog:** let bundled topics shadow colliding custom ids ([e07b8d1](https://github.com/monte3l/m3l-claude-mentor/commit/e07b8d19690dad89d54e9fd03c1ea2d7401834c2))
+* **tracks:** add the exam track model and loader ([4fc19e3](https://github.com/monte3l/m3l-claude-mentor/commit/4fc19e3e4f08e4390e04f8723b9cdafa4ffb56df))
+
+
+### Bug Fixes
+
+* **catalog:** resolve ambient-off topics in explicit requests ([a50a74b](https://github.com/monte3l/m3l-claude-mentor/commit/a50a74b2a633cea0abc472a19b67a693bbbeabaa))
+
 ## [1.0.0](https://github.com/monte3l/m3l-claude-mentor/compare/m3l-claude-mentor--v0.3.0...m3l-claude-mentor--v1.0.0) (2026-11-18)
 
 
