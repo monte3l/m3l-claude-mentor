@@ -306,7 +306,7 @@ describe("mergeCatalog", () => {
       expect(r.value.shadowedCustom).toEqual(["a"]);
     });
 
-    test("shadowedCustom is sorted and deduped", () => {
+    test("shadowedCustom is sorted", () => {
       const r = mergeCatalog(bundled, userOf({ custom: [raw("b"), raw("a")] }));
       expect(r.ok).toBe(true);
       if (r.ok) expect(r.value.shadowedCustom).toEqual(["a", "b"]);
@@ -388,6 +388,8 @@ describe("mergeCatalog", () => {
       // a is dropped (bundled a has no dependencies), so z -> b -> a is not a
       // cycle and the merge succeeds.
       expect(r.ok).toBe(true);
+      // The x <-> y cycle fails with or without the drop; only the first case
+      // above discriminates the drop.
       const cyc = mergeCatalog(
         bundled,
         userOf({

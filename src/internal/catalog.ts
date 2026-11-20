@@ -327,14 +327,14 @@ export function mergeCatalog(
 ): Parsed<MergedCatalog> {
   const bundledIds = new Set<string>(bundled.map((e) => e.id));
   const customIds = new Set<string>();
-  const shadowed = new Set<string>();
+  const shadowed: string[] = [];
   const kept: CatalogEntry[] = [];
   for (const [i, entry] of user.custom.entries()) {
     if (customIds.has(entry.id)) {
       return fail(`custom entry ${String(i)} duplicates an earlier custom id`);
     }
     customIds.add(entry.id);
-    if (bundledIds.has(entry.id)) shadowed.add(entry.id);
+    if (bundledIds.has(entry.id)) shadowed.push(entry.id);
     else kept.push(entry);
   }
 
@@ -357,7 +357,7 @@ export function mergeCatalog(
   );
   const problem = graphProblem(merged);
   if (problem !== null) return fail(problem);
-  return ok({ entries: merged, shadowedCustom: [...shadowed].sort() });
+  return ok({ entries: merged, shadowedCustom: shadowed.sort() });
 }
 
 const WORD_CHAR = /^[\p{L}\p{N}]$/u;
@@ -419,7 +419,10 @@ const NO_IDS: ReadonlySet<string> = new Set();
  * ```
  */
 export interface MatchTopicsOptions {
-  /** Ids of `ambient: false` entries that may match anyway. */
+  /**
+   * Ids of `ambient: false` entries that may match anyway, e.g. for an
+   * explicit learner request rather than an unprompted tip.
+   */
   readonly includeAmbientOff?: ReadonlySet<string>;
 }
 

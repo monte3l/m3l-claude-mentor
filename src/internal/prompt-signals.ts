@@ -94,7 +94,11 @@ function cleanPrompt(prompt: string): string {
   }
 }
 
-/** The catalog topic named by the words after `end`, up to sentence end. */
+/**
+ * The catalog topic named by the words after `end`, up to sentence end. This
+ * resolves an explicit learner request, so `ambient: false` topics (which only
+ * opt out of unprompted keyword tips) still match; disabled topics do not.
+ */
 function topicAfter(
   text: string,
   end: number,
@@ -103,7 +107,11 @@ function topicAfter(
   const window = text.slice(end, end + MAX_TOPIC_WORDS_CHARS);
   const stop = window.search(SENTENCE_END);
   const words = stop === -1 ? window : window.slice(0, stop);
-  return matchTopics(catalog, words, 1)[0]?.id;
+  const ambientOff = new Set<string>(
+    catalog.filter((e) => e.ambient === false).map((e) => e.id),
+  );
+  return matchTopics(catalog, words, 1, { includeAmbientOff: ambientOff })[0]
+    ?.id;
 }
 
 const GLOBAL_STOP: PromptSignal = { kind: "stop-tips" };

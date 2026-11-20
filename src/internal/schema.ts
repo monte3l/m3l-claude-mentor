@@ -253,8 +253,9 @@ export interface CatalogEntry {
   readonly style?: Style;
   readonly enabled: boolean;
   /**
-   * `false` keeps the topic out of ambient keyword matching (prompt tips)
-   * unless a caller opts it in. Present only when supplied.
+   * `false` keeps the topic out of unprompted keyword tips only; explicit
+   * learner requests naming it (e.g. "teach me next") still resolve it.
+   * Present only when supplied.
    */
   readonly ambient?: boolean;
 }
