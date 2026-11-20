@@ -32,12 +32,16 @@ export const DATA_FILES: Readonly<{
   catalog: "catalog.json";
   goals: "goals.md";
   evidence: "evidence.jsonl";
+  examItems: "exam-items.jsonl";
+  examPending: "exam-pending.json";
 }> = Object.freeze({
   profile: "profile.json",
   state: "state.json",
   catalog: "catalog.json",
   goals: "goals.md",
   evidence: "evidence.jsonl",
+  examItems: "exam-items.jsonl",
+  examPending: "exam-pending.json",
 });
 
 /**

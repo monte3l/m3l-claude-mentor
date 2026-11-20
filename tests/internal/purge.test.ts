@@ -31,9 +31,58 @@ const MANAGED = [
   "catalog.json",
   "goals.md",
   "evidence.jsonl",
+  "exam-items.jsonl",
+  "exam-pending.json",
 ];
 
+/** Seeds the five original files plus valid exam-items and exam-pending. */
+async function seedAll(target: string): Promise<void> {
+  await seed(target);
+  writeFileSync(
+    join(target, "exam-items.jsonl"),
+    `${JSON.stringify({
+      v: 1,
+      track: "CCAR-F",
+      domain: "D1",
+      objective: "D1.2",
+      topic: "plan-mode",
+      kind: "single",
+      mode: "drill",
+      correct: true,
+      at: 1000,
+      session: "sess-1",
+    })}\n`,
+  );
+  writeFileSync(
+    join(target, "exam-pending.json"),
+    JSON.stringify({
+      v: 1,
+      track: "CCAR-F",
+      mode: "drill",
+      createdAt: 1000,
+      items: [
+        {
+          objective: "D1.2",
+          topic: "plan-mode",
+          kind: "single",
+          key: ["B"],
+        },
+      ],
+    }),
+  );
+}
+
 describe("purgeData", () => {
+  test("deletes exam-items and exam-pending too when present", async () => {
+    await seedAll(dir);
+    const result = await purgeData(dir, { confirm: true });
+    expect([...result.deleted]).toEqual(
+      expect.arrayContaining(["examItems", "examPending"]),
+    );
+    expect(existsSync(join(dir, "exam-items.jsonl"))).toBe(false);
+    expect(existsSync(join(dir, "exam-pending.json"))).toBe(false);
+  });
+
   test("deletes the managed files and reports deleted vs alreadyMissing", async () => {
     await seed(dir);
     const result = await purgeData(dir, { confirm: true });
@@ -43,7 +92,11 @@ describe("purgeData", () => {
       "profile",
       "state",
     ]);
-    expect(result.alreadyMissing).toEqual(["catalog"]);
+    expect(result.alreadyMissing).toEqual([
+      "catalog",
+      "examItems",
+      "examPending",
+    ]);
     for (const name of MANAGED) expect(existsSync(join(dir, name))).toBe(false);
     expect(existsSync(dir)).toBe(true);
   });
@@ -98,7 +151,7 @@ describe("purgeData", () => {
   ])(
     "confirm %s -> CONFIRMATION_REQUIRED and nothing is deleted",
     async (_n, options) => {
-      await seed(dir);
+      await seedAll(dir);
       await expectCode(
         purgeData(dir, options as unknown as { confirm: true }),
         "CONFIRMATION_REQUIRED",
@@ -135,6 +188,8 @@ describe("purgeData", () => {
     expect([...result.alreadyMissing].sort()).toEqual([
       "catalog",
       "evidence",
+      "examItems",
+      "examPending",
       "goals",
       "profile",
       "state",
@@ -145,7 +200,7 @@ describe("purgeData", () => {
   test("purging a missing directory is fine and does not create it", async () => {
     const result = await purgeData(dir, { confirm: true });
     expect(result.deleted).toEqual([]);
-    expect(result.alreadyMissing).toHaveLength(5);
+    expect(result.alreadyMissing).toHaveLength(7);
     expect(existsSync(dir)).toBe(false);
   });
 });

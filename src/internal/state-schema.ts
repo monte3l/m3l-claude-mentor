@@ -19,6 +19,7 @@ import {
   type TopicId,
 } from "./schema.ts";
 import { newSegment, type SegmentState } from "./segment.ts";
+import { TRACK_CODE_PATTERN } from "./track-ids.ts";
 
 /**
  * The schema version this module reads and writes. A file with any other
@@ -53,6 +54,11 @@ export interface MentorState {
   /** `null`, or 1 to 64 chars of letters, digits, `.`, `+` or `-`. */
   readonly lastChangelogVersion: string | null;
   readonly segment: SegmentState;
+  /**
+   * The exam track the learner is preparing for, as a track code such as
+   * `CCAR-F`; absent (no own key) when none is set.
+   */
+  readonly activeTrack?: string;
 }
 
 /**
@@ -333,7 +339,9 @@ export function isChangelogVersion(value: unknown): value is string {
  * Validates a persisted {@link MentorState}. `schemaVersion` must be exactly
  * `1`; any other value fails with "unsupported schemaVersion", so a file
  * from a newer release is rejected rather than misread. Lists are returned
- * as fresh copies.
+ * as fresh copies. `activeTrack` is optional: when absent the result has no
+ * own `activeTrack` key, and when present it must be a track code (2 to 4
+ * uppercase letters, a dash, 1 or 2 uppercase letters).
  *
  * @param value - Untrusted input, typically JSON-parsed `state.json`.
  * @returns A fresh {@link MentorState}, or a reason naming the bad field.
@@ -385,6 +393,15 @@ export function parseState(value: unknown): Parsed<MentorState> {
   const segment = parseSegmentState(ownField(record, "segment"));
   if (!segment.ok) return fail(`state ${segment.reason}`);
 
+  const rawTrack = ownField(record, "activeTrack");
+  let activeTrack: string | undefined;
+  if (rawTrack !== undefined) {
+    if (typeof rawTrack !== "string" || !TRACK_CODE_PATTERN.test(rawTrack)) {
+      return fail("state activeTrack must be a track code such as CCAR-F");
+    }
+    activeTrack = rawTrack;
+  }
+
   return ok({
     schemaVersion: SCHEMA_VERSION,
     muted,
@@ -392,6 +409,7 @@ export function parseState(value: unknown): Parsed<MentorState> {
     excludedProjects: excludedProjects.value,
     lastChangelogVersion: version,
     segment: segment.value,
+    ...(activeTrack !== undefined ? { activeTrack } : {}),
   });
 }
 
@@ -569,6 +587,9 @@ export function clampStateToNow(state: MentorState, now: number): MentorState {
       lastTipAt: lastTipAt === null ? null : Math.min(lastTipAt, now),
       lastTopic: segment.lastTopic,
     },
+    ...(state.activeTrack !== undefined
+      ? { activeTrack: state.activeTrack }
+      : {}),
   };
 }
 

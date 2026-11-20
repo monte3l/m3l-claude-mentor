@@ -333,6 +333,44 @@ export async function writeTextAtomic(
   await staged.commit();
 }
 
+/**
+ * Deletes a data file with `unlink` (which never recurses and removes a
+ * symlink itself, not its target). A file or directory that is already
+ * missing is not an error, so this is idempotent. Never creates `dir`. This
+ * function does not lock.
+ *
+ * @param dir - The data directory.
+ * @param file - Which data file.
+ * @returns `true` when a file was deleted, `false` when it was missing.
+ * @throws MentorStateError `WRITE_FAILED` with the fs error as `cause` for
+ * any failure other than the file being missing.
+ * @throws MentorStateError `DATA_DIR_INVALID` (before any other check or
+ * I/O) when `dir` fails {@link assertValidDataDir}.
+ *
+ * @example
+ * ```ts
+ * import { removeDataFile } from "./fs-atomic.ts";
+ * await removeDataFile("/var/data/m3l", "examPending"); // false when absent
+ * ```
+ */
+export async function removeDataFile(
+  dir: string,
+  file: DataFile,
+): Promise<boolean> {
+  assertValidDataDir(dir);
+  try {
+    await unlink(dataFilePath(dir, file));
+  } catch (cause) {
+    if (errorCode(cause) === "ENOENT") return false;
+    throw new MentorStateError(
+      "WRITE_FAILED",
+      `could not remove ${DATA_FILES[file]}`,
+      { cause },
+    );
+  }
+  return true;
+}
+
 const NEWLINE = Buffer.from("\n", "utf8");
 
 /** Whether the file behind `handle` is non-empty and lacks a final `"\n"`. */

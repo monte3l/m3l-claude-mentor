@@ -74,14 +74,38 @@ describe("exportBundle evidenceSkipped", () => {
     putRaw("evidence.jsonl", `${JSON.stringify(evidenceAt(5))}\ngarbage\n`);
     const target = join(sandbox, "out.json");
     const result = await exportBundleToFile(src, NOW, target);
-    expect(result).toEqual({ evidenceSkipped: 1 });
+    expect(result).toEqual({ evidenceSkipped: 1, examItemsSkipped: 0 });
+    expect(existsSync(target)).toBe(true);
+  });
+
+  test("exportBundleToFile reports torn and invalid exam-items.jsonl lines", async () => {
+    await seed(src);
+    const valid = {
+      v: 1,
+      track: "CCAR-F",
+      domain: "D1",
+      objective: "D1.2",
+      topic: "plan-mode",
+      kind: "single",
+      mode: "drill",
+      correct: true,
+      at: 1,
+      session: "sess-1",
+    };
+    putRaw(
+      "exam-items.jsonl",
+      `${JSON.stringify(valid)}\n{"v":1,"track":"CC\n${JSON.stringify({ ...valid, at: -1 })}\n`,
+    );
+    const target = join(sandbox, "o.json");
+    const result = await exportBundleToFile(src, NOW, target);
+    expect(result).toEqual({ evidenceSkipped: 0, examItemsSkipped: 2 });
     expect(existsSync(target)).toBe(true);
   });
 
   test("a clean exportBundleToFile returns 0", async () => {
     await seed(src);
     expect(await exportBundleToFile(src, NOW, join(sandbox, "o.json"))).toEqual(
-      { evidenceSkipped: 0 },
+      { evidenceSkipped: 0, examItemsSkipped: 0 },
     );
   });
 });

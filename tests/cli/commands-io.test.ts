@@ -35,6 +35,7 @@ describe("export", () => {
     expect(await runOk(sb.dir, ["export", "--to", to])).toEqual({
       exported: true,
       evidenceSkipped: 0,
+      examItemsSkipped: 0,
     });
     expect(existsSync(to)).toBe(true);
   });

@@ -145,6 +145,7 @@ describe("importBundle / importBundleFromFile", () => {
       catalog: true,
       goals: true,
       evidenceEvents: 2,
+      examItems: 0,
     });
     expect(await loadState(dst, NOW)).toEqual(await loadState(src, NOW));
     expect(await loadProfile(dst, NOW)).toEqual(await loadProfile(src, NOW));
@@ -372,7 +373,7 @@ describe("importBundle / importBundleFromFile", () => {
 });
 
 describe("describeData", () => {
-  test("reports all five files in DATA_FILES order with sizes, counts and exclusions", async () => {
+  test("reports all seven files in DATA_FILES order with sizes, counts and exclusions", async () => {
     await seed(src);
     const info = await describeData(src, NOW);
     expect(info.dir).toBe(src);
@@ -382,6 +383,8 @@ describe("describeData", () => {
       "catalog",
       "goals",
       "evidence",
+      "examItems",
+      "examPending",
     ]);
     const sizeOf = (n: string): number => statSync(join(src, n)).size;
     const byFile = Object.fromEntries(info.files.map((f) => [f.file, f]));
@@ -393,6 +396,8 @@ describe("describeData", () => {
     expect(byFile["evidence"]?.bytes).toBe(sizeOf("evidence.jsonl"));
     expect(byFile["profile"]?.bytes).toBe(sizeOf("profile.json"));
     expect(byFile["catalog"]?.bytes).toBeNull();
+    expect(byFile["examItems"]?.bytes).toBeNull();
+    expect(byFile["examPending"]?.bytes).toBeNull();
     expect(info.evidenceEvents).toBe(2);
     expect(info.evidenceSkipped).toBe(0);
     expect(info.topics).toBe(1);
@@ -413,7 +418,7 @@ describe("describeData", () => {
 
   test("a missing directory reports bytes null everywhere and zero counts", async () => {
     const info = await describeData(src, NOW);
-    expect(info.files).toHaveLength(5);
+    expect(info.files).toHaveLength(7);
     expect(info.files.every((f) => f.bytes === null)).toBe(true);
     expect(info.evidenceEvents).toBe(0);
     expect(info.topics).toBe(0);

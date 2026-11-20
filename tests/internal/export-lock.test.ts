@@ -158,7 +158,11 @@ describe("purgeData with the lock", () => {
       "profile",
       "state",
     ]);
-    expect(result.alreadyMissing).toEqual(["catalog"]);
+    expect(result.alreadyMissing).toEqual([
+      "catalog",
+      "examItems",
+      "examPending",
+    ]);
     expect(lockFiles(dst)).toEqual([]);
   });
 
@@ -170,6 +174,8 @@ describe("purgeData with the lock", () => {
     expect([...result.alreadyMissing].sort()).toEqual([
       "catalog",
       "evidence",
+      "examItems",
+      "examPending",
       "goals",
       "profile",
       "state",

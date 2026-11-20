@@ -25,14 +25,25 @@ describe("constants", () => {
     expect(DATA_DIR_ENV).toBe("CLAUDE_PLUGIN_DATA");
   });
 
-  test("DATA_FILES holds the five file names and is frozen", () => {
+  test("DATA_FILES holds the seven file names and is frozen", () => {
     expect(DATA_FILES).toEqual({
       profile: "profile.json",
       state: "state.json",
       catalog: "catalog.json",
       goals: "goals.md",
       evidence: "evidence.jsonl",
+      examItems: "exam-items.jsonl",
+      examPending: "exam-pending.json",
     });
+    expect(Object.keys(DATA_FILES)).toEqual([
+      "profile",
+      "state",
+      "catalog",
+      "goals",
+      "evidence",
+      "examItems",
+      "examPending",
+    ]);
     expect(Object.isFrozen(DATA_FILES)).toBe(true);
   });
 });

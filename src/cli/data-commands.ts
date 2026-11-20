@@ -302,23 +302,33 @@ export async function setChangelogVersion(
 }
 
 /**
- * `export --to <absolute path>`: writes an export bundle.
+ * `export --to <absolute path>`: writes an export bundle and reports how
+ * many evidence and exam item lines were skipped as torn or invalid.
  *
  * @throws CliUsageError for a missing or non-absolute path.
  *
  * @example
  * ```ts
  * import { exportData } from "./data-commands.ts";
- * await exportData(args, env); // { exported: true, evidenceSkipped: 0 }
+ * await exportData(args, env);
+ * // { exported: true, evidenceSkipped: 0, examItemsSkipped: 0 }
  * ```
  */
 export async function exportData(
   args: ParsedArgs,
   env: CommandEnv,
-): Promise<{ readonly exported: true; readonly evidenceSkipped: number }> {
+): Promise<{
+  readonly exported: true;
+  readonly evidenceSkipped: number;
+  readonly examItemsSkipped: number;
+}> {
   const to = requireAbsolutePath(args, "to");
-  const { evidenceSkipped } = await exportBundleToFile(env.dir, env.now, to);
-  return { exported: true, evidenceSkipped };
+  const { evidenceSkipped, examItemsSkipped } = await exportBundleToFile(
+    env.dir,
+    env.now,
+    to,
+  );
+  return { exported: true, evidenceSkipped, examItemsSkipped };
 }
 
 /**
