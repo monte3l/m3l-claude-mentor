@@ -133,9 +133,10 @@ m3l-claude-mentor/
     whats-new/                       # changelog digest since last session
     profile/                         # view/edit goals, catalog, mutes, export/import, purge
     assess/                          # verification probes, explain-back judging
+    exam/                            # certification practice questions, readiness, study plan
   agents/
     mastery-assessor.md              # read-only (Read, Grep, Glob): judges probe answers, returns JSON verdicts
-    docs-researcher.md               # WebFetch only: fetches official docs and changelog; isolated context
+    docs-researcher.md               # WebFetch only: fetches official Claude, API, MCP docs and the changelog; isolated context
   hooks/hooks.json                   # command hooks running src/hooks/*.ts
   src/                               # TypeScript: the hooks and the CLI run from here directly, nothing is built
   data/topic-catalog.json            # default topics, types, dependencies
@@ -184,6 +185,7 @@ Notes:
 - `/m3l-claude-mentor:whats-new`: changelog digest filtered to the learner's goals and mastery map.
 - `/m3l-claude-mentor:assess <topic>`: a verification probe for a claimed level, judged by the `mastery-assessor` agent. Applied and Fluent can only be refuted by a probe, never confirmed.
 - `/m3l-claude-mentor:profile`: goals, catalog, mutes, export/import, show-and-delete.
+- `/m3l-claude-mentor:exam <code> [drill|mock|readiness|plan] [domain]`: prepares the learner for one of four Claude certification exams with original, model-written practice questions grounded in live docs, a per-domain readiness view and a study plan. The answer key is fixed in the CLI before a question is shown, and the CLI scores the answer. The questions and keys are not reviewed by a person, so every explanation links its docs page. The readiness view is a coverage and practice indicator, never a score prediction.
 
 ## 8. Customization
 

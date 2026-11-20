@@ -96,6 +96,7 @@ tips" at any time, in plain words.
 | `quiz`      | Practise recall on what is due for review                                                                            |
 | `whats-new` | See the changelog digest since your last session, filtered to your goals                                             |
 | `assess`    | Have a claimed level checked with a verification probe                                                               |
+| `exam`      | Prepare for a Claude certification exam: practice questions, a per-domain readiness view and a study plan            |
 | `profile`   | See or change goals, mutes, project exclusions and catalog overrides, and export, import or delete everything stored |
 
 ## Settings
@@ -175,19 +176,27 @@ before):
 The `docs-researcher` agent fetches pages with Claude Code's web fetch tool.
 A plugin cannot ship permission rules, so the first lookup asks you to allow
 the docs domain. Choose "don't ask again for this domain" or add the rule
-yourself:
+yourself. The Claude Code docs are enough for `teach`, `ask` and `whats-new`.
+The `exam` skill also reads the Claude API docs, the Model Context Protocol
+docs and Anthropic's engineering posts, so allow these as well if you use it:
 
 ```json
 {
   "permissions": {
-    "allow": ["WebFetch(domain:code.claude.com)"]
+    "allow": [
+      "WebFetch(domain:code.claude.com)",
+      "WebFetch(domain:platform.claude.com)",
+      "WebFetch(domain:modelcontextprotocol.io)",
+      "WebFetch(domain:www.anthropic.com)"
+    ]
   }
 }
 ```
 
-It only lets the web fetch tool read pages on `code.claude.com`. The agent is
-told to fetch nothing else, but the domain prompt is the real guard: if a
-lookup ever asks to fetch some other domain, deny it.
+These only let the web fetch tool read pages on those four official sites. The
+agent is told to fetch nothing else (on `www.anthropic.com` only the
+`/engineering` pages), but the domain prompt is the real guard: if a lookup
+ever asks to fetch some other domain, deny it.
 
 ## Requirements
 
@@ -272,8 +281,8 @@ that may still change any of it in a minor release.
 
 **The contract** is:
 
-- the six skill names, invoked as `/m3l-claude-mentor:<name>` (`ask`, `assess`,
-  `profile`, `quiz`, `teach`, `whats-new`);
+- the seven skill names, invoked as `/m3l-claude-mentor:<name>` (`ask`, `assess`,
+  `exam`, `profile`, `quiz`, `teach`, `whats-new`);
 - the two plugin options, `dial` and `transcriptAnalysis`, with their meaning and
   ranges;
 - the export format that `export` writes and `import` reads. This is format
