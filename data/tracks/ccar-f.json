@@ -1,0 +1,321 @@
+{
+  "schemaVersion": 1,
+  "code": "CCAR-F",
+  "title": "Claude Certified Architect – Foundations",
+  "tier": "foundations",
+  "assumes": null,
+  "guide": {
+    "version": "1.1",
+    "effective": "2026-11",
+    "sourceUrl": "https://anthropic-partners.skilljar.com/claude-certified-architect-foundations-certification",
+    "reviewedAt": "2026-11-20"
+  },
+  "format": {
+    "minutes": 120,
+    "passScaled": 720,
+    "scaleMax": 1000,
+    "itemKinds": ["single", "multiple"]
+  },
+  "scenarios": [
+    {
+      "id": "S1",
+      "summary": "Support agent on custom MCP tools that must resolve most cases itself and escalate wisely",
+      "domains": ["D1", "D2", "D5"]
+    },
+    {
+      "id": "S2",
+      "summary": "Team uses Claude Code day to day, with shared commands, project memory and a plan-or-execute choice",
+      "domains": ["D3", "D5"]
+    },
+    {
+      "id": "S3",
+      "summary": "Coordinator agent splits research among specialist subagents and assembles a cited report",
+      "domains": ["D1", "D2", "D5"]
+    },
+    {
+      "id": "S4",
+      "summary": "Engineer-facing agent explores legacy code using built-in tools plus MCP servers",
+      "domains": ["D1", "D2", "D3"]
+    },
+    {
+      "id": "S5",
+      "summary": "Claude Code runs in CI to review pull requests and write tests with few false alarms",
+      "domains": ["D3", "D4"]
+    },
+    {
+      "id": "S6",
+      "summary": "Pipeline pulls structured fields from messy documents, checks them against schemas, keeps accuracy",
+      "domains": ["D4", "D5"]
+    }
+  ],
+  "domains": [
+    {
+      "id": "D1",
+      "name": "Agentic Architecture & Orchestration",
+      "weight": 27,
+      "objectives": [
+        {
+          "id": "D1.1",
+          "officialRef": "1.1",
+          "summary": "Build an agentic loop that keeps going on tool calls and stops on the model's own completion signal.",
+          "topics": ["agentic-loop", "agent-sdk", "workflow-vs-agent-patterns"]
+        },
+        {
+          "id": "D1.2",
+          "officialRef": "1.2",
+          "summary": "Structure a coordinator that hands work to subagents and merges their results.",
+          "topics": ["multi-agent-orchestration", "subagents", "agent-sdk"]
+        },
+        {
+          "id": "D1.3",
+          "officialRef": "1.3",
+          "summary": "Set up how subagents are launched, what context they get, and how parallel runs are spawned.",
+          "topics": [
+            "subagents",
+            "multi-agent-orchestration",
+            "agent-sdk",
+            "context-window"
+          ]
+        },
+        {
+          "id": "D1.4",
+          "officialRef": "1.4",
+          "summary": "Enforce step ordering and clean handoffs to humans in multi-step flows, using code rather than prompts alone.",
+          "topics": ["workflow-vs-agent-patterns", "human-in-the-loop", "hooks"]
+        },
+        {
+          "id": "D1.5",
+          "officialRef": "1.5",
+          "summary": "Use SDK hooks to intercept tool calls and results, normalizing data and blocking policy violations.",
+          "topics": ["hooks", "agent-sdk", "permissions-model"]
+        },
+        {
+          "id": "D1.6",
+          "officialRef": "1.6",
+          "summary": "Break complex work into fixed pipelines or adaptive plans that fit the task.",
+          "topics": [
+            "workflow-vs-agent-patterns",
+            "explore-plan-code",
+            "multi-agent-orchestration"
+          ]
+        },
+        {
+          "id": "D1.7",
+          "officialRef": "1.7",
+          "summary": "Handle named sessions, resuming earlier work, and forking branches of exploration.",
+          "topics": ["session-management", "agent-sdk", "compaction"]
+        }
+      ]
+    },
+    {
+      "id": "D2",
+      "name": "Tool Design & MCP Integration",
+      "weight": 18,
+      "objectives": [
+        {
+          "id": "D2.1",
+          "officialRef": "2.1",
+          "summary": "Write tool descriptions and boundaries that let the model pick the right tool.",
+          "topics": ["tool-design", "tool-use-api", "built-in-tools"]
+        },
+        {
+          "id": "D2.2",
+          "officialRef": "2.2",
+          "summary": "Return structured, categorized error information from MCP tools so callers can recover.",
+          "topics": [
+            "mcp-server-development",
+            "tool-design",
+            "api-error-handling"
+          ]
+        },
+        {
+          "id": "D2.3",
+          "officialRef": "2.3",
+          "summary": "Give each agent a right-sized tool set and control tool selection behavior.",
+          "topics": ["tool-use-api", "tool-design", "multi-agent-orchestration"]
+        },
+        {
+          "id": "D2.4",
+          "officialRef": "2.4",
+          "summary": "Connect MCP servers at project or user level, with credentials kept out of config.",
+          "topics": [
+            "mcp",
+            "mcp-server-development",
+            "settings-scopes",
+            "api-key-handling"
+          ]
+        },
+        {
+          "id": "D2.5",
+          "officialRef": "2.5",
+          "summary": "Choose the right built-in tool for searching, reading, editing and running code.",
+          "topics": ["built-in-tools", "agentic-loop", "context-hygiene"]
+        }
+      ]
+    },
+    {
+      "id": "D3",
+      "name": "Claude Code Configuration & Workflows",
+      "weight": 20,
+      "objectives": [
+        {
+          "id": "D3.1",
+          "officialRef": "3.1",
+          "summary": "Organize CLAUDE.md guidance across user, project and directory levels, split into modules.",
+          "topics": ["claude-md", "settings-scopes", "context-window"]
+        },
+        {
+          "id": "D3.2",
+          "officialRef": "3.2",
+          "summary": "Create reusable commands and skills, choosing options such as scope and isolated context.",
+          "topics": ["slash-commands", "skills", "plugins"]
+        },
+        {
+          "id": "D3.3",
+          "officialRef": "3.3",
+          "summary": "Load conventions only for matching files by attaching path patterns to rule files.",
+          "topics": ["claude-md", "context-hygiene"]
+        },
+        {
+          "id": "D3.4",
+          "officialRef": "3.4",
+          "summary": "Decide between planning first and executing directly based on task size and ambiguity.",
+          "topics": ["plan-mode", "explore-plan-code", "subagents"]
+        },
+        {
+          "id": "D3.5",
+          "officialRef": "3.5",
+          "summary": "Improve results step by step using examples, tests and interview-style prompting.",
+          "topics": [
+            "specific-prompts",
+            "few-shot-examples",
+            "verify-your-work"
+          ]
+        },
+        {
+          "id": "D3.6",
+          "officialRef": "3.6",
+          "summary": "Run Claude Code non-interactively in CI with machine-readable output and independent review.",
+          "topics": [
+            "claude-code-headless-ci",
+            "permissions-model",
+            "structured-output"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D4",
+      "name": "Prompt Engineering & Structured Output",
+      "weight": 20,
+      "objectives": [
+        {
+          "id": "D4.1",
+          "officialRef": "4.1",
+          "summary": "Replace vague guidance with explicit criteria so reviews are precise and false positives drop.",
+          "topics": ["prompt-design", "specific-prompts", "eval-design"]
+        },
+        {
+          "id": "D4.2",
+          "officialRef": "4.2",
+          "summary": "Use well-chosen few-shot examples to make output format and judgment consistent.",
+          "topics": ["few-shot-examples", "prompt-design", "failure-diagnosis"]
+        },
+        {
+          "id": "D4.3",
+          "officialRef": "4.3",
+          "summary": "Force schema-conformant output via tool definitions and JSON schemas, with sensible optional fields.",
+          "topics": ["structured-output", "tool-use-api", "prompt-design"]
+        },
+        {
+          "id": "D4.4",
+          "officialRef": "4.4",
+          "summary": "Validate extractions, retry with error feedback, and know when retries cannot help.",
+          "topics": [
+            "structured-output",
+            "api-error-handling",
+            "verify-your-work",
+            "failure-diagnosis"
+          ]
+        },
+        {
+          "id": "D4.5",
+          "officialRef": "4.5",
+          "summary": "Pick batch or synchronous processing per latency need, and plan for batch failures.",
+          "topics": ["batch-processing", "prompt-caching", "api-error-handling"]
+        },
+        {
+          "id": "D4.6",
+          "officialRef": "4.6",
+          "summary": "Improve review quality with separate reviewer instances and multi-pass checks.",
+          "topics": [
+            "review-ai-changes",
+            "multi-agent-orchestration",
+            "eval-design"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D5",
+      "name": "Context Management & Reliability",
+      "weight": 15,
+      "objectives": [
+        {
+          "id": "D5.1",
+          "officialRef": "5.1",
+          "summary": "Keep critical facts intact across long conversations despite summarization and truncation.",
+          "topics": [
+            "context-window",
+            "compaction",
+            "context-hygiene",
+            "prompt-caching"
+          ]
+        },
+        {
+          "id": "D5.2",
+          "officialRef": "5.2",
+          "summary": "Decide when an agent should escalate to a person and how to resolve ambiguous requests.",
+          "topics": ["human-in-the-loop", "agentic-loop", "tool-design"]
+        },
+        {
+          "id": "D5.3",
+          "officialRef": "5.3",
+          "summary": "Pass failure details between agents so the coordinator can recover instead of hiding errors.",
+          "topics": [
+            "multi-agent-orchestration",
+            "api-error-handling",
+            "tool-design"
+          ]
+        },
+        {
+          "id": "D5.4",
+          "officialRef": "5.4",
+          "summary": "Explore large codebases without exhausting context, using scratch notes and delegated lookups.",
+          "topics": [
+            "context-hygiene",
+            "subagents",
+            "compaction",
+            "built-in-tools"
+          ]
+        },
+        {
+          "id": "D5.5",
+          "officialRef": "5.5",
+          "summary": "Design review workflows that sample outputs and calibrate confidence before automating.",
+          "topics": ["human-in-the-loop", "eval-design", "verify-your-work"]
+        },
+        {
+          "id": "D5.6",
+          "officialRef": "5.6",
+          "summary": "Keep source attribution and flag conflicting or uncertain data when combining sources.",
+          "topics": [
+            "grounding-and-citations",
+            "multi-agent-orchestration",
+            "prompt-injection-defense"
+          ]
+        }
+      ]
+    }
+  ]
+}

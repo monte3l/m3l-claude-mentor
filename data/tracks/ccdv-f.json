@@ -1,0 +1,288 @@
+{
+  "schemaVersion": 1,
+  "code": "CCDV-F",
+  "title": "Claude Certified Developer – Foundations",
+  "tier": "foundations",
+  "assumes": null,
+  "guide": {
+    "version": "1.1",
+    "effective": "2026-12-07",
+    "sourceUrl": "https://anthropic-partners.skilljar.com/page/partner-certifications",
+    "reviewedAt": "2026-11-20"
+  },
+  "format": {
+    "minutes": 120,
+    "passScaled": 720,
+    "scaleMax": 1000,
+    "itemKinds": ["single", "multiple"]
+  },
+  "domains": [
+    {
+      "id": "D1",
+      "name": "Agents and Workflows",
+      "weight": 17,
+      "objectives": [
+        {
+          "id": "D1.1",
+          "summary": "Pick a fixed workflow or autonomous agent from risk and audit needs; split orchestrator and subagents; choose the runtime.",
+          "topics": [
+            "workflow-vs-agent-patterns",
+            "multi-agent-orchestration",
+            "subagents",
+            "term-harness"
+          ]
+        },
+        {
+          "id": "D1.2",
+          "summary": "Write and fix Agent SDK agent definitions, loops and hook setups so required steps always run regardless of what the model chooses.",
+          "topics": ["agent-sdk", "hooks", "agentic-loop", "term-harness"]
+        },
+        {
+          "id": "D1.3",
+          "summary": "Read an agent trace, spot the missing or misused pattern (loop stopping, isolation, memory, context limits) and choose the fix.",
+          "topics": [
+            "agentic-loop",
+            "subagents",
+            "context-window",
+            "failure-diagnosis"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D2",
+      "name": "Applications and Integration",
+      "weight": 20,
+      "objectives": [
+        {
+          "id": "D2.1",
+          "summary": "Use Messages API features correctly: turns, tools, streaming, images, thinking, caching, schemas, stop reasons, realtime vs batch.",
+          "topics": [
+            "messages-api",
+            "tool-use-api",
+            "prompt-caching",
+            "batch-processing",
+            "vision-and-files",
+            "extended-thinking"
+          ]
+        },
+        {
+          "id": "D2.2",
+          "summary": "Judge an app design: instruction behavior per surface, data crossing the app boundary, and whether schema and session choices fit.",
+          "topics": [
+            "term-system-prompt",
+            "messages-api",
+            "session-management",
+            "structured-output"
+          ]
+        },
+        {
+          "id": "D2.3",
+          "summary": "Derive the right config from its files and pipeline (memory files, settings, model pins, prompt versions, plugins, CI) per environment.",
+          "topics": [
+            "claude-md",
+            "settings-scopes",
+            "plugins",
+            "claude-code-headless-ci",
+            "model-names-and-limits"
+          ]
+        },
+        {
+          "id": "D2.4",
+          "summary": "Debug failing integration code from its errors: stream event handling, retries blind to error classes, flawed multi-format file ingestion.",
+          "topics": [
+            "api-error-handling",
+            "streaming-events",
+            "vision-and-files",
+            "messages-api"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D3",
+      "name": "Claude Code",
+      "weight": 8,
+      "objectives": [
+        {
+          "id": "D3.1",
+          "summary": "Operate Claude Code on every surface: sessions, memory layering, settings, permission modes, non-interactive use, built-in commands.",
+          "topics": [
+            "claude-md",
+            "settings-scopes",
+            "permissions-model",
+            "session-management",
+            "claude-code-headless-ci",
+            "slash-commands"
+          ]
+        },
+        {
+          "id": "D3.2",
+          "summary": "Match a recurring team workflow to the right extension type, then build and package it for sharing.",
+          "topics": [
+            "skills",
+            "plugins",
+            "hooks",
+            "subagents",
+            "slash-commands"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D4",
+      "name": "Eval, Testing, and Debugging",
+      "weight": 10,
+      "objectives": [
+        {
+          "id": "D4.1",
+          "summary": "Build an eval for a stated quality target: human-calibrated model judges, reference sets, regression suites, defensible metrics.",
+          "topics": ["eval-design", "verify-your-work"]
+        },
+        {
+          "id": "D4.2",
+          "summary": "Read a trace or repro to name the failure type, locate whether the fault is in the integration or the model, and fix the cause.",
+          "topics": [
+            "failure-diagnosis",
+            "eval-design",
+            "context-hygiene",
+            "agentic-loop"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D5",
+      "name": "Model Selection and Optimization",
+      "weight": 12,
+      "objectives": [
+        {
+          "id": "D5.1",
+          "summary": "Explain and steer observed model behavior using tokens, context size, sampling randomness, and thinking and effort settings.",
+          "topics": [
+            "generation-mechanics",
+            "term-token",
+            "context-window",
+            "extended-thinking"
+          ]
+        },
+        {
+          "id": "D5.2",
+          "summary": "Pick a model tier balancing quality, speed and spend under hard limits; plan for behavior shifts across releases with regression evals.",
+          "topics": ["model-selection", "model-names-and-limits", "eval-design"]
+        },
+        {
+          "id": "D5.3",
+          "summary": "Find what drives spend from usage data, apply the fitting lever (caching, batching, token limits) and estimate the savings.",
+          "topics": [
+            "prompt-caching",
+            "batch-processing",
+            "model-selection",
+            "term-token"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D6",
+      "name": "Prompt and Context Engineering",
+      "weight": 15,
+      "objectives": [
+        {
+          "id": "D6.1",
+          "summary": "Repair long sessions whose context turns noisy or strays: compaction, trimming tool results, subagent delegation, or a fresh start.",
+          "topics": [
+            "compaction",
+            "context-hygiene",
+            "context-window",
+            "subagents"
+          ]
+        },
+        {
+          "id": "D6.2",
+          "summary": "Rework a prompt so output matches intent after evals show a gap: clearer wording, placement, examples, output limits, input cleaning.",
+          "topics": [
+            "prompt-design",
+            "few-shot-examples",
+            "specific-prompts",
+            "term-system-prompt",
+            "eval-design"
+          ]
+        },
+        {
+          "id": "D6.3",
+          "summary": "Keep downstream code safe from malformed model output via enforced schemas, response checks, and guarded handling of unstructured replies.",
+          "topics": ["structured-output", "tool-use-api", "api-error-handling"]
+        },
+        {
+          "id": "D6.4",
+          "summary": "Base answers only on supplied documents, with attribution and a not-found path; pick full context or retrieval on size, cost, freshness.",
+          "topics": [
+            "grounding-and-citations",
+            "vision-and-files",
+            "context-window",
+            "prompt-design"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D7",
+      "name": "Security and Safety",
+      "weight": 8,
+      "objectives": [
+        {
+          "id": "D7.1",
+          "summary": "Assess how an agent reading untrusted input could be hijacked or talked out of its rules; layer defenses against leaks and rogue actions.",
+          "topics": [
+            "prompt-injection-defense",
+            "human-in-the-loop",
+            "permissions-model"
+          ]
+        },
+        {
+          "id": "D7.2",
+          "summary": "Layer guardrails, minimal privileges and hooks so harmful operations are blocked deterministically even against hostile instructions.",
+          "topics": [
+            "hooks",
+            "permissions-model",
+            "human-in-the-loop",
+            "prompt-injection-defense"
+          ]
+        },
+        {
+          "id": "D7.3",
+          "summary": "Manage Anthropic keys safely: keep them server-side, scope them by workspace, separate environments, rotate and monitor use.",
+          "topics": ["api-key-handling"]
+        }
+      ]
+    },
+    {
+      "id": "D8",
+      "name": "Tools and MCP",
+      "weight": 10,
+      "objectives": [
+        {
+          "id": "D8.1",
+          "summary": "Implement a tool end to end: schema, guiding description, lean results, errors, execution side, approvals, and the assembled tool set.",
+          "topics": [
+            "tool-design",
+            "tool-use-api",
+            "human-in-the-loop",
+            "built-in-tools"
+          ]
+        },
+        {
+          "id": "D8.2",
+          "summary": "Build, deploy and connect an MCP server exposing resources, tools and prompts, choosing a transport and handling auth.",
+          "topics": ["mcp-server-development", "mcp", "tool-design"]
+        },
+        {
+          "id": "D8.3",
+          "summary": "Choose between skills, MCP servers, and native or bespoke tools: where the capability lives, who owns it, how Claude finds and calls it.",
+          "topics": ["built-in-tools", "skills", "mcp", "tool-use-api"]
+        }
+      ]
+    }
+  ]
+}
