@@ -111,6 +111,28 @@ describe("agent specifics", () => {
       expect(hasPhrase(body, needle), needle).toBe(true);
   });
 
+  test("docs-researcher names the three index URLs and the four allowed hosts", () => {
+    const { data, body } = load("docs-researcher");
+    expect(splitList(data["tools"])).toEqual(["WebFetch"]);
+    for (const needle of [
+      "https://code.claude.com/docs/llms.txt",
+      "https://platform.claude.com/llms.txt",
+      "https://modelcontextprotocol.io/llms.txt",
+      "code.claude.com",
+      "platform.claude.com",
+      "modelcontextprotocol.io",
+      "www.anthropic.com",
+      "/engineering",
+    ])
+      expect(hasPhrase(body, needle), needle).toBe(true);
+  });
+
+  test("docs-researcher forbids fetching anything else", () => {
+    expect(hasPhrase(load("docs-researcher").body, "Fetch nothing else")).toBe(
+      true,
+    );
+  });
+
   test("mastery-assessor has a non-empty subset of Read, Grep, Glob", () => {
     const { data, body } = load("mastery-assessor");
     const tools = splitList(data["tools"]);
