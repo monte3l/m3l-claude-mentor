@@ -145,14 +145,14 @@ m3l-claude-mentor/
 
 Hook events (command hooks only):
 
-| Event                                   | Job                                                                             |
-| --------------------------------------- | ------------------------------------------------------------------------------- |
-| `SessionStart` (startup, resume, clear) | Load profile summary, due reviews, digest flag via `additionalContext`          |
-| `SessionStart` (compact)                | Re-inject learner state after compaction                                        |
-| `UserPromptSubmit`                      | Detect signals; run the segment gate; inject style hint and tip directive       |
-| `PostToolUse`                           | Extract feature-usage signals; append observed-usage evidence                   |
-| `Stop`                                  | Record activity only (no segment boundary); never returns context or a decision |
-| `PostCompact`                           | Update segment state only (it cannot inject context)                            |
+| Event                                   | Job                                                                                       |
+| --------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `SessionStart` (startup, resume, clear) | Load profile summary, due reviews, active exam track, digest flag via `additionalContext` |
+| `SessionStart` (compact)                | Re-inject learner state after compaction                                                  |
+| `UserPromptSubmit`                      | Detect signals; run the segment gate; inject style hint and tip directive                 |
+| `PostToolUse`                           | Extract feature-usage signals; append observed-usage evidence                             |
+| `Stop`                                  | Record activity only (no segment boundary); never returns context or a decision           |
+| `PostCompact`                           | Update segment state only (it cannot inject context)                                      |
 
 Notes:
 
@@ -161,8 +161,8 @@ Notes:
 - `Stop` `additionalContext` forces the conversation to continue, and `PreCompact`/`PostCompact` output cannot reach the model, so tips are injected on `UserPromptSubmit` and context is restored with `SessionStart` matcher `compact`.
 - Skills are namespaced by plugin: `/m3l-claude-mentor:teach`, not `/mentor teach`. State access from skills goes through a small CLI (`src/cli/mentor-state.ts`), so Markdown never hand-edits JSON.
 - Plugin agents ignore `hooks`, `mcpServers` and `permissionMode` frontmatter; hooks ship at plugin level.
-- The CLI commands are `show`, `get-profile`, `record-evidence`, `record-batch`, `recompute`, `introduce`, `record-pass`, `set-mute`, `set-topic-mute`, `exclude-project`, `get-goals`, `set-goals`, `topics`, `set-topic-override`, `set-changelog-version`, `export`, `import` and `purge`. A leading `--data-dir <absolute path>` beats the environment. `record-batch` takes 1 to 10 events, validates before the first write and saves once, so a lesson or quiz needs one save per answered group.
-- Every write to the state files takes one lock on the data directory, `.state.lock` (`src/internal/lock.ts`), created exclusively with a random token. A lock older than 5 s, judged by its modification time alone, is broken by exactly one waiter, and release removes the lock only if it is still ours. Hooks wait at most 2 s, well under their 10 s limit, and the CLI waits 6 s, longer than the stale window, so it always eventually succeeds. A lock that stays held ends in `LOCK_TIMEOUT` with fixed text, and an unwritable data directory fails at once with `WRITE_FAILED` instead of waiting. The store functions never lock; the callers do, around a whole load-compute-save. `import` stages all five files before taking the lock and holds it only for the renames, `purge` locks only an existing directory, and `export` and the read-only commands take no lock.
+- The CLI commands are `show`, `get-profile`, `record-evidence`, `record-batch`, `recompute`, `introduce`, `record-pass`, `set-mute`, `set-topic-mute`, `exclude-project`, `get-goals`, `set-goals`, `topics`, `set-topic-override`, `set-changelog-version`, `export`, `import` and `purge`, plus the exam commands of section 16 (`tracks`, `set-track`, `exam-begin`, `exam-answer`, `readiness`, `exam-items`, `exam-void` and `exam-unvoid`). A leading `--data-dir <absolute path>` beats the environment. `record-batch` takes 1 to 10 events, validates before the first write and saves once, so a lesson or quiz needs one save per answered group.
+- Every write to the state files takes one lock on the data directory, `.state.lock` (`src/internal/lock.ts`), created exclusively with a random token. A lock older than 5 s, judged by its modification time alone, is broken by exactly one waiter, and release removes the lock only if it is still ours. Hooks wait at most 2 s, well under their 10 s limit, and the CLI waits 6 s, longer than the stale window, so it always eventually succeeds. A lock that stays held ends in `LOCK_TIMEOUT` with fixed text, and an unwritable data directory fails at once with `WRITE_FAILED` instead of waiting. The store functions never lock; the callers do, around a whole load-compute-save. `import` stages every file it replaces before taking the lock and holds it only for the renames, `purge` locks only an existing directory, and `export` and the read-only commands take no lock.
 - On a lock timeout `Stop`, `PostCompact` and `PostToolUse` skip the write with the usual single stderr line and exit 0. `SessionStart` computes the refreshed profile without the lock, takes it only when a level would be raised, and on a timeout injects its context from the stored profile. `UserPromptSubmit` fails closed: no tip, no mute or resume notice (nothing was saved), and nothing at all for a learner who has muted tips, though a learner who has not still gets the style hint and teach offer. A hook that degrades this way reports it through the optional `note` of its output, one stderr line that never reaches the JSON.
 - A skill's `allowed-tools` pre-approval lasts only for the turn the learner invokes it, and a plugin cannot ship permission rules. The README therefore documents a one-time user rule for the CLI and a narrower rule set, checked live on Claude Code 2.1.327. The `docs-researcher` agent prompts per domain for `WebFetch`, which the README also covers.
 - Skills dispatch the agents by the scoped name `m3l-claude-mentor:<agent>`, with a self-contained prompt because a subagent sees no conversation. The `assess` skill rebuilds the `record-batch` tokens itself from the verdicts and never takes a token string from the agent. Both dispatches were confirmed live by the evals.
@@ -201,17 +201,20 @@ Two surfaces, kept in sync:
 - The digest compares changelog entries since the last session against the catalog and mastery map.
 - Fast-moving facts (model names and IDs, pricing, limits) are never stored as lesson content; always fetched.
 - Bundled content is limited to stable concepts and the catalog structure.
+- Exam tracks (section 16) carry their guide version, its effective date and a `reviewedAt` date. The `tracks` command reports `effectiveFuture` while the guide is not yet in force and `reviewStale` when `reviewedAt` is older than 120 days, and the `exam` skill warns on either. Re-review a track whenever its guide version changes.
 
 ## 10. State and privacy
 
 User-level storage in `${CLAUDE_PLUGIN_DATA}` (`~/.claude/plugins/data/<id>/`). It survives plugin updates but is deleted when the plugin is uninstalled, unless `--keep-data` is passed, so export/import ships early. Contents:
 
-| File                       | Content                                                        |
-| -------------------------- | -------------------------------------------------------------- |
-| `profile.json`             | Per-topic levels, per-dimension evidence, calibration score    |
-| `evidence.jsonl`           | Append-only log: channel, topic, result, timestamp, session id |
-| `goals.md`, `catalog.json` | Customization (section 8)                                      |
-| `state.json`               | Dial, mute, segment counters, last-seen changelog version      |
+| File                       | Content                                                                                                                                       |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `profile.json`             | Per-topic levels, per-dimension evidence, calibration score                                                                                   |
+| `evidence.jsonl`           | Append-only log: channel, topic, result, timestamp, session id                                                                                |
+| `goals.md`, `catalog.json` | Customization (section 8)                                                                                                                     |
+| `state.json`               | Dial, mute, segment counters, last-seen changelog version, active exam track, voided exam submissions                                         |
+| `exam-items.jsonl`         | Append-only exam item log: track, domain, objective, topic, kind, mode, correct, timestamp, session id. Never the question, options or answer |
+| `exam-pending.json`        | The answer key of the exam in progress (option letters only). Expires after 24 h and is not exported                                          |
 
 Transcript reading (chosen by the user) is a sensitive capability. Proposed safeguards, which the user has not yet confirmed:
 
@@ -296,3 +299,21 @@ None blocking. Still open:
   - Project exclusion follows symlinks and folds case on macOS and Windows. It stays case-sensitive on Linux mounts that are case-insensitive and does not fold Unicode normalisation forms. Resolving a path on a hung network mount can block until the hook times out, which fails safe.
   - A broken install or an unwritable data directory makes a hook print one stderr line per event. Claude Code shows that only in verbose output, so the learner sees nothing. A `doctor` command could surface it and is not planned.
   - `UserPromptSubmit` can say "Mentor tips muted for X" when the 500-topic cap stopped the mute from being saved. It predates the lock and is not fixed yet.
+
+## 16. Certification preparation
+
+The plugin can prepare a learner for four official Claude certification exams: Claude Certified Developer - Foundations (CCDV-F), Architect - Foundations (CCAR-F), Architect - Professional (CCAR-P) and Developer - Professional (CCDV-P). The Associate level is out of scope; adding it needs one new file under `data/tracks/`.
+
+**Tracks.** Each exam is a bundled, paraphrased blueprint in `data/tracks/<code>.json`: the guide version and effective date, the format (120 minutes, a scaled pass mark of 720 out of 1000), domains with weights that sum to 100, and objectives that each map to one to six catalog topics. A Professional track names the Foundations track it assumes. An objective may list third-party frameworks under `external`; the skill names them and sends the learner elsewhere, and never writes questions on them. Blueprints are paraphrased from the public exam guides, never copied. The exam topics live in the same catalog as the others, but with `ambient: false`: they produce no keyword tips and do not appear in the unprompted session-start lists unless their track is the learner's active track. An explicit request for one always works.
+
+**Items.** The `exam` skill writes original scenario questions (single or multiple response) grounded in live docs through `docs-researcher`, and every explanation links its page. It never uses or paraphrases the sample questions in the exam guides and refuses to discuss real exam items. The model fixes the answer key with `exam-begin` before the question is shown, and `exam-answer` scores it in code (a multiple-response item is right only on the exact set). A drill is one item per begin and answer cycle; a mock is 10 to 15 items begun together and scored together. A follow-up "why is this option wrong?" is judged as an explain-back, and it is the only way the item raises understanding, because quiz evidence feeds only the recall dimension.
+
+**Evidence.** Each scored item appends one quiz evidence event for its topic and one line to the exam item log. The question, options and answer are never stored. The key sits in `exam-pending.json` until it is answered, replaced or 24 hours old.
+
+**Readiness.** A pure function over the profile, the track and the item log (`src/internal/readiness.ts`). Per objective it takes the best level credit among its topics (Unseen 0, Introduced or Claimed 0.1, Recalled 0.5, Understood 0.8, Applied or Fluent 1). Per domain, with at least four effective items, it blends decayed accuracy (21-day half-life) 60% with coverage 40%; with fewer, it uses coverage alone and flags it. At most three items per objective per day count. The index is the weight-weighted sum over domains. It reports no index when it has fewer than 15 effective items, or when the domains with enough items hold under 60% of the weight. It lists the three weakest domains and always says it is **not a score prediction**. All of these numbers are this project's own and have not been validated against real exam results.
+
+**Void.** The answer keys are written by the model and no person reviews them. A learner can dispute a key; when the docs support them, `exam-void` removes that submission (every item answered in one `exam-answer` call) from readiness and topic levels. A void is a `(session, at)` pair in `state.json`, at most 100; the logs are never rewritten, and `exam-unvoid` reverses it.
+
+**Track focus.** `set-track` stores the learner's active exam. While it is set, `SessionStart` adds a one-line hint to run the exam skill and lists that track's topics first, by weight. `teach` and `quiz` offer them first too.
+
+**Limits.** The skill never says a learner will pass. The track `sourceUrl` values were not verifiable (the certification pages refused automated access). The quiz-channel mastery evidence from exams is not capped per day, only readiness is.

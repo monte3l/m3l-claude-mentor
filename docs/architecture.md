@@ -13,9 +13,9 @@ are in [`CLAUDE.md`](../CLAUDE.md). The threat analysis is in the
 | **Learner**                         | Installs the plugin from the `monte3l/m3l-plugins` catalog, works in Claude Code as usual, and invokes the skills `/m3l-claude-mentor:<name>`                                                                                                                                |
 | **Claude Code**                     | Loads the plugin, runs the hooks with the event JSON on stdin, substitutes `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}`, and runs a skill's pre-approved command                                                                                                      |
 | **Hooks** (`src/hooks/entry-*.ts`)  | Load the profile at session start, decide whether a tip is due, record usage signals and activity. They read and write the state files only, make no network call and never block. A hook that writes takes a short lock on the data directory and skips the write after 2 s |
-| **Skills** (`skills/*/SKILL.md`)    | Teach, answer, quiz, summarize what changed, verify a claim and manage the profile. They read and write state only through the CLI                                                                                                                                           |
+| **Skills** (`skills/*/SKILL.md`)    | Teach, answer, quiz, prepare for certification exams, summarize what changed, verify a claim and manage the profile. They read and write state only through the CLI                                                                                                          |
 | **CLI** (`src/cli/mentor-state.ts`) | The single way a skill reads or changes the stored state, including export, import and deletion                                                                                                                                                                              |
-| **Agents** (`agents/*.md`)          | `docs-researcher` fetches pages from `code.claude.com` with the web fetch tool. `mastery-assessor` reads files the learner names and judges answers. Both are read-only                                                                                                      |
+| **Agents** (`agents/*.md`)          | `docs-researcher` fetches pages from the official Claude, API, MCP and engineering docs with the web fetch tool. `mastery-assessor` reads files the learner names and judges answers. Both are read-only                                                                     |
 | **Maintainers**                     | Review and merge pull requests, and merge the release pull request                                                                                                                                                                                                           |
 | **Contributor**                     | Opens issues and pull requests                                                                                                                                                                                                                                               |
 | **CI (GitHub Actions)**             | Runs the tests, coverage gate, style and lint checks, docs gate, scanners and the weekly Scorecard. Holds read-only tokens and no secrets, except the jobs named in [`SECURITY.md`](../SECURITY.md#secrets-and-credentials)                                                  |
@@ -31,14 +31,23 @@ Claude Code event -stdin JSON-> src/hooks/entry-*.ts -> state files in ${CLAUDE_
                                    Claude (tip line)    skill -> src/cli/mentor-state.ts
 ```
 
-The state is `profile.json`, `evidence.jsonl`, `state.json`, and the optional
-`goals.md` and `catalog.json`. It stays on the learner's machine. Only
-feature-usage signals are stored, never conversation content.
+The state is `profile.json`, `evidence.jsonl`, `state.json`, `exam-items.jsonl`
+and `exam-pending.json`, and the optional `goals.md` and `catalog.json`. It
+stays on the learner's machine. Only feature-usage signals and exam item
+metadata (never a question, option or answer) are stored, never conversation
+content.
+
+The exam skill adds one more flow. The bundled blueprints in `data/tracks/*.json`
+are read by the CLI. The skill writes a question, fixes its key with
+`exam-begin`, and `exam-answer` scores it in code, appends quiz evidence and an
+item-log line, and recomputes the topic levels. `readiness` and `exam-items`
+read the profile and the log, and `exam-void` hides a disputed submission
+through a list in `state.json`. See [`spec.md`](spec.md#16-certification-preparation).
 
 ## External interfaces
 
-**Interface 1: the skills.** `teach`, `ask`, `quiz`, `whats-new`, `assess` and
-`profile`, invoked as `/m3l-claude-mentor:<name>`. Each pre-approves exactly
+**Interface 1: the skills.** `teach`, `ask`, `quiz`, `whats-new`, `assess`, `exam`
+and `profile`, invoked as `/m3l-claude-mentor:<name>`. Each pre-approves exactly
 `Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)` through its
 `allowed-tools`, and nothing else. This is part of the public contract.
 
@@ -63,7 +72,8 @@ state and `import` reads one back after validating it against the schema. This
 is part of the public contract.
 
 **Interface 6: the agents and the network.** `docs-researcher` has only the web
-fetch tool and is told to read pages on `code.claude.com`. The first fetch of a
+fetch tool and is told to read pages on `code.claude.com`, `platform.claude.com`,
+`modelcontextprotocol.io` and `www.anthropic.com/engineering`. The first fetch of a
 domain asks the learner for permission, because a plugin cannot ship permission
 rules. This is the only network use in the plugin.
 

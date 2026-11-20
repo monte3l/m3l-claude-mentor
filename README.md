@@ -99,6 +99,16 @@ tips" at any time, in plain words.
 | `exam`      | Prepare for a Claude certification exam: practice questions, a per-domain readiness view and a study plan            |
 | `profile`   | See or change goals, mutes, project exclusions and catalog overrides, and export, import or delete everything stored |
 
+## Certification prep
+
+The `exam` skill helps you prepare for four official Claude certification exams: Claude Certified Developer - Foundations (`CCDV-F`), Architect - Foundations (`CCAR-F`), Architect - Professional (`CCAR-P`) and Developer - Professional (`CCDV-P`). Try `/m3l-claude-mentor:exam CCAR-F drill`, `mock`, `readiness` or `plan`.
+
+- The practice questions are original, written by Claude from the live docs, and each explanation links its page. They are not real exam questions, and the mentor will not use or discuss real ones.
+- **A person does not review the questions or their answer keys.** If a key looks wrong, tell the mentor; when the docs agree with you, it can void that result so it leaves your readiness and levels.
+- The readiness view is a coverage and practice indicator built from this plugin's own weights. It is **not a prediction of your exam score** and has not been checked against real results.
+- The exam blueprints are short paraphrases of the public exam guides. The guide, not this plugin, is the authority on what an exam covers. A guide that is not yet in force is flagged.
+- Stored: your topic levels, plus one line per practice question with its exam, domain, objective, topic, result and time. The question and your answer are never stored.
+
 ## Settings
 
 Both options are plugin options in `/config`.
