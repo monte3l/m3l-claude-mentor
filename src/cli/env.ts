@@ -72,7 +72,8 @@ export function lockedState<T>(
 }
 
 /**
- * The merged catalog plus the user's `catalog.json` it was built from.
+ * The merged catalog plus the user's `catalog.json` it was built from, and
+ * the ids of custom topics dropped because a bundled topic uses that id.
  *
  * @example
  * ```ts
@@ -83,6 +84,8 @@ export function lockedState<T>(
 export interface LoadedCatalog {
   readonly file: CatalogFile;
   readonly entries: readonly CatalogEntry[];
+  /** Sorted ids of custom entries shadowed by a bundled id; may be empty. */
+  readonly shadowedCustom: readonly string[];
 }
 
 /**
@@ -109,7 +112,11 @@ export async function loadMergedCatalog(
       "catalog.json does not merge with the bundled topic catalog",
     );
   }
-  return { file, entries: merged.value };
+  return {
+    file,
+    entries: merged.value.entries,
+    shadowedCustom: merged.value.shadowedCustom,
+  };
 }
 
 /**

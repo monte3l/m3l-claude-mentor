@@ -310,6 +310,32 @@ describe("parseCatalogEntry", () => {
     }
   });
 
+  test.each([true, false])("keeps a supplied ambient: %s", (ambient) => {
+    const r = parseCatalogEntry({ ...validEntry, ambient });
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(Object.hasOwn(r.value, "ambient")).toBe(true);
+      expect(r.value.ambient).toBe(ambient);
+    }
+  });
+
+  test("omits ambient from the parsed entry when absent", () => {
+    const r = parseCatalogEntry(validEntry);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(Object.hasOwn(r.value, "ambient")).toBe(false);
+  });
+
+  test.each([
+    ["string", "false"],
+    ["number", 0],
+    ["null", null],
+    ["object", {}],
+  ])("rejects a non-boolean ambient (%s) naming the field", (_n, ambient) => {
+    const r = parseCatalogEntry({ ...validEntry, ambient });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toContain("ambient");
+  });
+
   test("lowercases and trims keywords", () => {
     const r = parseCatalogEntry({
       ...validEntry,

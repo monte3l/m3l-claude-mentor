@@ -92,22 +92,25 @@ describe("absent ctx.bundled", () => {
 
 describe("a user catalog that does not merge", () => {
   test("exits 1 with VALIDATION_FAILED and does not echo catalog content", async () => {
-    const parsed = parseCatalog([
-      {
-        id: "plan-mode",
-        title: "SECRET-TITLE-xyzzy",
-        type: "concept",
-        dependencies: [],
-        keywords: ["xyzzy-keyword"],
-        targetLevel: "Understood",
-        enabled: true,
-      },
-    ]);
+    const secret = {
+      id: "dup-topic",
+      title: "SECRET-TITLE-xyzzy",
+      type: "concept",
+      dependencies: [],
+      keywords: ["xyzzy-keyword"],
+      targetLevel: "Understood",
+      enabled: true,
+    };
+    const parsed = parseCatalog([secret]);
     if (!parsed.ok) throw new Error("custom topic fixture is invalid");
-    // The custom id duplicates a bundled id, so it cannot merge.
+    // Two custom entries share an id: still an error (only a clash with a
+    // bundled id is tolerated).
     await saveCatalogFile(sb.dir, {
       scoring: {},
-      user: { overrides: {}, custom: parsed.value },
+      user: {
+        overrides: {},
+        custom: [...parsed.value, ...parsed.value],
+      },
     });
     const result = await run(sb.dir, ["get-profile"]);
     expect(result.exitCode).toBe(1);
@@ -116,7 +119,48 @@ describe("a user catalog that does not merge", () => {
     expect(result.stderr.trimEnd()).not.toContain("\n");
     expect(result.stderr).not.toContain("SECRET-TITLE-xyzzy");
     expect(result.stderr).not.toContain("xyzzy-keyword");
-    expect(result.stderr).not.toContain("plan-mode");
+    expect(result.stderr).not.toContain("dup-topic");
+  });
+});
+
+describe("a custom topic that reuses a bundled id", () => {
+  async function seedCollision(): Promise<void> {
+    const parsed = parseCatalog([
+      {
+        id: "plan-mode",
+        title: "My own plan mode",
+        type: "concept",
+        dependencies: [],
+        keywords: ["xyzzy-keyword"],
+        targetLevel: "Understood",
+        enabled: true,
+      },
+    ]);
+    if (!parsed.ok) throw new Error("custom topic fixture is invalid");
+    await saveCatalogFile(sb.dir, {
+      scoring: {},
+      user: { overrides: {}, custom: parsed.value },
+    });
+  }
+
+  test("topics succeeds, keeps the bundled entry and reports the id as shadowedCustom", async () => {
+    await seedCollision();
+    const out = (await runOk(sb.dir, ["topics"])) as {
+      topics: { id: string; title: string }[];
+      shadowedCustom: string[];
+    };
+    expect(out.shadowedCustom).toEqual(["plan-mode"]);
+    expect(out.topics.map((t) => [t.id, t.title])).toEqual([
+      ["context-window", "The context window"],
+      ["plan-mode", "Plan mode"],
+    ]);
+  });
+
+  test("get-profile no longer fails with VALIDATION_FAILED", async () => {
+    await seedCollision();
+    const result = await run(sb.dir, ["get-profile"]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr).toBe("");
   });
 });
 
