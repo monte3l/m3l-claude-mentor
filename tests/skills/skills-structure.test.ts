@@ -32,10 +32,11 @@ beforeAll(async () => {
   commands = await cliCommands();
 });
 
-describe("rule 1: exactly six skill directories", () => {
-  test("skills/ holds exactly the six directories", () => {
+describe("rule 1: exactly seven skill directories", () => {
+  test("skills/ holds exactly the seven directories", () => {
     const entries = readdirSync(SKILLS_DIR, { withFileTypes: true });
     expect(entries.every((e) => e.isDirectory())).toBe(true);
+    expect(entries).toHaveLength(7);
     expect(entries.map((e) => e.name).sort()).toEqual([...SKILL_NAMES].sort());
   });
 
@@ -306,7 +307,7 @@ describe("rule 7: ask and whats-new source from official docs", () => {
     expect(lines.some((l) => /\brecord-(evidence|pass)\b/.test(l))).toBe(false);
   });
 
-  test.each(["ask", "whats-new", "teach"])(
+  test.each(["ask", "whats-new", "teach", "exam"])(
     "%s dispatches the docs-researcher agent",
     (name) => {
       expect(
@@ -319,6 +320,12 @@ describe("rule 7: ask and whats-new source from official docs", () => {
     expect(
       hasPhrase(readSkill("assess"), "m3l-claude-mentor:mastery-assessor"),
     ).toBe(true);
+  });
+
+  test("exam does not mention mastery-assessor (it judges the follow-up itself)", () => {
+    for (const file of skillMarkdownFiles("exam")) {
+      expect(file.body, file.path).not.toMatch(/mastery-assessor/);
+    }
   });
 
   test.each(["quiz", "profile"])("%s mentions no agent", (name) => {
@@ -338,7 +345,7 @@ describe("rule 7: ask and whats-new source from official docs", () => {
   });
 });
 
-const WEB_SKILLS = ["teach", "ask", "whats-new"];
+const WEB_SKILLS = ["teach", "ask", "whats-new", "exam"];
 const usesCli = (name: string): boolean =>
   skillMarkdownFiles(name).some((f) =>
     bashLines(f.body).some((l) => l.includes("mentor-state.ts")),

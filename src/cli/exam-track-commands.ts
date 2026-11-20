@@ -1,12 +1,14 @@
 import { loadBundledTracks } from "../internal/bundled-tracks.ts";
+import { MentorStateError } from "../internal/errors.ts";
 import { DAY_MS } from "../internal/mastery.ts";
 import { loadState, saveState } from "../internal/store.ts";
+import { DOMAIN_ID_PATTERN } from "../internal/track-ids.ts";
 import {
   checkTrackAgainstCatalog,
   type Track,
   type TrackGuide,
 } from "../internal/tracks.ts";
-import { CliUsageError, type ParsedArgs } from "./args.ts";
+import { CliUsageError, requireValue, type ParsedArgs } from "./args.ts";
 import { loadMergedCatalog, lockedState, type CommandEnv } from "./env.ts";
 import { findBundledTrack, requireTrackCode } from "./exam-shared.ts";
 
@@ -27,6 +29,34 @@ export interface TrackDomainView {
   readonly weight: number;
   /** How many objectives the domain has. */
   readonly objectives: number;
+}
+
+/**
+ * One objective of a track as printed by `tracks --code`.
+ *
+ * @example
+ * ```ts
+ * import type { ObjectiveDetailView } from "./exam-track-commands.ts";
+ * const d: ObjectiveDetailView = {
+ *   id: "D1.1",
+ *   domain: "D1",
+ *   officialRef: "1.1",
+ *   summary: "Design an agentic loop",
+ *   topics: ["agentic-loop"],
+ * };
+ * ```
+ */
+export interface ObjectiveDetailView {
+  readonly id: string;
+  /** The owning domain's id. */
+  readonly domain: string;
+  /** Present only when the track file supplies it. */
+  readonly officialRef?: string;
+  readonly summary: string;
+  /** Mapped topic ids, in track-file order. */
+  readonly topics: readonly string[];
+  /** Present only when the track file supplies it. */
+  readonly external?: readonly string[];
 }
 
 /**
@@ -53,6 +83,11 @@ export interface TrackView {
   readonly unknownTopics: readonly string[];
   /** Ids of objectives with no known, enabled topic; sorted. */
   readonly disabledObjectives: readonly string[];
+  /**
+   * Present only with `--code`: the track's objectives in track order,
+   * limited to one domain when `--domain` is given.
+   */
+  readonly objectiveDetails?: readonly ObjectiveDetailView[];
 }
 
 /**
@@ -100,27 +135,96 @@ function trackView(
   };
 }
 
+function objectiveDetails(
+  track: Track,
+  domainId: string | undefined,
+): ObjectiveDetailView[] {
+  const domains =
+    domainId === undefined
+      ? track.domains
+      : track.domains.filter((domain) => domain.id === domainId);
+  if (domains.length === 0) {
+    throw new MentorStateError(
+      "VALIDATION_FAILED",
+      "the exam track has no domain with that id",
+    );
+  }
+  return domains.flatMap((domain) =>
+    domain.objectives.map((objective) => ({
+      id: objective.id,
+      domain: domain.id,
+      ...(objective.officialRef !== undefined
+        ? { officialRef: objective.officialRef }
+        : {}),
+      summary: objective.summary,
+      topics: [...objective.topics],
+      ...(objective.external !== undefined
+        ? { external: [...objective.external] }
+        : {}),
+    })),
+  );
+}
+
+/** The `--code` / `--domain` selection, validated; `undefined` without flags. */
+function trackSelection(
+  args: ParsedArgs,
+): { readonly track: Track; readonly domain: string | undefined } | undefined {
+  const hasDomain = args.values.has("domain");
+  if (!args.values.has("code")) {
+    if (hasDomain) throw new CliUsageError();
+    return undefined;
+  }
+  const code = requireTrackCode(args, "code");
+  const domain = hasDomain ? requireValue(args, "domain") : undefined;
+  if (domain !== undefined && !DOMAIN_ID_PATTERN.test(domain)) {
+    throw new CliUsageError();
+  }
+  return { track: findBundledTrack(code), domain };
+}
+
 /**
- * `tracks`: every bundled exam track in loader order, each checked against
- * the merged catalog, plus the stored active track. Read-only; never locks.
+ * `tracks [--code <code> [--domain <id>]]`: every bundled exam track in
+ * loader order, each checked against the merged catalog, plus the stored
+ * active track. With `--code`, only that track, carrying `objectiveDetails`
+ * (limited to one domain by `--domain`). Read-only; never locks.
  *
- * @throws MentorStateError from loading the catalog, the state or the
- * bundled tracks.
+ * @throws CliUsageError when `--domain` is given without `--code`, or either
+ * value is malformed.
+ * @throws MentorStateError `VALIDATION_FAILED` (fixed messages) when the
+ * code is not bundled or the track has no such domain; also from loading the
+ * catalog, the state or the bundled tracks.
  *
  * @example
  * ```ts
  * import { tracks } from "./exam-track-commands.ts";
- * const { active, tracks: rows } = await tracks(env);
+ * const { active, tracks: rows } = await tracks(args, env);
  * ```
  */
-export async function tracks(env: CommandEnv): Promise<TracksView> {
+export async function tracks(
+  args: ParsedArgs,
+  env: CommandEnv,
+): Promise<TracksView> {
+  const selection = trackSelection(args);
+  const details =
+    selection === undefined
+      ? undefined
+      : objectiveDetails(selection.track, selection.domain);
   const { entries } = await loadMergedCatalog(env);
   const state = await loadState(env.dir, env.now);
+  const rows =
+    selection === undefined ? loadBundledTracks() : [selection.track];
   return {
     active: state.activeTrack ?? null,
-    tracks: loadBundledTracks().map((track) =>
-      trackView(track, checkTrackAgainstCatalog(track, entries), env.now),
-    ),
+    tracks: rows.map((track) => {
+      const view = trackView(
+        track,
+        checkTrackAgainstCatalog(track, entries),
+        env.now,
+      );
+      return details === undefined
+        ? view
+        : { ...view, objectiveDetails: details };
+    }),
   };
 }
 

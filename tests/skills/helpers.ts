@@ -9,6 +9,7 @@ export const SKILLS_DIR = resolve(import.meta.dirname, "../../skills");
 export const SKILL_NAMES = [
   "assess",
   "ask",
+  "exam",
   "profile",
   "quiz",
   "teach",

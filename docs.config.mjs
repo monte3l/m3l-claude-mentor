@@ -51,6 +51,12 @@ export default {
       label: "Profile skill prompt",
     },
     {
+      src: "skills/exam/SKILL.md",
+      out: "skill-exam.html",
+      group: "Reference",
+      label: "Exam skill prompt",
+    },
+    {
       src: "agents/docs-researcher.md",
       out: "agent-docs-researcher.html",
       group: "Reference",
@@ -160,6 +166,11 @@ export default {
       glob: "skills/teach/references/**",
       reason:
         "reference files the teach skill loads on demand, not standalone pages",
+    },
+    {
+      glob: "skills/exam/references/**",
+      reason:
+        "reference files the exam skill loads on demand, not standalone pages",
     },
     {
       glob: "design/source/**",

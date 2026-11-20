@@ -19,7 +19,15 @@ function frontmatter(text: string): Record<string, string> {
   return out;
 }
 
-const SKILLS = ["ask", "assess", "profile", "quiz", "teach", "whats-new"];
+const SKILLS = [
+  "ask",
+  "assess",
+  "exam",
+  "profile",
+  "quiz",
+  "teach",
+  "whats-new",
+];
 
 const manifest = JSON.parse(
   readFileSync(join(ROOT, ".claude-plugin", "plugin.json"), "utf8"),
