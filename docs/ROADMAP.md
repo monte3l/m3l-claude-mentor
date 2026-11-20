@@ -1,5 +1,5 @@
 ---
-reviewed: 2026-11-20
+reviewed: 2026-11-21
 ---
 
 # Roadmap
@@ -22,6 +22,12 @@ releases, and a new skill, option or topic ships as a minor release.
 
 Keep the lessons current. Re-check the topic catalogue against the Claude Code
 docs when its behaviour changes. This is ordinary maintenance, not a milestone.
+
+Keep the exam tracks current. Re-review a track in `data/tracks/` whenever its
+exam guide changes version or its effective date arrives (the `tracks` command
+flags both), and re-check the objective-to-topic mappings against the new guide.
+The Associate certifications are out of scope; adding one needs only a new track
+file and any topics it needs.
 
 ## Next 12 months
 
@@ -61,6 +67,16 @@ symlinks and case folding. The ones the roadmap adds:
 - **Few people can run the project.** See [Governance](GOVERNANCE.md#bus-factor).
   It needs contributors from outside the organization. There is no committed
   timeline.
+
+- **Exam practice has no human review.** The questions and answer keys are written
+  by the model, and a wrong key is caught only when a learner disputes it, which
+  then needs `exam-void`. A reviewed question bank is not planned.
+- **Exam readiness is unvalidated.** Its weights, decay and thresholds are this
+  project's own and were never compared with real exam outcomes, so it is
+  labelled a practice indicator and never a prediction.
+- **The exam guide links are unverified.** The certification pages refused
+  automated access, so each track's `sourceUrl` has not been opened by a script.
+  Check them in a browser.
 
 ## Unverified
 
