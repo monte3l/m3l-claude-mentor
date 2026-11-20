@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import {
   matchTopics,
   mergeCatalog,
+  isUnprompted,
   parseCatalog,
   parseUserCatalog,
 } from "../../src/internal/catalog.ts";
@@ -35,6 +36,34 @@ function parsed(id: string, extra: Record<string, unknown> = {}): CatalogEntry {
 function ids(entries: readonly CatalogEntry[]): string[] {
   return entries.map((e) => e.id);
 }
+
+const ORIGINAL_IDS: readonly string[] = [
+  "context-window",
+  "compaction",
+  "agentic-loop",
+  "permissions-model",
+  "settings-scopes",
+  "mcp",
+  "claude-md",
+  "slash-commands",
+  "plan-mode",
+  "skills",
+  "subagents",
+  "hooks",
+  "plugins",
+  "output-styles",
+  "worktrees",
+  "verify-your-work",
+  "explore-plan-code",
+  "context-hygiene",
+  "specific-prompts",
+  "review-ai-changes",
+  "term-token",
+  "term-system-prompt",
+  "term-harness",
+  "model-names-and-limits",
+  "new-features",
+];
 
 describe("parseCatalog", () => {
   test("preserves input order", () => {
@@ -118,7 +147,17 @@ describe("parseCatalog", () => {
     const r = parseCatalog(JSON.parse(text) as unknown);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.value).toHaveLength(25);
+    expect(r.value).toHaveLength(52);
+    expect(r.value.slice(0, 25).map((e) => e.id as string)).toEqual(
+      ORIGINAL_IDS,
+    );
+    for (const e of r.value.slice(0, 25)) {
+      expect(e.ambient, `${e.id} ambient`).toBeUndefined();
+    }
+    for (const e of r.value.slice(25)) {
+      expect(e.enabled, `${e.id} enabled`).toBe(true);
+      expect(e.ambient, `${e.id} ambient`).toBe(false);
+    }
     const fast = r.value.filter((e) => e.type === "fast-moving");
     expect(fast.length).toBeGreaterThan(0);
     for (const e of fast) expect(e.targetLevel).toBe("Introduced");
@@ -603,5 +642,20 @@ describe("matchTopics", () => {
     expect(ids(matchTopics(cat, `${"a ".repeat(9990)}needle`))).toEqual([
       "late",
     ]);
+  });
+});
+
+describe("isUnprompted", () => {
+  test.each([
+    [true, undefined, true],
+    [true, true, true],
+    [true, false, false],
+    [false, undefined, false],
+    [false, true, false],
+    [false, false, false],
+  ] as const)("enabled=%s ambient=%s -> %s", (enabled, ambient, expected) => {
+    const extra: Record<string, unknown> =
+      ambient === undefined ? { enabled } : { enabled, ambient };
+    expect(isUnprompted(parsed("t", extra))).toBe(expected);
   });
 });

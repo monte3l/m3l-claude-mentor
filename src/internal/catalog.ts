@@ -409,6 +409,33 @@ function containsWord(text: string, keyword: string): boolean {
 const NO_IDS: ReadonlySet<string> = new Set();
 
 /**
+ * Whether `entry` may be listed unprompted: it is enabled and not marked
+ * `ambient: false`. An absent `ambient` counts as ambient. Per-topic mutes
+ * live in state and are checked by the caller.
+ *
+ * The session-start handler uses this to choose which topics may appear in
+ * its unprompted below-target and review-due lines. {@link matchTopics}
+ * deliberately does not call it: it repeats its own `ambient === false`
+ * check because an explicit request can opt an `ambient: false` topic back
+ * in through `includeAmbientOff`, an exception this predicate has no input
+ * for.
+ *
+ * Design note: an `ambient: false` topic stays excluded from session-start
+ * reminders even after the learner has started (touched) it. This is a
+ * deliberate choice for now, to be revisited when exam tracks become active
+ * (Phase 3/4 of the exam-tracks plan).
+ *
+ * @example
+ * ```ts
+ * import { isUnprompted } from "./catalog.ts";
+ * const shown = catalog.filter(isUnprompted);
+ * ```
+ */
+export function isUnprompted(entry: CatalogEntry): boolean {
+  return entry.enabled && entry.ambient !== false;
+}
+
+/**
  * Options for {@link matchTopics}.
  *
  * @example

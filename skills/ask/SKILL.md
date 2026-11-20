@@ -40,8 +40,9 @@ To mention a related lesson, read the catalog:
 node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} topics
 ```
 
-Match the question against topic ids, titles and keywords. When one fits and is not
-muted, end with one line offering `/m3l-claude-mentor:teach <id>`.
+Match the question against topic ids, titles and keywords. When one fits, is not muted
+and has `ambient` true, end with one line offering `/m3l-claude-mentor:teach <id>`.
+Never offer a topic whose `ambient` is false unprompted; the learner has to name it.
 
 ## Rules
 

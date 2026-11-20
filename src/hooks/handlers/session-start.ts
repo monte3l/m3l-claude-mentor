@@ -5,6 +5,7 @@
  * raised; it never lowers a level (the explicit `recompute` CLI command
  * does) and never writes `state.json`.
  */
+import { isUnprompted } from "../../internal/catalog.ts";
 import { isLockTimeout, withStateLock } from "../../internal/lock.ts";
 import { isReviewDue } from "../../internal/mastery.ts";
 import { recomputeProfile } from "../../internal/recompute.ts";
@@ -207,7 +208,8 @@ async function refreshedProfile(deps: HookDeps): Promise<Refreshed> {
  * (`session start`, or `restored after compaction` for source `compact`),
  * the dial, up to 8 below-target topics (touched ones first), up to 5 due
  * reviews, the first 400 chars of the learner's goals, and a pointer to the
- * profile command, all from the updated profile. Muted topics are omitted;
+ * profile command, all from the updated profile. Muted, disabled and
+ * `ambient: false` topics are omitted;
  * evidence content is never included; `state.json` is never written.
  *
  * @example
@@ -229,7 +231,7 @@ export const sessionStartHandler: HookHandler = async (payload, deps) => {
 
   const muted = new Set<string>(state.mutedTopics);
   const entries = deps.catalog.filter(
-    (entry) => entry.enabled && !muted.has(entry.id),
+    (entry) => isUnprompted(entry) && !muted.has(entry.id),
   );
   const below = belowTargetLines(entries, profile);
   const reviews = reviewLines(entries, profile, deps.now);

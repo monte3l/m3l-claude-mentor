@@ -32,8 +32,9 @@ The first docs lookup may ask the user to allow the docs domain (see the README)
 
 1. **Resolve the topic** from `topics` by matching `$ARGUMENTS` to ids, titles and
    keywords. When ambiguous or empty, list 3-5 candidates (prefer `Unseen` or
-   `Introduced`, `enabled` true) and ask the learner to pick. When nothing matches, say so
-   and offer `/m3l-claude-mentor:ask`.
+   `Introduced`, `enabled` true) and ask the learner to pick. Exclude any topic whose
+   `ambient` is false from those candidates unless `$ARGUMENTS` names it. When nothing
+   matches, say so and offer `/m3l-claude-mentor:ask`.
 2. **Gate.** When `enabled` is false, do not teach; offer to enable it through
    `/m3l-claude-mentor:profile`. When `muted` is true, teach only if the learner
    explicitly asks by name after being told. Mention any `dependencies` still `Unseen`
