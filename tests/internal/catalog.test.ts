@@ -65,6 +65,61 @@ const ORIGINAL_IDS: readonly string[] = [
   "new-features",
 ];
 
+const FOUNDATIONS_IDS: readonly string[] = [
+  "messages-api",
+  "streaming-events",
+  "prompt-caching",
+  "batch-processing",
+  "extended-thinking",
+  "workflow-vs-agent-patterns",
+  "multi-agent-orchestration",
+  "session-management",
+  "model-selection",
+  "generation-mechanics",
+  "tool-use-api",
+  "structured-output",
+  "vision-and-files",
+  "agent-sdk",
+  "mcp-server-development",
+  "claude-code-headless-ci",
+  "built-in-tools",
+  "tool-design",
+  "api-error-handling",
+  "prompt-design",
+  "few-shot-examples",
+  "grounding-and-citations",
+  "eval-design",
+  "failure-diagnosis",
+  "prompt-injection-defense",
+  "api-key-handling",
+  "human-in-the-loop",
+];
+
+const PROFESSIONAL_IDS: readonly string[] = [
+  "deployment-surfaces",
+  "agent-runtimes",
+  "retrieval-architecture",
+  "rate-limits-throughput",
+  "durable-agent-state",
+  "context-editing-and-memory",
+  "progressive-discovery",
+  "governance-compliance",
+  "production-reliability",
+  "observability-telemetry",
+  "incident-response",
+  "online-evaluation",
+  "llm-as-judge",
+  "cost-latency-optimization",
+  "model-migration-and-change-management",
+  "agent-threat-defense",
+  "enterprise-identity-and-audit",
+  "ai-risk-and-bias",
+  "stakeholder-communication",
+  "org-agent-governance",
+  "agent-fleet-operations",
+  "guardrail-design",
+];
+
 describe("parseCatalog", () => {
   test("preserves input order", () => {
     const r = parseCatalog([
@@ -147,7 +202,7 @@ describe("parseCatalog", () => {
     const r = parseCatalog(JSON.parse(text) as unknown);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.value).toHaveLength(52);
+    expect(r.value).toHaveLength(74);
     expect(r.value.slice(0, 25).map((e) => e.id as string)).toEqual(
       ORIGINAL_IDS,
     );
@@ -158,6 +213,12 @@ describe("parseCatalog", () => {
       expect(e.enabled, `${e.id} enabled`).toBe(true);
       expect(e.ambient, `${e.id} ambient`).toBe(false);
     }
+    expect(r.value.slice(25, 52).map((e) => e.id as string)).toEqual(
+      FOUNDATIONS_IDS,
+    );
+    expect(r.value.slice(52, 74).map((e) => e.id as string)).toEqual(
+      PROFESSIONAL_IDS,
+    );
     const fast = r.value.filter((e) => e.type === "fast-moving");
     expect(fast.length).toBeGreaterThan(0);
     for (const e of fast) expect(e.targetLevel).toBe("Introduced");

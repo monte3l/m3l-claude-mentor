@@ -759,5 +759,404 @@
     "targetLevel": "Applied",
     "enabled": true,
     "ambient": false
+  },
+  {
+    "id": "deployment-surfaces",
+    "title": "Deployment surfaces",
+    "type": "concept",
+    "dependencies": ["messages-api"],
+    "keywords": [
+      "deployment surface",
+      "cloud platform deployment",
+      "amazon bedrock",
+      "google vertex ai",
+      "llm gateway",
+      "configuration parity",
+      "provider routing",
+      "microsoft foundry",
+      "first-party api"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "agent-runtimes",
+    "title": "Agent runtimes",
+    "type": "concept",
+    "dependencies": ["agent-sdk"],
+    "keywords": [
+      "agent runtime",
+      "managed agents",
+      "self-hosted agent loop",
+      "agent sandbox",
+      "where the loop runs",
+      "agent state ownership"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "retrieval-architecture",
+    "title": "Retrieval architecture",
+    "type": "concept",
+    "dependencies": ["grounding-and-citations"],
+    "keywords": [
+      "retrieval architecture",
+      "rag pipeline",
+      "chunking strategy",
+      "embedding index",
+      "retrieve vs stuff context",
+      "index freshness",
+      "reranking"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "rate-limits-throughput",
+    "title": "Rate limits and throughput",
+    "type": "concept",
+    "dependencies": ["api-error-handling"],
+    "keywords": [
+      "throughput planning",
+      "backpressure",
+      "quota allocation",
+      "multi-tenant quota",
+      "request queueing",
+      "burst traffic",
+      "capacity planning"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "durable-agent-state",
+    "title": "Durable agent state",
+    "type": "concept",
+    "dependencies": ["session-management"],
+    "keywords": [
+      "durable agent",
+      "agent checkpoint",
+      "resume after interruption",
+      "idempotent tool call",
+      "restart an agent",
+      "long-running agent",
+      "state across model change"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "context-editing-and-memory",
+    "title": "Context editing and memory",
+    "type": "concept",
+    "dependencies": ["compaction"],
+    "keywords": [
+      "context editing",
+      "memory tool",
+      "memory store",
+      "prune tool results",
+      "long-horizon context",
+      "clear tool results",
+      "agent memory store"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "progressive-discovery",
+    "title": "Progressive discovery",
+    "type": "concept",
+    "dependencies": ["tool-design"],
+    "keywords": [
+      "tool progressive disclosure",
+      "tool search",
+      "deferred tools",
+      "lazy tool loading",
+      "too many tools",
+      "tool context cost"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "governance-compliance",
+    "title": "Governance and compliance",
+    "type": "concept",
+    "dependencies": [],
+    "keywords": [
+      "zero data retention",
+      "data retention",
+      "pii handling",
+      "phi handling",
+      "audit trail",
+      "tenant isolation",
+      "data residency",
+      "regulatory fit"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "production-reliability",
+    "title": "Production reliability",
+    "type": "practice",
+    "dependencies": ["api-error-handling"],
+    "keywords": [
+      "service level objective",
+      "graceful degradation",
+      "fallback model",
+      "circuit breaker",
+      "multi-region failover",
+      "provider failover",
+      "reliability slo"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "observability-telemetry",
+    "title": "Observability and telemetry",
+    "type": "practice",
+    "dependencies": ["agentic-loop"],
+    "keywords": [
+      "agent tracing",
+      "token usage metrics",
+      "cost metrics",
+      "latency metrics",
+      "redact logs",
+      "llm observability",
+      "alerting on agents"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "incident-response",
+    "title": "Incident response",
+    "type": "practice",
+    "dependencies": ["failure-diagnosis"],
+    "keywords": [
+      "llm incident",
+      "rollback a prompt",
+      "kill switch",
+      "incident triage",
+      "post-incident review",
+      "blameless postmortem",
+      "runaway agent"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "online-evaluation",
+    "title": "Online evaluation",
+    "type": "practice",
+    "dependencies": ["eval-design"],
+    "keywords": [
+      "online evaluation",
+      "production sampling",
+      "a/b test prompts",
+      "production feedback loop",
+      "eval release gate",
+      "metrics by task type",
+      "shadow traffic"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "llm-as-judge",
+    "title": "LLM as judge design",
+    "type": "practice",
+    "dependencies": ["eval-design"],
+    "keywords": [
+      "judge rubric",
+      "position bias",
+      "length bias",
+      "inter-rater reliability",
+      "judge drift",
+      "judge calibration",
+      "grader prompt"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "cost-latency-optimization",
+    "title": "Cost and latency optimization",
+    "type": "practice",
+    "dependencies": ["prompt-caching", "model-selection"],
+    "keywords": [
+      "time to first token",
+      "parallel tool calls",
+      "tiered routing",
+      "per-tenant spend",
+      "cost control",
+      "latency budget",
+      "cache checkpoint"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "model-migration-and-change-management",
+    "title": "Model migration and change management",
+    "type": "practice",
+    "dependencies": ["model-selection", "eval-design"],
+    "keywords": [
+      "pin model version",
+      "model migration",
+      "regression baseline",
+      "prompt versioning",
+      "tool schema versioning",
+      "deprecation planning",
+      "upgrade rollout"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "agent-threat-defense",
+    "title": "Agent threat defense",
+    "type": "practice",
+    "dependencies": ["prompt-injection-defense"],
+    "keywords": [
+      "tool poisoning",
+      "data exfiltration",
+      "exfiltration path",
+      "agent sandboxing",
+      "red teaming",
+      "adversarial input"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "enterprise-identity-and-audit",
+    "title": "Enterprise identity and audit",
+    "type": "practice",
+    "dependencies": ["api-key-handling"],
+    "keywords": [
+      "single sign-on",
+      "sso for agents",
+      "secrets management",
+      "per-tenant credentials",
+      "agent access control",
+      "audit logging",
+      "agent identity"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "ai-risk-and-bias",
+    "title": "Bias, fairness and safety evaluation",
+    "type": "practice",
+    "dependencies": ["eval-design"],
+    "keywords": [
+      "bias testing",
+      "fairness evaluation",
+      "safety evaluation",
+      "harm analysis"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "stakeholder-communication",
+    "title": "Stakeholder communication",
+    "type": "practice",
+    "dependencies": [],
+    "keywords": [
+      "stakeholder communication",
+      "architecture decision record",
+      "explain tradeoffs",
+      "handoff document",
+      "non-technical audience",
+      "limits and risk",
+      "adr",
+      "operations runbook",
+      "sla commitment"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "org-agent-governance",
+    "title": "Organisation agent governance",
+    "type": "practice",
+    "dependencies": ["human-in-the-loop", "settings-scopes"],
+    "keywords": [
+      "agent usage policy",
+      "approval tiers",
+      "change control",
+      "who may run agents",
+      "org policy",
+      "agent governance"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "agent-fleet-operations",
+    "title": "Agent fleet operations",
+    "type": "practice",
+    "dependencies": [
+      "claude-code-headless-ci",
+      "multi-agent-orchestration",
+      "worktrees"
+    ],
+    "keywords": [
+      "agent fleet",
+      "task sharding",
+      "unattended agents",
+      "merge gate",
+      "event-driven trigger",
+      "fleet budget cap",
+      "agent supervision"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "guardrail-design",
+    "title": "Designing runtime guardrails",
+    "type": "practice",
+    "dependencies": ["agent-threat-defense", "hooks"],
+    "keywords": [
+      "guardrail design",
+      "runtime guardrails",
+      "input filter",
+      "output filter",
+      "pii redaction",
+      "destructive action block",
+      "guardrail tuning",
+      "refusal fallback"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
   }
 ]
