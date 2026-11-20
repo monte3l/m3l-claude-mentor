@@ -43,7 +43,9 @@ authored or substantially assisted a commit — see `.claude/skills/writing-comm
 
 Branch off `main` as `feat/<slug>` / `fix/<slug>`, never work directly on
 `main` — `guard-branch-isolation.mjs` blocks `src/**`/`tests/**` writes
-while `HEAD` is `main`. Land any `src/`/`tests/` change via PR. Run
+while `HEAD` is `main`, and `guard-shared-checkout.mjs` blocks any edit,
+`git commit` or new branch in the main checkout itself, so work happens in a
+worktree off `origin/main`. Land any `src/`/`tests/` change via PR. Run
 `.claude/skills/starting-work/` before beginning change-work if you haven't
 already settled the branch and PR decision.
 
