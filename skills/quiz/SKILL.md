@@ -34,7 +34,9 @@ types and `enabled`.
 ## Steps
 
 1. **Choose topics.** With an argument, match it in `topics`. Otherwise take up to three
-   topics whose `reviewDue` is true (that is the only source of due items). When nothing
+   topics whose `reviewDue` is true (that is the only source of due items). When
+   `activeTrackTopics` (from `get-profile`) is non-empty, due topics in it are offered
+   first, ordered by weight descending. When nothing
    is due, say so and offer a quiz on an introduced topic, or
    `/m3l-claude-mentor:teach`.
 2. **Skip muted and disabled topics, even when named.** Say why and offer

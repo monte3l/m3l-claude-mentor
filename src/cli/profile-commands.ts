@@ -23,6 +23,7 @@ import {
   saveProfile,
 } from "../internal/store.ts";
 import { loadBundledTracks } from "../internal/bundled-tracks.ts";
+import { trackTopicWeights } from "../internal/track-weights.ts";
 import { excludeVoidedEvidence } from "../internal/voids.ts";
 import { requireOneOf, requireTopicId, type ParsedArgs } from "./args.ts";
 import {
@@ -31,7 +32,6 @@ import {
   requireCatalogEntry,
   type CommandEnv,
 } from "./env.ts";
-import { trackTopicWeights } from "./exam-shared.ts";
 
 const UNSEEN_TOPIC: TopicProfile = {
   introduced: false,
@@ -100,7 +100,7 @@ export interface ProfileView {
   readonly activeTrack: string | null;
   /**
    * Each topic's exam weight in the active track (see `trackTopicWeights`
-   * in `./exam-shared.ts`); `{}` when no track is active or the stored code
+   * in `../internal/track-weights.ts`); `{}` when no track is active or the stored code
    * is no longer a bundled track.
    */
   readonly activeTrackTopics: Readonly<Record<string, number>>;
