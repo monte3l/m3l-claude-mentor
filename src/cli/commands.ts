@@ -19,6 +19,9 @@ import {
   show,
 } from "./data-commands.ts";
 import type { CommandEnv } from "./env.ts";
+import { examItems, readiness } from "./exam-report-commands.ts";
+import { examAnswer, examBegin } from "./exam-session-commands.ts";
+import { setTrack, tracks } from "./exam-track-commands.ts";
 import {
   getProfile,
   introduce,
@@ -88,6 +91,22 @@ const COMMANDS = {
   ),
   "set-changelog-version": spec("set-changelog-version --version <version>", [
     "version",
+  ]),
+  tracks: spec("tracks"),
+  "set-track": spec("set-track --code <code> | --clear", ["code"], {
+    booleanFlags: ["clear"],
+  }),
+  "exam-begin": spec(
+    "exam-begin --track <code> --mode <drill|mock> --items <spec;spec...>",
+    ["track", "mode", "items"],
+  ),
+  "exam-answer": spec("exam-answer --answers <letters;letters...>", [
+    "answers",
+  ]),
+  readiness: spec("readiness [--track <code>]", ["track"]),
+  "exam-items": spec("exam-items [--track <code>] [--limit <n>]", [
+    "track",
+    "limit",
   ]),
 } as const satisfies Readonly<Record<string, CommandSpec>>;
 
@@ -210,6 +229,18 @@ function dispatch(
       return setTopicOverride(args, env);
     case "set-changelog-version":
       return setChangelogVersion(args, env);
+    case "tracks":
+      return tracks(env);
+    case "set-track":
+      return setTrack(args, env);
+    case "exam-begin":
+      return examBegin(args, env);
+    case "exam-answer":
+      return examAnswer(args, env);
+    case "readiness":
+      return readiness(args, env);
+    case "exam-items":
+      return examItems(args, env);
   }
 }
 

@@ -22,6 +22,7 @@ import {
   readEvidence,
   saveProfile,
 } from "../internal/store.ts";
+import { loadBundledTracks } from "../internal/bundled-tracks.ts";
 import { requireOneOf, requireTopicId, type ParsedArgs } from "./args.ts";
 import {
   loadMergedCatalog,
@@ -29,6 +30,7 @@ import {
   requireCatalogEntry,
   type CommandEnv,
 } from "./env.ts";
+import { trackTopicWeights } from "./exam-shared.ts";
 
 const UNSEEN_TOPIC: TopicProfile = {
   introduced: false,
@@ -93,11 +95,28 @@ export interface ProfileView {
   readonly excludedProjects: readonly string[];
   /** The last changelog version shown, or `null` when none was recorded. */
   readonly lastChangelogVersion: string | null;
+  /** The stored active exam track code, or `null` when none is set. */
+  readonly activeTrack: string | null;
+  /**
+   * Each topic's exam weight in the active track (see `trackTopicWeights`
+   * in `./exam-shared.ts`); `{}` when no track is active or the stored code
+   * is no longer a bundled track.
+   */
+  readonly activeTrackTopics: Readonly<Record<string, number>>;
+}
+
+function activeTrackTopics(
+  activeTrack: string | undefined,
+): Readonly<Record<string, number>> {
+  if (activeTrack === undefined) return {};
+  const track = loadBundledTracks().find((t) => t.code === activeTrack);
+  return track === undefined ? {} : trackTopicWeights(track);
 }
 
 /**
  * `get-profile`: the stored profile merged with the state's mute and
- * exclusion settings and last changelog version; topics sorted by id. The
+ * exclusion settings, last changelog version and active exam track (with
+ * its per-topic exam weights); topics sorted by id. The
  * merged catalog is loaded so that a `catalog.json` that no longer merges
  * is reported.
  *
@@ -131,6 +150,8 @@ export async function getProfile(env: CommandEnv): Promise<ProfileView> {
     mutedTopics: state.mutedTopics,
     excludedProjects: state.excludedProjects,
     lastChangelogVersion: state.lastChangelogVersion,
+    activeTrack: state.activeTrack ?? null,
+    activeTrackTopics: activeTrackTopics(state.activeTrack),
   };
 }
 

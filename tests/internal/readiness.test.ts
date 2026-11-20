@@ -10,6 +10,7 @@ import {
   ACCURACY_BLEND,
   ITEM_HALF_LIFE_DAYS,
   LEVEL_CREDIT,
+  MAX_ITEMS_PER_OBJECTIVE_PER_DAY,
   MIN_DOMAIN_ITEMS,
   MIN_EVIDENCE_WEIGHT_SHARE,
   MIN_TOTAL_ITEMS,
@@ -31,7 +32,13 @@ import { parseTrack, type Track } from "../../src/internal/tracks.ts";
 
 const NOW = Date.UTC(2026, 10, 20);
 
-/** A track of N single-objective domains: Dn / Dn.1 / topic-n. */
+/**
+ * Objectives per fixture domain. Several, so `items` can spread a batch of
+ * same-day items across them and stay under the per-objective daily cap.
+ */
+const OBJECTIVES_PER_DOMAIN = 8;
+
+/** A track of N domains: Dn with objectives Dn.1..Dn.8, all mapped to topic-n. */
 function makeTrack(weights: readonly number[], code = "CCAR-F"): Track {
   const parsed = parseTrack({
     schemaVersion: 1,
@@ -56,13 +63,11 @@ function makeTrack(weights: readonly number[], code = "CCAR-F"): Track {
       id: `D${String(i + 1)}`,
       name: `Domain ${String(i + 1)}`,
       weight,
-      objectives: [
-        {
-          id: `D${String(i + 1)}.1`,
-          summary: "An objective",
-          topics: [`topic-${String(i + 1)}`],
-        },
-      ],
+      objectives: Array.from({ length: OBJECTIVES_PER_DOMAIN }, (_, o) => ({
+        id: `D${String(i + 1)}.${String(o + 1)}`,
+        summary: "An objective",
+        topics: [`topic-${String(i + 1)}`],
+      })),
     })),
   });
   if (!parsed.ok) throw new Error(parsed.reason);
@@ -98,12 +103,13 @@ function item(
   domain: string,
   correct: boolean,
   at: number = NOW,
+  objective = `${domain}.1`,
 ): ExamItem {
   const parsed = parseExamItem({
     v: 1,
     track,
     domain,
-    objective: `${domain}.1`,
+    objective,
     topic: "topic-1",
     kind: "single",
     mode: "drill",
@@ -115,7 +121,10 @@ function item(
   return parsed.value;
 }
 
-/** `n` items for a domain, the first `right` of them correct. */
+/**
+ * `n` items for a domain, the first `right` of them correct, rotated across
+ * the fixture objectives so the per-objective daily cap does not bind.
+ */
 function items(
   domain: string,
   n: number,
@@ -124,7 +133,13 @@ function items(
   track = "CCAR-F",
 ): ExamItem[] {
   return Array.from({ length: n }, (_, i) =>
-    item(track, domain, i < right, at),
+    item(
+      track,
+      domain,
+      i < right,
+      at,
+      `${domain}.${String((i % OBJECTIVES_PER_DOMAIN) + 1)}`,
+    ),
   );
 }
 
@@ -166,6 +181,7 @@ describe("constants", () => {
     expect(MIN_TOTAL_ITEMS).toBe(15);
     expect(MIN_EVIDENCE_WEIGHT_SHARE).toBe(60);
     expect(ACCURACY_BLEND).toBe(0.6);
+    expect(MAX_ITEMS_PER_OBJECTIVE_PER_DAY).toBe(3);
   });
 
   test.each([
@@ -571,6 +587,171 @@ describe("purity", () => {
   });
 });
 
+describe("per-objective daily cap", () => {
+  const full = profileOf({ "topic-1": "Applied", "topic-2": "Applied" });
+  const DAY_START = NOW; // NOW is a UTC midnight, so NOW + i ms stays in its day
+  const run = (its: readonly ExamItem[], over: Partial<ReadinessInput> = {}) =>
+    computeReadiness(input({ items: its, ...over }));
+
+  test("10 same-day items on one objective count as exactly 3", () => {
+    const its = Array.from({ length: 10 }, (_, i) =>
+      item("CCAR-F", "D1", true, DAY_START + i * 1000, "D1.1"),
+    );
+    const r = run(its);
+    expect(domainOf(r, "D1").effectiveItems).toBeCloseTo(3);
+    expect(r.totalEffectiveItems).toBeCloseTo(3);
+  });
+
+  test("the first three by time count: right then wrong gives accuracy 1", () => {
+    const its = Array.from({ length: 10 }, (_, i) =>
+      item("CCAR-F", "D1", i < 3, DAY_START + i * 1000, "D1.1"),
+    );
+    expect(domainOf(run(its), "D1").accuracy).toBeCloseTo(1);
+  });
+
+  test("the first three by time count: wrong then right gives accuracy 0", () => {
+    const its = Array.from({ length: 10 }, (_, i) =>
+      item("CCAR-F", "D1", i >= 3, DAY_START + i * 1000, "D1.1"),
+    );
+    expect(domainOf(run(its), "D1").accuracy).toBeCloseTo(0);
+  });
+
+  test("three or fewer items are all counted", () => {
+    const its = [0, 1, 2].map((i) =>
+      item("CCAR-F", "D1", true, DAY_START + i, "D1.1"),
+    );
+    expect(domainOf(run(its), "D1").effectiveItems).toBeCloseTo(3);
+  });
+
+  test("a capped-out objective cannot reach evidence thresholds", () => {
+    const its = Array.from({ length: 16 }, (_, i) =>
+      item("CCAR-F", "D1", true, DAY_START + i, "D1.1"),
+    );
+    const r = run(its, { profile: full });
+    expect(r.totalEffectiveItems).toBeCloseTo(3);
+    expect(domainOf(r, "D1").lowEvidence).toBe(true);
+    expect(r.status).toBe("insufficient-evidence");
+  });
+
+  test("each objective on the same day gets its own 3", () => {
+    const its = ["D1.1", "D1.2", "D1.3"].flatMap((o) =>
+      Array.from({ length: 5 }, (_, i) =>
+        item("CCAR-F", "D1", true, DAY_START + i, o),
+      ),
+    );
+    expect(domainOf(run(its), "D1").effectiveItems).toBeCloseTo(9);
+  });
+
+  test("the same objective on different UTC days gets 3 per day", () => {
+    const its = [0, 1, 2].flatMap((d) =>
+      Array.from({ length: 5 }, (_, i) =>
+        item("CCAR-F", "D1", true, DAY_START - d * DAY_MS + i, "D1.1"),
+      ),
+    );
+    // days are NOW's, NOW-1d's and NOW-2d's UTC days
+    const w = (days: number) => 0.5 ** (days / ITEM_HALF_LIFE_DAYS);
+    expect(domainOf(run(its), "D1").effectiveItems).toBeCloseTo(
+      3 * (w(0) + w(1) + w(2)),
+      2,
+    );
+  });
+
+  test("the UTC midnight boundary splits days: at = k*DAY_MS - 1 and k*DAY_MS differ", () => {
+    const k = NOW / DAY_MS;
+    expect(Number.isInteger(k)).toBe(true);
+    const before = Array.from({ length: 4 }, () =>
+      item("CCAR-F", "D1", true, k * DAY_MS - 1, "D1.1"),
+    );
+    const after = Array.from({ length: 4 }, () =>
+      item("CCAR-F", "D1", true, k * DAY_MS, "D1.1"),
+    );
+    const r = run([...before, ...after]);
+    // 3 from each side of midnight; the 1ms-old items weigh ~1
+    expect(domainOf(r, "D1").effectiveItems).toBeCloseTo(6, 3);
+    // one side alone is capped at 3
+    expect(domainOf(run(before), "D1").effectiveItems).toBeCloseTo(3, 3);
+    expect(domainOf(run(after), "D1").effectiveItems).toBeCloseTo(3, 3);
+  });
+
+  test("equal timestamps break ties by input order: right-first gives accuracy 1", () => {
+    const its = Array.from({ length: 6 }, (_, i) =>
+      item("CCAR-F", "D1", i < 3, DAY_START, "D1.1"),
+    );
+    expect(domainOf(run(its), "D1").accuracy).toBeCloseTo(1);
+  });
+
+  test("equal timestamps break ties by input order: wrong-first gives accuracy 0", () => {
+    const its = Array.from({ length: 6 }, (_, i) =>
+      item("CCAR-F", "D1", i >= 3, DAY_START, "D1.1"),
+    );
+    expect(domainOf(run(its), "D1").accuracy).toBeCloseTo(0);
+  });
+
+  test("the result does not depend on input order when timestamps are distinct", () => {
+    // earliest three are right; the later five are wrong
+    const sorted = Array.from({ length: 8 }, (_, i) =>
+      item("CCAR-F", "D1", i < 3, DAY_START + i * 1000, "D1.1"),
+    );
+    const baseline = run(sorted);
+    expect(domainOf(baseline, "D1").accuracy).toBeCloseTo(1);
+    const permutations: ExamItem[][] = [
+      [...sorted].reverse(),
+      [...sorted.slice(3), ...sorted.slice(0, 3)],
+      [4, 0, 7, 2, 5, 1, 6, 3].map((i) => sorted[i] as ExamItem),
+      [7, 6, 0, 1, 2, 3, 4, 5].map((i) => sorted[i] as ExamItem),
+    ];
+    for (const p of permutations) expect(run(p)).toEqual(baseline);
+  });
+
+  test("items excluded by other rules do not consume cap slots", () => {
+    const valid = item("CCAR-F", "D1", true, DAY_START + 100, "D1.1");
+    const otherTrack = Array.from({ length: 5 }, (_, i) =>
+      item("CCDV-F", "D1", false, DAY_START + i, "D1.1"),
+    );
+    const unknownDomain = Array.from({ length: 5 }, (_, i) =>
+      item("CCAR-F", "D9", false, DAY_START + i, "D9.1"),
+    );
+    // objective D1.1 filed under domain D2: outside its own domain
+    const wrongDomain = Array.from({ length: 5 }, (_, i) => ({
+      ...item("CCAR-F", "D2", false, DAY_START + i),
+      objective: "D1.1",
+    }));
+    const r = run([
+      ...otherTrack,
+      ...unknownDomain,
+      ...wrongDomain,
+      valid,
+      { ...valid, at: DAY_START + 101 },
+      { ...valid, at: DAY_START + 102 },
+    ]);
+    expect(domainOf(r, "D1").effectiveItems).toBeCloseTo(3);
+    expect(domainOf(r, "D1").accuracy).toBeCloseTo(1);
+    expect(domainOf(r, "D2").effectiveItems).toBe(0);
+    expect(r.totalEffectiveItems).toBeCloseTo(3);
+  });
+
+  test("the cap applies before decay weighting", () => {
+    const base = NOW - 10 * DAY_MS;
+    const its = Array.from({ length: 10 }, (_, i) =>
+      item("CCAR-F", "D1", true, base + i * 1000, "D1.1"),
+    );
+    expect(domainOf(run(its), "D1").effectiveItems).toBeCloseTo(
+      3 * 0.5 ** (10 / ITEM_HALF_LIFE_DAYS),
+      3,
+    );
+  });
+
+  test("does not mutate deep-frozen input", () => {
+    const its = Array.from({ length: 10 }, (_, i) =>
+      item("CCAR-F", "D1", i < 3, DAY_START + i, "D1.1"),
+    );
+    const i = deepFreeze(input({ profile: full, items: its }));
+    const a = computeReadiness(i);
+    expect(computeReadiness(i)).toEqual(a);
+    expect(domainOf(a, "D1").accuracy).toBeCloseTo(1);
+  });
+});
+
 describe("real bundled CCDV-F track", () => {
   test("produces a well-formed ok readiness from a synthetic profile and 30 items", async () => {
     const track = loadBundledTracks().find((t) => t.code === "CCDV-F");
@@ -589,18 +770,30 @@ describe("real bundled CCDV-F track", () => {
     // Give 4 items to the heaviest domains until their weight reaches 60,
     // then put the remainder on the heaviest domain.
     const byWeight = [...track.domains].sort((a, b) => b.weight - a.weight);
+    // Items rotate over the domain's real objectives and roll to a new UTC day
+    // every 3 per objective, so the per-objective daily cap never binds.
+    const spread = (
+      d: (typeof track.domains)[number],
+      n: number,
+      right: number,
+      at: number,
+    ): ExamItem[] =>
+      Array.from({ length: n }, (_, i) => {
+        const o = d.objectives[i % d.objectives.length];
+        if (o === undefined) throw new Error("domain without objectives");
+        const day = Math.floor(i / (d.objectives.length * 3));
+        return item(track.code, d.id, i < right, at - day * DAY_MS, o.id);
+      });
     const generated: ExamItem[] = [];
     let share = 0;
     for (const d of byWeight) {
       if (share >= 60) break;
-      generated.push(...items(d.id, 4, 3, NOW, track.code));
+      generated.push(...spread(d, 4, 3, NOW));
       share += d.weight;
     }
     const top = byWeight[0];
     if (top === undefined) throw new Error("no domains");
-    generated.push(
-      ...items(top.id, 30 - generated.length, 20, NOW - 2 * DAY_MS, track.code),
-    );
+    generated.push(...spread(top, 30 - generated.length, 20, NOW - 2 * DAY_MS));
     expect(generated).toHaveLength(30);
 
     const r = computeReadiness({

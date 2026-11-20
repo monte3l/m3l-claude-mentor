@@ -7,9 +7,13 @@
  * share of correct exam items logged for it). The overall index weights the
  * domains by their exam weight. It is a study aid, never a score prediction:
  * every result carries `notAScorePrediction: true`.
+ *
+ * Only the first {@link MAX_ITEMS_PER_OBJECTIVE_PER_DAY} items per objective
+ * per UTC day count. That cap is an unvalidated heuristic of ours, there to
+ * stop repeating one objective from inflating readiness.
  */
 import type { ExamItem } from "./exam-schema.ts";
-import { checkFinite, recencyFactor } from "./mastery.ts";
+import { checkFinite, DAY_MS, recencyFactor } from "./mastery.ts";
 import type { CatalogEntry, Level } from "./schema.ts";
 import type { Profile } from "./state-schema.ts";
 import type { Track, TrackDomain, TrackObjective } from "./tracks.ts";
@@ -96,6 +100,19 @@ export const MIN_EVIDENCE_WEIGHT_SHARE = 60;
 export const ACCURACY_BLEND = 0.6;
 
 /**
+ * How many items per objective per UTC day count toward readiness: the first
+ * ones by `at` (ties by log order); the rest are ignored entirely. An
+ * unvalidated heuristic of ours, there to stop repetition inflating readiness.
+ *
+ * @example
+ * ```ts
+ * import { MAX_ITEMS_PER_OBJECTIVE_PER_DAY } from "./readiness.ts";
+ * MAX_ITEMS_PER_OBJECTIVE_PER_DAY; // 3
+ * ```
+ */
+export const MAX_ITEMS_PER_OBJECTIVE_PER_DAY = 3;
+
+/**
  * Readiness for one track domain.
  *
  * @example
@@ -170,7 +187,9 @@ export interface ReadinessInput {
   readonly profile: Profile;
   /**
    * The exam item log; items of other tracks, unknown domains, or with an
-   * objective outside their own domain in the track are ignored.
+   * objective outside their own domain in the track are ignored, as are
+   * items past {@link MAX_ITEMS_PER_OBJECTIVE_PER_DAY} for their objective
+   * and UTC day.
    */
   readonly items: readonly ExamItem[];
   /** Epoch milliseconds; must be finite. */
@@ -215,19 +234,28 @@ interface Tally {
  * Weights the items by recency per domain. An item is ignored when it
  * belongs to another track, names a domain the track lacks, or names an
  * objective that is not one of its own domain's objectives in the track.
+ * Of the rest, only the first {@link MAX_ITEMS_PER_OBJECTIVE_PER_DAY} per
+ * objective and UTC day count, ordered by `at` with ties kept in input order
+ * (a stable sort of a copy); the cap applies before decay weighting.
  */
 function tallyItems(
   input: ReadinessInput,
   objectivesByDomain: ReadonlyMap<string, ReadonlySet<string>>,
 ): ReadonlyMap<string, Tally> {
+  const counted = input.items
+    .filter(
+      (item) =>
+        item.track === input.track.code &&
+        objectivesByDomain.get(item.domain)?.has(item.objective) === true,
+    )
+    .sort((a, b) => a.at - b.at);
+  const slots = new Map<string, number>();
   const tallies = new Map<string, Tally>();
-  for (const item of input.items) {
-    if (
-      item.track !== input.track.code ||
-      objectivesByDomain.get(item.domain)?.has(item.objective) !== true
-    ) {
-      continue;
-    }
+  for (const item of counted) {
+    const key = `${item.objective}\u0000${String(Math.floor(item.at / DAY_MS))}`;
+    const used = slots.get(key) ?? 0;
+    if (used >= MAX_ITEMS_PER_OBJECTIVE_PER_DAY) continue;
+    slots.set(key, used + 1);
     const w = recencyFactor(input.now - item.at, ITEM_HALF_LIFE_DAYS);
     const tally = tallies.get(item.domain) ?? { weight: 0, correct: 0 };
     tally.weight += w;
@@ -286,7 +314,11 @@ function weakestDomains(domains: readonly DomainReadiness[]): string[] {
  * Per domain: coverage is the mean, over its objectives, of the best
  * {@link LEVEL_CREDIT} among each objective's enabled catalog topics. Each of
  * the track's items for a known domain weighs `0.5 ** (age / 21 days)` (a
- * future item weighs 1); accuracy is the weighted share of correct items. A
+ * future item weighs 1), but only the first
+ * {@link MAX_ITEMS_PER_OBJECTIVE_PER_DAY} per objective and UTC day count (by
+ * `at`, ties in input order), an unvalidated heuristic of ours that stops
+ * repetition inflating readiness; accuracy is the weighted share of correct
+ * items. A
  * domain with at least {@link MIN_DOMAIN_ITEMS} effective items has mastery
  * `0.6 * accuracy + 0.4 * coverage`; otherwise its mastery is its coverage
  * and it is flagged `lowEvidence`.
