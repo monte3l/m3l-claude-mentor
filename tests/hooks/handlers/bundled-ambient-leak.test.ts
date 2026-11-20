@@ -21,9 +21,9 @@ const ORIGINAL = CATALOG.slice(0, 25);
 const EXAM = CATALOG.slice(25);
 
 describe("the bundled exam topics never surface at SessionStart", () => {
-  test("the fixture splits the real catalog into 25 original and 27 ambient:false topics", () => {
+  test("the fixture splits the real catalog into 25 original and 49 ambient:false topics", () => {
     expect(ORIGINAL).toHaveLength(25);
-    expect(EXAM).toHaveLength(27);
+    expect(EXAM).toHaveLength(49);
     expect(EXAM.every((e) => e.ambient === false && e.enabled)).toBe(true);
     expect(ORIGINAL.every((e) => e.ambient !== false)).toBe(true);
   });

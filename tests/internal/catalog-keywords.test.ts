@@ -148,6 +148,31 @@ const EXAM_EXAMPLES: readonly (readonly [string, string])[] = [
   ["prompt-injection-defense", "defend against prompt injection"],
   ["api-key-handling", "where should the api key live"],
   ["human-in-the-loop", "add an approval gate before payment"],
+  ["deployment-surfaces", "should we use google vertex ai for claude"],
+  ["agent-runtimes", "which agent runtime fits our team"],
+  ["retrieval-architecture", "design the rag pipeline for our docs"],
+  ["rate-limits-throughput", "plan for burst traffic next week"],
+  ["durable-agent-state", "make it resume after interruption"],
+  ["context-editing-and-memory", "when do I use context editing"],
+  ["progressive-discovery", "we hit the too many tools problem"],
+  ["governance-compliance", "do we need zero data retention"],
+  ["production-reliability", "add a circuit breaker for the provider"],
+  ["observability-telemetry", "set up agent tracing for the fleet"],
+  ["incident-response", "we need a kill switch for the bot"],
+  ["online-evaluation", "run an a/b test prompts experiment"],
+  ["llm-as-judge", "my judge rubric shows position bias"],
+  ["cost-latency-optimization", "stay inside the latency budget"],
+  [
+    "model-migration-and-change-management",
+    "plan the model migration to a new version",
+  ],
+  ["agent-threat-defense", "guard against tool poisoning"],
+  ["enterprise-identity-and-audit", "wire up single sign-on for the agents"],
+  ["ai-risk-and-bias", "run a bias testing pass before launch"],
+  ["stakeholder-communication", "write an architecture decision record"],
+  ["org-agent-governance", "draft an agent usage policy"],
+  ["agent-fleet-operations", "how do we run an agent fleet overnight"],
+  ["guardrail-design", "add runtime guardrails around the agent"],
 ];
 
 const EXAM_IDS: ReadonlySet<string> = new Set(
@@ -172,7 +197,7 @@ describe("exam topic example prompts", () => {
     expect(EXAM_EXAMPLES.map(([id]) => id).sort()).toEqual(
       [...EXAM_IDS].sort(),
     );
-    expect(EXAM_EXAMPLES).toHaveLength(27);
+    expect(EXAM_EXAMPLES).toHaveLength(49);
   });
 
   test.each(EXAM_EXAMPLES)("%s <- %j when opted in", (id, prompt) => {
@@ -205,6 +230,32 @@ describe("exam topic example prompts", () => {
         phrase,
       ).toEqual([]);
     }
+  });
+});
+
+describe("everyday phrases are not hijacked by exam topics", () => {
+  test.each([
+    "teach me progressive disclosure",
+    "explain the feedback loop",
+    "what is access control",
+    "how does agent memory work",
+    "do a risk assessment",
+    "what is a budget cap",
+  ])("%j does not resolve to an exam topic first", (prompt) => {
+    const [first] = matchTopics(catalog, prompt, 1, {
+      includeAmbientOff: EXAM_IDS,
+    });
+    expect(first === undefined ? false : EXAM_IDS.has(first.id)).toBe(false);
+  });
+
+  test.each([
+    ["progressive-discovery", "teach me tool progressive disclosure"],
+    ["online-evaluation", "teach me production feedback loop"],
+  ])("%s <- %j still wins when opted in", (id, prompt) => {
+    const hits = matchTopics(catalog, prompt, 1, {
+      includeAmbientOff: EXAM_IDS,
+    });
+    expect(hits.map((e) => e.id)).toEqual([id]);
   });
 });
 
