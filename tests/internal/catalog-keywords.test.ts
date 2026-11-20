@@ -113,9 +113,50 @@ const EXAMPLES: readonly (readonly [string, string])[] = [
   ["claude-md", "use /init here"],
 ];
 
+/**
+ * Exam topics are `ambient: false`, so they only match when opted in. Each
+ * phrase contains one of that topic's own keywords.
+ */
+const EXAM_EXAMPLES: readonly (readonly [string, string])[] = [
+  ["messages-api", "what does the messages api return"],
+  ["streaming-events", "which streaming events does it emit"],
+  ["prompt-caching", "how does prompt caching save cost"],
+  ["batch-processing", "when should I use the batch api"],
+  ["extended-thinking", "turn on extended thinking for this call"],
+  ["workflow-vs-agent-patterns", "is prompt chaining better here"],
+  ["multi-agent-orchestration", "design a multi-agent system"],
+  ["session-management", "how does session resume behave"],
+  ["model-selection", "how should I choose a model for this"],
+  ["generation-mechanics", "what does sampling temperature change"],
+  ["tool-use-api", "what is a tool_result block"],
+  ["structured-output", "how do I get structured output"],
+  ["vision-and-files", "how does the files api work"],
+  ["agent-sdk", "how do I start with the agent sdk"],
+  [
+    "mcp-server-development",
+    "which stdio transport and streamable http should I pick",
+  ],
+  ["claude-code-headless-ci", "run in headless mode on a schedule"],
+  ["built-in-tools", "which built-in tools exist"],
+  ["tool-design", "how do I improve my tool design"],
+  ["api-error-handling", "handle a 429 error from the api"],
+  ["prompt-design", "tips for prompt design with xml tags"],
+  ["few-shot-examples", "when to use few-shot examples"],
+  ["grounding-and-citations", "how do citations work"],
+  ["eval-design", "build a golden set for my eval"],
+  ["failure-diagnosis", "why does a hallucination happen"],
+  ["prompt-injection-defense", "defend against prompt injection"],
+  ["api-key-handling", "where should the api key live"],
+  ["human-in-the-loop", "add an approval gate before payment"],
+];
+
+const EXAM_IDS: ReadonlySet<string> = new Set(
+  catalog.filter((e) => e.ambient === false).map((e) => e.id as string),
+);
+
 describe("example prompts match their topic first", () => {
   test("the table covers every bundled topic", () => {
-    const covered = new Set(EXAMPLES.map(([id]) => id));
+    const covered = new Set([...EXAMPLES, ...EXAM_EXAMPLES].map(([id]) => id));
     expect(catalog.map((e) => e.id).filter((id) => !covered.has(id))).toEqual(
       [],
     );
@@ -123,6 +164,47 @@ describe("example prompts match their topic first", () => {
 
   test.each(EXAMPLES)("%s <- %j", (id, prompt) => {
     expect(matchTopics(catalog, prompt, 1).map((e) => e.id)).toEqual([id]);
+  });
+});
+
+describe("exam topic example prompts", () => {
+  test("the table covers every ambient:false bundled topic exactly once", () => {
+    expect(EXAM_EXAMPLES.map(([id]) => id).sort()).toEqual(
+      [...EXAM_IDS].sort(),
+    );
+    expect(EXAM_EXAMPLES).toHaveLength(27);
+  });
+
+  test.each(EXAM_EXAMPLES)("%s <- %j when opted in", (id, prompt) => {
+    const hits = matchTopics(catalog, prompt, 1, {
+      includeAmbientOff: EXAM_IDS,
+    });
+    expect(hits.map((e) => e.id)).toEqual([id]);
+  });
+
+  test("the grep tool phrase matches built-in-tools when opted in", () => {
+    const hits = matchTopics(
+      catalog,
+      "how does the grep tool differ from a custom tool",
+      1,
+      { includeAmbientOff: EXAM_IDS },
+    );
+    expect(hits.map((e) => e.id)).toEqual(["built-in-tools"]);
+  });
+
+  test.each(EXAM_EXAMPLES)("%s stays silent unprompted: %j", (id, prompt) => {
+    expect(matchTopics(catalog, prompt, 50).map((e) => e.id)).not.toContain(id);
+  });
+
+  test("without opt-in no exam topic matches any example phrase", () => {
+    const phrases = [...EXAMPLES, ...EXAM_EXAMPLES].map(([, text]) => text);
+    for (const phrase of phrases) {
+      const ids = matchTopics(catalog, phrase, 100).map((e) => e.id as string);
+      expect(
+        ids.filter((id) => EXAM_IDS.has(id)),
+        phrase,
+      ).toEqual([]);
+    }
   });
 });
 

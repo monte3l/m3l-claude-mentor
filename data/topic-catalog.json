@@ -296,5 +296,468 @@
     "keywords": ["changelog", "new feature", "release notes"],
     "targetLevel": "Introduced",
     "enabled": true
+  },
+  {
+    "id": "messages-api",
+    "title": "The Messages API: requests and responses",
+    "type": "concept",
+    "dependencies": [],
+    "keywords": [
+      "messages api",
+      "/v1/messages",
+      "stop_reason",
+      "max_tokens",
+      "message roles",
+      "content blocks"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "streaming-events",
+    "title": "Streaming events and terminal events",
+    "type": "concept",
+    "dependencies": ["messages-api"],
+    "keywords": [
+      "streaming events",
+      "message_stop",
+      "content_block_delta",
+      "server-sent events",
+      "stream a response",
+      "message_delta"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "prompt-caching",
+    "title": "Prompt caching",
+    "type": "concept",
+    "dependencies": ["messages-api"],
+    "keywords": [
+      "prompt caching",
+      "cache breakpoint",
+      "cache_control",
+      "cache hit",
+      "cache invalidation",
+      "cached prefix"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "batch-processing",
+    "title": "Batch vs realtime processing",
+    "type": "concept",
+    "dependencies": ["messages-api"],
+    "keywords": [
+      "message batches",
+      "batch api",
+      "batch processing",
+      "batch vs realtime",
+      "asynchronous batch"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "extended-thinking",
+    "title": "Extended and adaptive thinking",
+    "type": "concept",
+    "dependencies": ["messages-api"],
+    "keywords": [
+      "extended thinking",
+      "adaptive thinking",
+      "thinking budget",
+      "effort parameter",
+      "thinking blocks",
+      "reasoning effort"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "workflow-vs-agent-patterns",
+    "title": "Workflows vs agents: choosing a pattern",
+    "type": "concept",
+    "dependencies": ["agentic-loop"],
+    "keywords": [
+      "workflow vs agent",
+      "prompt chaining",
+      "routing pattern",
+      "agentic workflow",
+      "orchestrator-workers",
+      "evaluator-optimizer"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "multi-agent-orchestration",
+    "title": "Multi-agent orchestration",
+    "type": "concept",
+    "dependencies": ["workflow-vs-agent-patterns", "subagents"],
+    "keywords": [
+      "multi-agent",
+      "orchestrator agent",
+      "orchestrator subagent",
+      "subagent context",
+      "agent handoff",
+      "parallel subagents"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "session-management",
+    "title": "Session management: resume and fork",
+    "type": "concept",
+    "dependencies": ["context-window"],
+    "keywords": [
+      "session resume",
+      "fork a session",
+      "resume a session",
+      "session id",
+      "long-running session",
+      "session state"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "model-selection",
+    "title": "Choosing a model tier",
+    "type": "concept",
+    "dependencies": ["model-names-and-limits"],
+    "keywords": [
+      "model selection",
+      "choose a model",
+      "model tier",
+      "quality latency cost",
+      "model upgrade",
+      "model deprecation"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "generation-mechanics",
+    "title": "How generation works: tokens and sampling",
+    "type": "concept",
+    "dependencies": ["context-window"],
+    "keywords": [
+      "sampling temperature",
+      "top_p",
+      "non-deterministic",
+      "next-token prediction",
+      "tokenization",
+      "context length"
+    ],
+    "targetLevel": "Understood",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "tool-use-api",
+    "title": "Tool use in the API",
+    "type": "feature",
+    "dependencies": ["messages-api", "agentic-loop"],
+    "keywords": [
+      "tool_choice",
+      "tool_use block",
+      "tool_result",
+      "tool definition",
+      "input_schema",
+      "function calling"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "structured-output",
+    "title": "Structured output",
+    "type": "feature",
+    "dependencies": ["tool-use-api"],
+    "keywords": [
+      "structured output",
+      "json schema",
+      "json mode",
+      "schema validation",
+      "output schema",
+      "response format"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "vision-and-files",
+    "title": "Vision, documents and the Files API",
+    "type": "feature",
+    "dependencies": ["messages-api"],
+    "keywords": [
+      "files api",
+      "image input",
+      "vision input",
+      "pdf input",
+      "document input",
+      "base64 image"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "agent-sdk",
+    "title": "The Claude Agent SDK",
+    "type": "feature",
+    "dependencies": ["agentic-loop", "hooks"],
+    "keywords": [
+      "agent sdk",
+      "claude agent sdk",
+      "custom agent loop",
+      "sdk hooks",
+      "query() function",
+      "agent lifecycle"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "mcp-server-development",
+    "title": "Building MCP servers",
+    "type": "feature",
+    "dependencies": ["mcp"],
+    "keywords": [
+      "build an mcp server",
+      "mcp resources",
+      "mcp prompts",
+      "mcp transport",
+      "stdio transport",
+      "streamable http"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "claude-code-headless-ci",
+    "title": "Claude Code headless mode and CI",
+    "type": "feature",
+    "dependencies": ["settings-scopes"],
+    "keywords": [
+      "headless mode",
+      "claude -p",
+      "print mode",
+      "stream-json",
+      "output-format",
+      "claude code ci",
+      "github actions"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "built-in-tools",
+    "title": "Built-in tools vs custom tools",
+    "type": "feature",
+    "dependencies": ["tool-use-api"],
+    "keywords": [
+      "built-in tools",
+      "server tools",
+      "web search tool",
+      "code execution tool",
+      "bash tool",
+      "text editor tool",
+      "claude code built-in tools",
+      "grep tool",
+      "glob tool"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "tool-design",
+    "title": "Designing tools Claude can use well",
+    "type": "practice",
+    "dependencies": ["tool-use-api"],
+    "keywords": [
+      "tool design",
+      "tool description",
+      "tool schema",
+      "error results",
+      "is_error",
+      "tool response"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "api-error-handling",
+    "title": "API error handling and retries",
+    "type": "practice",
+    "dependencies": ["messages-api"],
+    "keywords": [
+      "rate limit error",
+      "429 error",
+      "overloaded error",
+      "529 overloaded",
+      "retry with backoff",
+      "exponential backoff",
+      "request timeout"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "prompt-design",
+    "title": "Prompt design: clarity and placement",
+    "type": "practice",
+    "dependencies": ["messages-api"],
+    "keywords": [
+      "prompt design",
+      "xml tags",
+      "instruction clarity",
+      "output constraints",
+      "input sanitisation",
+      "prompt template"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "few-shot-examples",
+    "title": "Few-shot examples",
+    "type": "practice",
+    "dependencies": ["prompt-design"],
+    "keywords": [
+      "few-shot",
+      "multishot",
+      "one-shot example",
+      "zero-shot",
+      "in-context examples",
+      "example selection"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "grounding-and-citations",
+    "title": "Grounding and citations",
+    "type": "practice",
+    "dependencies": ["prompt-design"],
+    "keywords": [
+      "grounding",
+      "citations",
+      "cite sources",
+      "answer from documents",
+      "not found response",
+      "full-context vs retrieval"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "eval-design",
+    "title": "Designing evals",
+    "type": "practice",
+    "dependencies": ["prompt-design"],
+    "keywords": [
+      "golden set",
+      "regression tests",
+      "llm-as-judge",
+      "llm judge",
+      "human labels",
+      "eval suite"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "failure-diagnosis",
+    "title": "Diagnosing model failures",
+    "type": "practice",
+    "dependencies": ["messages-api"],
+    "keywords": [
+      "hallucination",
+      "model refusal",
+      "context loss",
+      "output drift",
+      "read the trace",
+      "integration vs model"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "prompt-injection-defense",
+    "title": "Prompt injection defense",
+    "type": "practice",
+    "dependencies": ["prompt-design"],
+    "keywords": [
+      "prompt injection",
+      "untrusted content",
+      "indirect injection",
+      "least privilege",
+      "deterministic guardrails",
+      "injection mitigation"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "api-key-handling",
+    "title": "API key handling",
+    "type": "practice",
+    "dependencies": [],
+    "keywords": [
+      "api key",
+      "anthropic_api_key",
+      "key rotation",
+      "server-side proxy",
+      "scoped keys",
+      "environment separation"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
+  },
+  {
+    "id": "human-in-the-loop",
+    "title": "Human in the loop",
+    "type": "practice",
+    "dependencies": ["workflow-vs-agent-patterns"],
+    "keywords": [
+      "human in the loop",
+      "approval gate",
+      "escalate to a human",
+      "confidence threshold",
+      "human review step",
+      "human approval"
+    ],
+    "targetLevel": "Applied",
+    "enabled": true,
+    "ambient": false
   }
 ]
