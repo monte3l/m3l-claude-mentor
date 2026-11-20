@@ -19,6 +19,7 @@ interface TopicRow {
   targetLevel: string;
   style?: string;
   enabled: boolean;
+  ambient: boolean;
   dependencies: string[];
   keywords: string[];
   level: string;
@@ -54,6 +55,7 @@ describe("topics", () => {
           type: "concept",
           targetLevel: "Understood",
           enabled: true,
+          ambient: true,
           dependencies: [],
           keywords: ["context"],
           level: "Unseen",
@@ -66,6 +68,7 @@ describe("topics", () => {
           type: "feature",
           targetLevel: "Applied",
           enabled: true,
+          ambient: true,
           dependencies: [],
           keywords: ["plan"],
           level: "Unseen",
@@ -171,6 +174,78 @@ describe("topics", () => {
       targetLevel: "Fluent",
       style: "socratic",
       keywords: ["alpha", "beta"],
+    });
+  });
+
+  describe("ambient", () => {
+    const withAmbient = (extra: Record<string, unknown>): unknown[] => [
+      {
+        id: "quiet-one",
+        title: "Quiet",
+        type: "concept",
+        dependencies: [],
+        keywords: ["quiet"],
+        targetLevel: "Recalled",
+        enabled: true,
+        ...extra,
+      },
+    ];
+
+    test.each([
+      ["absent", {}, true],
+      ["explicit true", { ambient: true }, true],
+      ["explicit false", { ambient: false }, false],
+    ])(
+      "a bundled entry with ambient %s -> reports ambient",
+      async (_n, extra, want) => {
+        const bundled = parseCatalog(withAmbient(extra));
+        if (!bundled.ok) throw new Error("fixture invalid");
+        const out = (await runOk(sb.dir, ["topics"], {
+          bundled: bundled.value,
+        })) as { topics: TopicRow[] };
+        expect(out.topics).toHaveLength(1);
+        expect(out.topics[0]?.ambient).toBe(want);
+        expect(Object.hasOwn(out.topics[0] ?? {}, "ambient")).toBe(true);
+      },
+    );
+
+    test.each([
+      ["absent", {}, true],
+      ["explicit true", { ambient: true }, true],
+      ["explicit false", { ambient: false }, false],
+    ])(
+      "a custom entry with ambient %s -> reports ambient",
+      async (_n, extra, want) => {
+        const custom = parseCatalog(withAmbient(extra));
+        if (!custom.ok) throw new Error("fixture invalid");
+        await saveCatalogFile(sb.dir, {
+          scoring: {},
+          user: { overrides: {}, custom: custom.value },
+        });
+        const row = (await topics()).find((r) => r.id === "quiet-one");
+        expect(row?.ambient).toBe(want);
+      },
+    );
+
+    test("a bundled ambient:false entry keeps ambient false when overridden", async () => {
+      const bundled = parseCatalog(withAmbient({ ambient: false }));
+      if (!bundled.ok) throw new Error("fixture invalid");
+      await saveCatalogFile(sb.dir, {
+        scoring: {},
+        user: {
+          overrides: { "quiet-one": { targetLevel: "Fluent", enabled: false } },
+          custom: [],
+        },
+      });
+      const out = (await runOk(sb.dir, ["topics"], {
+        bundled: bundled.value,
+      })) as { topics: TopicRow[] };
+      expect(out.topics[0]).toMatchObject({
+        id: "quiet-one",
+        targetLevel: "Fluent",
+        enabled: false,
+        ambient: false,
+      });
     });
   });
 

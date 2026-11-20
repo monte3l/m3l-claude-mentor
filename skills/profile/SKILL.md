@@ -45,9 +45,11 @@ node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DA
 ```
 
 Summarise readably: topics grouped by level, topics due for review, calibration, mute
-and exclusion settings, and the goals. Every count (topics seen, totals) comes only from the
-`topics` or `get-profile` output by counting the array; never state a count that is
-not computed from the output. Do not dump raw JSON.
+and exclusion settings, and the goals. Leave out `Unseen` topics whose `ambient` is
+false: they are optional study topics the learner has not asked for. Every count (topics
+seen, totals) comes only from the `topics` or `get-profile` output by counting the rows
+you show; never state a count that is not computed from the output. Do not dump raw
+JSON.
 
 ## Goals
 

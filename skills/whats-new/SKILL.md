@@ -48,7 +48,7 @@ node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DA
 2. **Select entries newer than `lastChangelogVersion`** from its answer. On a first run
    (null), cover the latest 5-10 versions, not the whole history.
 3. **Filter** to entries touching the learner's goals, started or enabled topics in
-   `topics`, or `$ARGUMENTS`. Drop the rest.
+   `topics`, or `$ARGUMENTS`. Ignore topics whose `ambient` is false. Drop the rest.
 4. **Present a short digest**: about seven bullets at most, newest first, one line each
    with the version and a docs link. Flag entries that may change something already
    learned and offer `/m3l-claude-mentor:teach <id>`. Known gap: topic levels are not

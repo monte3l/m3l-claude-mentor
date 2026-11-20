@@ -34,6 +34,7 @@ import {
  *   type: "feature",
  *   targetLevel: "Applied",
  *   enabled: true,
+ *   ambient: true,
  *   dependencies: [],
  *   keywords: ["plan mode"],
  *   level: "Unseen",
@@ -50,6 +51,8 @@ export interface CatalogTopicView {
   /** Present only when the merged entry has a style. */
   readonly style?: Style;
   readonly enabled: boolean;
+  /** `false` only when the entry is marked `ambient: false`; else `true`. */
+  readonly ambient: boolean;
   readonly dependencies: readonly TopicId[];
   readonly keywords: readonly string[];
   /** The stored level, or `Unseen` when the profile has none. */
@@ -62,7 +65,8 @@ export interface CatalogTopicView {
  * `topics`: every entry of the merged catalog (bundled entries with the
  * user's overrides applied, then custom topics), in catalog order, joined
  * with the profile and the state. Disabled entries are listed with
- * `enabled: false`. `shadowedCustom` (always present, sorted, possibly
+ * `enabled: false`; `ambient` is always present, `false` only for an entry
+ * marked `ambient: false`. `shadowedCustom` (always present, sorted, possibly
  * empty) lists custom topic ids dropped because a bundled topic already uses
  * them. Nothing is written.
  *
@@ -72,6 +76,7 @@ export interface CatalogTopicView {
  * ```ts
  * import { topics } from "./catalog-commands.ts";
  * const { topics: rows, shadowedCustom } = await topics(env);
+ * const quiet = rows.filter((row) => !row.ambient).map((row) => row.id);
  * ```
  */
 export async function topics(env: CommandEnv): Promise<{
@@ -94,6 +99,7 @@ export async function topics(env: CommandEnv): Promise<{
         targetLevel: entry.targetLevel,
         ...(entry.style !== undefined ? { style: entry.style } : {}),
         enabled: entry.enabled,
+        ambient: entry.ambient !== false,
         dependencies: entry.dependencies,
         keywords: entry.keywords,
         level: stored?.level ?? "Unseen",
