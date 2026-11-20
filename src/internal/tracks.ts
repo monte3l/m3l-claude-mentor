@@ -14,6 +14,11 @@ import {
   type Parsed,
   type TopicId,
 } from "./schema.ts";
+import {
+  DOMAIN_ID_PATTERN,
+  OBJECTIVE_ID_PATTERN,
+  TRACK_CODE_PATTERN,
+} from "./track-ids.ts";
 
 /**
  * The certification tiers a track can belong to.
@@ -204,9 +209,6 @@ export interface Track {
   readonly domains: readonly TrackDomain[];
 }
 
-const CODE_PATTERN = /^[A-Z]{2,4}-[A-Z]{1,2}$/;
-const DOMAIN_ID_PATTERN = /^D[1-9][0-9]?$/;
-const OBJECTIVE_ID_PATTERN = /^(D[1-9][0-9]?)\.[1-9][0-9]?$/;
 const SCENARIO_ID_PATTERN = /^S[1-9][0-9]?$/;
 const MONTH_PATTERN = /^(\d{4})-(\d{2})$/;
 const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -665,7 +667,7 @@ export function parseTrack(value: unknown): Parsed<Track> {
   }
 
   const code = ownField(record, "code");
-  if (typeof code !== "string" || !CODE_PATTERN.test(code)) {
+  if (typeof code !== "string" || !TRACK_CODE_PATTERN.test(code)) {
     return fail("track code must look like CCAR-F");
   }
 
@@ -682,7 +684,7 @@ export function parseTrack(value: unknown): Parsed<Track> {
   const assumes = ownField(record, "assumes");
   if (
     assumes !== null &&
-    (typeof assumes !== "string" || !CODE_PATTERN.test(assumes))
+    (typeof assumes !== "string" || !TRACK_CODE_PATTERN.test(assumes))
   ) {
     return fail("track assumes must be null or a track code");
   }

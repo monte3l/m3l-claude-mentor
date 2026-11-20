@@ -10,6 +10,7 @@ import {
   type CatalogFile,
 } from "./catalog-file.ts";
 import { MentorStateError } from "./errors.ts";
+import { MAX_EXAM_ITEMS, parseExamItem, type ExamItem } from "./exam-schema.ts";
 import { MAX_GOALS_BYTES } from "./fs-atomic.ts";
 import {
   MAX_EVIDENCE_EVENTS,
@@ -78,6 +79,14 @@ export interface Bundle {
   readonly goals: string;
   /** At most {@link MAX_EVIDENCE_EVENTS} events, oldest first. */
   readonly evidence: readonly Evidence[];
+  /**
+   * The exam item log, at most {@link MAX_EXAM_ITEMS} items, oldest first.
+   * Optional: `exportBundle` always writes it (`[]` for an empty or missing
+   * log); an older bundle may lack it. An import replaces the stored log when
+   * the section is present (an empty section leaves an empty log) and leaves
+   * the stored log untouched when it is absent.
+   */
+  readonly examItems?: readonly ExamItem[];
 }
 
 function asRecord(value: unknown): Readonly<Record<string, unknown>> | null {
@@ -127,6 +136,25 @@ function parseEvidenceList(value: unknown): Parsed<readonly Evidence[]> {
   return { ok: true, value: events };
 }
 
+function parseExamItemList(value: unknown): Parsed<readonly ExamItem[]> {
+  if (!Array.isArray(value)) return fail("bundle examItems must be an array");
+  const entries: readonly unknown[] = value;
+  if (entries.length > MAX_EXAM_ITEMS) {
+    return fail(
+      `bundle examItems must not exceed ${String(MAX_EXAM_ITEMS)} items`,
+    );
+  }
+  const items: ExamItem[] = [];
+  for (const [index, entry] of entries.entries()) {
+    const parsed = parseExamItem(entry);
+    if (!parsed.ok) {
+      return fail(`bundle examItems[${String(index)}]: ${parsed.reason}`);
+    }
+    items.push(parsed.value);
+  }
+  return { ok: true, value: items };
+}
+
 /**
  * Validates an export bundle. Every field is read once as an own property;
  * extra keys are ignored and not copied. `format` must equal
@@ -134,7 +162,12 @@ function parseEvidenceList(value: unknown): Parsed<readonly Evidence[]> {
  * (any other version is rejected, never misread). Each section goes through
  * its own parser (`parseState`, `parseProfile`, `parseCatalogFile`, and
  * `parseEvidence` per item, whose failure names the zero-based index as
- * `evidence[<index>]`). The result is built fresh.
+ * `evidence[<index>]`). The optional `examItems` section may be absent;
+ * when present (as an own key) it must be an array of at most
+ * {@link MAX_EXAM_ITEMS} items, each passing `parseExamItem` (a failure
+ * names `examItems[<index>]`). A present but empty section stays present as
+ * `[]`, distinct from an absent one: the result has an own `examItems` key
+ * exactly when the input did. The result is built fresh.
  *
  * @param value - Untrusted input, typically a JSON-parsed bundle file.
  * @returns A fresh {@link Bundle}, or a reason that does not echo input.
@@ -183,6 +216,12 @@ export function parseBundle(value: unknown): Parsed<Bundle> {
   const evidence = parseEvidenceList(ownField(record, "evidence"));
   if (!evidence.ok) return evidence;
 
+  const hasExamItems = Object.hasOwn(record, "examItems");
+  const examItems: Parsed<readonly ExamItem[]> = hasExamItems
+    ? parseExamItemList(ownField(record, "examItems"))
+    : { ok: true, value: [] };
+  if (!examItems.ok) return examItems;
+
   return {
     ok: true,
     value: {
@@ -194,6 +233,7 @@ export function parseBundle(value: unknown): Parsed<Bundle> {
       catalog: catalog.value,
       goals: goals.value,
       evidence: evidence.value,
+      ...(hasExamItems ? { examItems: examItems.value } : {}),
     },
   };
 }
@@ -228,8 +268,9 @@ export function jsonText(value: unknown, what: string, indent: number): string {
 
 /**
  * Serializes a bundle as pretty-printed JSON (two-space indent) with a
- * trailing newline. Only the bundle's own fields are written, and the
- * catalog is written in its `catalog.json` form, so
+ * trailing newline. Only the bundle's own fields are written, the catalog
+ * is written in its `catalog.json` form, and `examItems` is written whenever
+ * the bundle has it (an empty `[]` included) and omitted only when absent, so
  * `parseBundle(JSON.parse(serializeBundle(b)))` equals `b`.
  *
  * @param bundle - A bundle, normally from {@link parseBundle} or `exportBundle`.
@@ -252,6 +293,9 @@ export function serializeBundle(bundle: Bundle): string {
       catalog: serializeCatalogFile(bundle.catalog),
       goals: bundle.goals,
       evidence: bundle.evidence,
+      ...(bundle.examItems === undefined
+        ? {}
+        : { examItems: bundle.examItems }),
     },
     "the bundle",
     2,

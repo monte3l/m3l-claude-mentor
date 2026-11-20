@@ -7,23 +7,27 @@
  */
 
 import { randomUUID } from "node:crypto";
-import { open, rename, unlink, type FileHandle } from "node:fs/promises";
+import { open, rename, type FileHandle } from "node:fs/promises";
 import path from "node:path";
 import { serializeCatalogFile } from "./catalog-file.ts";
 import { MentorStateError } from "./errors.ts";
+import { readExamItems } from "./exam-store.ts";
 import {
   BUNDLE_FORMAT,
   BUNDLE_VERSION,
   MAX_BUNDLE_BYTES,
   checkNow,
   isConfirmed,
-  jsonText,
   parseBundle,
   serializeBundle,
   type Bundle,
 } from "./export-bundle.ts";
-import { stageTextAtomic, type StagedText } from "./fs-atomic.ts";
-import { withStateLock, type LockedOptions } from "./lock.ts";
+import {
+  replaceAll,
+  unlinkQuietly,
+  type ImportSummary,
+} from "./export-import.ts";
+import { type LockedOptions } from "./lock.ts";
 import {
   DATA_FILES,
   assertValidDataDir,
@@ -45,26 +49,26 @@ export {
   serializeBundle,
   type Bundle,
 } from "./export-bundle.ts";
+export type { ImportSummary } from "./export-import.ts";
 export { describeData, purgeData } from "./purge.ts";
 
 /** Every managed file, in {@link DATA_FILES} order. */
 const MANAGED_FILES = Object.keys(DATA_FILES) as readonly DataFile[];
 
-/** The order import replaces files in: `state` last, as hooks read it first. */
-const IMPORT_ORDER: readonly DataFile[] = [
-  "evidence",
-  "goals",
-  "catalog",
-  "profile",
-  "state",
-];
-
-const FILE_MODE = 0o600;
-
 /** A UTF-8 byte order mark, as decoded; stripped before parsing an import. */
 const BOM = "\uFEFF";
 
-/** Validates a caller-supplied file path; the message never echoes it. */
+const FILE_MODE = 0o600;
+
+/**
+ * Validates a caller-supplied file path; the message never echoes it.
+ *
+ * @param value - Untrusted path.
+ * @param what - A fixed label for the error message.
+ * @returns The resolved absolute path.
+ * @throws MentorStateError `VALIDATION_FAILED` for a non-string, relative
+ * path or one containing NUL.
+ */
 function checkAbsolutePath(value: unknown, what: string): string {
   if (
     typeof value !== "string" ||
@@ -91,18 +95,6 @@ async function closeQuietly(handle: FileHandle): Promise<void> {
   }
 }
 
-/**
- * Removes a temp file on a path that is already failing. An unlink error is
- * dropped on purpose so it cannot replace the primary error.
- */
-async function unlinkQuietly(target: string): Promise<void> {
-  try {
-    await unlink(target);
-  } catch {
-    // Best effort only; the primary error is re-thrown by the caller.
-  }
-}
-
 /** Fills `buffer` from the start of the file until it is full or the file ends. */
 async function readInto(handle: FileHandle, buffer: Buffer): Promise<number> {
   let total = 0;
@@ -120,8 +112,13 @@ async function readInto(handle: FileHandle, buffer: Buffer): Promise<number> {
 }
 
 /**
- * Reads at most `MAX_BUNDLE_BYTES + 1` bytes of the import file. A missing
- * file is an error here, never an empty import.
+ * Reads at most `MAX_BUNDLE_BYTES + 1` bytes of the import file as UTF-8. A
+ * missing file is an error here, never an empty import.
+ *
+ * @param source - Absolute path of the import file.
+ * @returns The file's text.
+ * @throws MentorStateError `READ_FAILED` with the fs error as `cause`;
+ * `TOO_LARGE` when the file exceeds {@link MAX_BUNDLE_BYTES}.
  */
 async function readBundleFile(source: string): Promise<string> {
   const buffer = Buffer.alloc(MAX_BUNDLE_BYTES + 1);
@@ -157,6 +154,11 @@ async function readBundleFile(source: string): Promise<string> {
  * directory (flag `wx`, mode `0o600`), fsynced, closed and renamed over the
  * target, as `writeTextAtomic` does for the data files. The parent directory
  * is not created.
+ *
+ * @param target - Absolute path of the file to write.
+ * @param text - The content.
+ * @throws MentorStateError `WRITE_FAILED` with the fs error as `cause`; the
+ * temp file is removed (best effort).
  */
 async function writeFileAtomic(target: string, text: string): Promise<void> {
   const temp = path.join(
@@ -191,13 +193,16 @@ async function writeFileAtomic(target: string, text: string): Promise<void> {
  * @example
  * ```ts
  * import { exportBundle, type ExportResult } from "./export.ts";
- * const { bundle, evidenceSkipped }: ExportResult = await exportBundle(dir, Date.now());
+ * const { bundle, evidenceSkipped, examItemsSkipped }: ExportResult =
+ *   await exportBundle(dir, Date.now());
  * ```
  */
 export interface ExportResult {
   readonly bundle: Bundle;
   /** Evidence lines in the tail window that were malformed or invalid. */
   readonly evidenceSkipped: number;
+  /** Exam item lines in the tail window that were torn or invalid. */
+  readonly examItemsSkipped: number;
 }
 
 /** Loads, validates and serializes the export, refusing an oversized one. */
@@ -210,6 +215,7 @@ async function buildExport(
   const catalog = await loadCatalogFile(dir);
   const goals = await loadGoals(dir);
   const { events, skipped } = await readEvidence(dir);
+  const exam = await readExamItems(dir);
   const parsed = parseBundle({
     format: BUNDLE_FORMAT,
     version: BUNDLE_VERSION,
@@ -219,6 +225,7 @@ async function buildExport(
     catalog: serializeCatalogFile(catalog),
     goals,
     evidence: events,
+    examItems: exam.items,
   });
   if (!parsed.ok) {
     throw new MentorStateError(
@@ -233,7 +240,12 @@ async function buildExport(
       `the export is larger than ${String(MAX_BUNDLE_BYTES)} bytes and could not be imported`,
     );
   }
-  return { bundle: parsed.value, evidenceSkipped: skipped, text };
+  return {
+    bundle: parsed.value,
+    evidenceSkipped: skipped,
+    examItemsSkipped: exam.skipped,
+    text,
+  };
 }
 
 /**
@@ -244,14 +256,20 @@ async function buildExport(
  * only the tail window `readEvidence` returns: the last (at most
  * `MAX_EVIDENCE_EVENTS` from `./schema.ts`) valid events within the last 2 MiB of
  * `evidence.jsonl`, oldest first; older events are not exported, and
- * malformed lines in the window are counted in `evidenceSkipped`. The bundle
+ * malformed lines in the window are counted in `evidenceSkipped`. The exam
+ * item log is exported the same way (`readExamItems` in `./exam-store.ts`:
+ * the last valid items within the last 1 MiB, oldest first) as the
+ * `examItems` section, which is always present (`[]` when the log is empty
+ * or missing, so importing it empties the target's log); its torn or invalid
+ * lines are counted in `examItemsSkipped`. The pending exam
+ * (`exam-pending.json`) is never exported. The bundle
  * is re-validated with {@link parseBundle} and its serialized size checked
  * against {@link MAX_BUNDLE_BYTES}, so what is exported can be imported.
  * Never creates the data directory.
  *
  * @param dir - The data directory.
  * @param now - Current timestamp in milliseconds; finite and non-negative.
- * @returns A fresh bundle and the skipped-evidence count.
+ * @returns A fresh bundle and the skipped evidence and exam item counts.
  * @throws MentorStateError `DATA_DIR_INVALID` (checked first) when `dir`
  * fails {@link assertValidDataDir}; the loader errors (`READ_FAILED`,
  * `TOO_LARGE`, `PARSE_FAILED`, `VALIDATION_FAILED`); `VALIDATION_FAILED` when
@@ -263,7 +281,8 @@ async function buildExport(
  * @example
  * ```ts
  * import { exportBundle } from "./export.ts";
- * const { bundle, evidenceSkipped } = await exportBundle("/var/data/m3l", Date.now());
+ * const { bundle, evidenceSkipped, examItemsSkipped } =
+ *   await exportBundle("/var/data/m3l", Date.now());
  * ```
  */
 export async function exportBundle(
@@ -272,8 +291,11 @@ export async function exportBundle(
 ): Promise<ExportResult> {
   assertValidDataDir(dir);
   checkNow(now);
-  const { bundle, evidenceSkipped } = await buildExport(dir, now);
-  return { bundle, evidenceSkipped };
+  const { bundle, evidenceSkipped, examItemsSkipped } = await buildExport(
+    dir,
+    now,
+  );
+  return { bundle, evidenceSkipped, examItemsSkipped };
 }
 
 /**
@@ -293,7 +315,7 @@ export async function exportBundle(
  * @param dir - The data directory.
  * @param now - Current timestamp in milliseconds; finite and non-negative.
  * @param targetPath - Absolute path of the bundle file to write.
- * @returns The skipped-evidence count of the export.
+ * @returns The skipped evidence and exam item counts of the export.
  * @throws MentorStateError `DATA_DIR_INVALID` (checked first) when `dir`
  * fails {@link assertValidDataDir}; `VALIDATION_FAILED` for a relative
  * target or one that is a managed data file (nothing is read or written);
@@ -304,14 +326,21 @@ export async function exportBundle(
  * @example
  * ```ts
  * import { exportBundleToFile } from "./export.ts";
- * await exportBundleToFile("/var/data/m3l", Date.now(), "/home/me/mentor-export.json");
+ * const { evidenceSkipped, examItemsSkipped } = await exportBundleToFile(
+ *   "/var/data/m3l",
+ *   Date.now(),
+ *   "/home/me/mentor-export.json",
+ * );
  * ```
  */
 export async function exportBundleToFile(
   dir: string,
   now: number,
   targetPath: string,
-): Promise<{ readonly evidenceSkipped: number }> {
+): Promise<{
+  readonly evidenceSkipped: number;
+  readonly examItemsSkipped: number;
+}> {
   assertValidDataDir(dir);
   checkNow(now);
   const target = checkAbsolutePath(targetPath, "the export target");
@@ -324,27 +353,12 @@ export async function exportBundleToFile(
       );
     }
   }
-  const { evidenceSkipped, text } = await buildExport(dir, now);
+  const { evidenceSkipped, examItemsSkipped, text } = await buildExport(
+    dir,
+    now,
+  );
   await writeFileAtomic(target, text);
-  return { evidenceSkipped };
-}
-
-/**
- * What an import replaced.
- *
- * @example
- * ```ts
- * import { importBundle, type ImportSummary } from "./export.ts";
- * const summary: ImportSummary = await importBundle(dir, bundle, { replace: true });
- * ```
- */
-export interface ImportSummary {
-  readonly state: boolean;
-  readonly profile: boolean;
-  readonly catalog: boolean;
-  readonly goals: boolean;
-  /** How many evidence events the new log holds. */
-  readonly evidenceEvents: number;
+  return { evidenceSkipped, examItemsSkipped };
 }
 
 function requireReplace(options: unknown): void {
@@ -363,142 +377,44 @@ function invalidBundle(reason: string): MentorStateError {
   );
 }
 
-/** Every file's new content, built before anything is written. */
-function fileTexts(bundle: Bundle): Readonly<Record<DataFile, string>> {
-  return {
-    evidence: bundle.evidence
-      .map((event) => jsonText(event, "an evidence event", 0))
-      .join(""),
-    goals: bundle.goals,
-    catalog: jsonText(serializeCatalogFile(bundle.catalog), "the catalog", 2),
-    profile: jsonText(bundle.profile, "the profile", 2),
-    state: jsonText(bundle.state, "the state", 2),
-  };
-}
-
-function importStopped(
-  file: DataFile,
-  replaced: readonly DataFile[],
-  cause: unknown,
-): MentorStateError {
-  const done = replaced.length === 0 ? "none" : replaced.join(", ");
-  return new MentorStateError(
-    "WRITE_FAILED",
-    `import stopped writing ${DATA_FILES[file]}; sections already replaced: ${done}`,
-    { cause },
-  );
-}
-
-/** One data file staged for import. */
-interface StagedFile {
-  readonly file: DataFile;
-  readonly staged: StagedText;
-}
-
-/** Removes staged temp files that will never be committed (best effort). */
-async function discardStaged(files: readonly StagedFile[]): Promise<void> {
-  for (const { staged } of files) await unlinkQuietly(staged.temp);
-}
-
-/**
- * Stages every file in {@link IMPORT_ORDER}. A failure discards whatever was
- * staged, so no managed file has changed and no temp file is left behind.
- */
-async function stageAll(
-  dir: string,
-  texts: Readonly<Record<DataFile, string>>,
-): Promise<readonly StagedFile[]> {
-  const staged: StagedFile[] = [];
-  for (const file of IMPORT_ORDER) {
-    try {
-      staged.push({
-        file,
-        staged: await stageTextAtomic(dir, file, texts[file]),
-      });
-    } catch (cause) {
-      await discardStaged(staged);
-      throw importStopped(file, [], cause);
-    }
-  }
-  return staged;
-}
-
-/** Renames every staged file over its target, in {@link IMPORT_ORDER}. */
-async function commitAll(files: readonly StagedFile[]): Promise<void> {
-  const replaced: DataFile[] = [];
-  for (const { file, staged } of files) {
-    try {
-      await staged.commit();
-    } catch (cause) {
-      throw importStopped(file, replaced, cause);
-    }
-    replaced.push(file);
-  }
-}
-
-/**
- * Replaces every managed file from an already-validated bundle in two
- * phases. First every file (the evidence log included, so the old log is
- * replaced, never appended to) is staged to a fsynced temp file WITHOUT the
- * data lock: the temps are private until renamed, and an import replaces the
- * data wholesale, so nothing staged depends on what is stored. Only the
- * renames, in {@link IMPORT_ORDER}, run under the lock; that keeps the lock
- * short, so a large bundle on a slow disk cannot hold it across slow fsyncs
- * for longer than the stale window. A staging failure changes nothing. If
- * the lock cannot be taken, or a rename fails (a temp that vanished before
- * its commit, say to a purge sweep, included), every temp not yet renamed is
- * removed; a rename failure leaves the sections before it replaced.
- */
-async function replaceAll(
-  dir: string,
-  bundle: Bundle,
-  options: LockedOptions,
-): Promise<ImportSummary> {
-  const files = await stageAll(dir, fileTexts(bundle));
-  try {
-    await withStateLock(dir, () => commitAll(files), options.lock);
-  } catch (error) {
-    // Already-renamed temps are gone, so this removes only the rest.
-    await discardStaged(files);
-    throw error;
-  }
-  return {
-    state: true,
-    profile: true,
-    catalog: true,
-    goals: true,
-    evidenceEvents: bundle.evidence.length,
-  };
-}
-
 /**
  * Replaces all stored data with `bundle`. `options.replace` must be exactly
- * `true` (there is no merge mode). The bundle is re-validated with
+ * `true` (there is no merge mode). Two files are special: the exam item log
+ * (`exam-items.jsonl`) is replaced only when the bundle carries
+ * `examItems` (an empty section leaves an empty log), and is left exactly as
+ * it was (or absent) otherwise; the pending exam (`exam-pending.json`) is
+ * never read or written, but a successful import removes it (its answer key
+ * belongs to the replaced data) as the last step of the locked rename phase;
+ * it may already be absent. The bundle is re-validated with
  * {@link parseBundle} and every file's new content is built before any
  * managed file changes, so an invalid bundle leaves the directory as it
- * was. The replacement then runs in two phases. First every file is staged
+ * was (the pending exam included). The replacement then runs in two phases. First every file is staged
  * to a fsynced temp file (the evidence log is rebuilt, never appended to)
  * without the data lock, so a large bundle on a slow disk never holds it
- * across fsyncs; a staging failure removes the temps and leaves all five old
- * files untouched. Then, under the data lock (`withStateLock` in
+ * across fsyncs; a staging failure removes the temps and leaves every old
+ * file untouched. Then, under the data lock (`withStateLock` in
  * `./lock.ts`), the temps are renamed over the targets: evidence, goals,
- * catalog, profile, and `state` last. If the lock cannot be taken the temps
+ * catalog, the exam log (when carried), profile, and `state` last. If the lock cannot be taken the temps
  * are removed and nothing changes. There is no rollback of the rename phase:
  * if a rename fails the directory holds a mix, the remaining temps are
- * removed, and the error says which sections were already replaced.
+ * removed, and the error says which sections were already replaced; a
+ * failure to remove the pending exam is reported the same way, after every
+ * section was replaced.
  *
  * @param dir - The data directory; created (mode `0o700`) if missing.
  * @param bundle - The bundle to import.
  * @param options - `replace: true` confirms the replacement.
  * @param lockOptions - Optional lock tuning; real callers pass nothing or a
  * CLI timeout.
- * @returns What was replaced.
+ * @returns What was replaced, including how many exam items the log now
+ * holds (`null` when the bundle had no `examItems` and the log was kept).
  * @throws MentorStateError `DATA_DIR_INVALID` (checked first) when `dir`
  * fails {@link assertValidDataDir}; `CONFIRMATION_REQUIRED` unless `replace`
  * is exactly `true`; `IMPORT_INVALID` for an invalid bundle;
  * `VALIDATION_FAILED` when a section does not serialize to JSON;
  * `LOCK_TIMEOUT` when the data lock stays held (none of these writes
- * anything); `WRITE_FAILED` naming the file that failed and the sections
+ * anything); `WRITE_FAILED` naming the file that failed (`exam-pending.json` when its
+ * removal failed) and the sections
  * already replaced (`none` for any staging failure), with the fs error as
  * `cause`.
  *

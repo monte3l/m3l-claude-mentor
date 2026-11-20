@@ -59,7 +59,7 @@ export interface DataFileInfo {
  */
 export interface DataSummary {
   readonly dir: string;
-  /** All five managed files, in {@link DATA_FILES} order. */
+  /** Every managed file, in {@link DATA_FILES} order. */
   readonly files: readonly DataFileInfo[];
   /** Valid evidence events in the tail window. */
   readonly evidenceEvents: number;
@@ -98,10 +98,13 @@ async function sizeOf(dir: string, file: DataFile): Promise<number | null> {
  * and size, evidence counts, topic counts and the project exclusion list.
  * Sizes come from `lstat`, so a managed file that is a symbolic link (live or
  * dangling) or a directory is `READ_FAILED`. A missing file is reported with
- * `bytes: null`, not an error. Every section is loaded, so a corrupt or
- * unreadable `state.json`, `profile.json`, `catalog.json`, `goals.md` or
- * evidence log is not hidden: its typed error propagates. Never creates the
- * data directory.
+ * `bytes: null`, not an error. The state, profile, catalog, goals and
+ * evidence sections are loaded, so a corrupt or unreadable `state.json`,
+ * `profile.json`, `catalog.json`, `goals.md` or evidence log is not hidden:
+ * its typed error propagates. The exam files (`exam-items.jsonl` and
+ * `exam-pending.json`) are listed with their sizes only; they are not loaded
+ * or validated, so a corrupt exam file does not fail this call. Never
+ * creates the data directory.
  *
  * @param dir - The data directory.
  * @param now - Current timestamp in milliseconds; finite and non-negative.
@@ -218,8 +221,9 @@ async function listEntries(dir: string): Promise<readonly string[]> {
 }
 
 /**
- * Deletes everything the mentor stores (design 13.2): the five managed files
- * by exact name, plus leftover temp files named `.<managed-name>.<anything>.tmp`
+ * Deletes everything the mentor stores (design 13.2): every managed file in
+ * {@link DATA_FILES} (the exam item log and the pending exam included) by
+ * exact name, plus leftover temp files named `.<managed-name>.<anything>.tmp`
  * and broken locks named `.state.lock.stale.<anything>` in `dir`. When `dir`
  * exists the deletion runs under the data lock (`withStateLock` in
  * `./lock.ts`), whose release removes `.state.lock` last, so purge leaves no

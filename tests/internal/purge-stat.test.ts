@@ -74,6 +74,8 @@ describe("purge when the data directory cannot be a directory", () => {
       expect([...result.alreadyMissing].sort()).toEqual([
         "catalog",
         "evidence",
+        "examItems",
+        "examPending",
         "goals",
         "profile",
         "state",
@@ -85,7 +87,7 @@ describe("purge when the data directory cannot be a directory", () => {
   test("a really missing directory stays missing (real stat)", async () => {
     const result = await purgeData(dir, { confirm: true });
     expect(existsSync(dir)).toBe(false);
-    expect(result.alreadyMissing).toHaveLength(5);
+    expect(result.alreadyMissing).toHaveLength(7);
   });
 });
 
