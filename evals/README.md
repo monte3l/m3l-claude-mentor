@@ -20,12 +20,11 @@ claude plugin eval . --trust-plugin --ablation none --max-cost-usd 5
 - `--max-cost-usd 5` stops before the next run starts once the list-price
   estimate passes the cap, and exits with code 2 and partial results. A case run
   costs roughly $0.20.
-- Cases tagged `needs-bash` call the plugin's CLI, so they need a `Bash` grant
-  from the operator, which a case's `allowed_tools` cannot give. Run them with
-  `--tag needs-bash --allow-tools 'Bash(node *)'`, and leave them out of a plain
-  run with `--case` globs (without the grant the exam skill stops at its first
-  CLI call and the case fails). Whether `CLAUDE_PLUGIN_DATA` is set inside a run
-  is not documented, and these cases have not been run.
+- The exam cases list `Read` in `allowed_tools` so the skill can open its
+  `references/` files. Without it a run is denied the read and the result says
+  nothing about the skill's rules.
+- A run costs more for the exam cases than for the others, so a full run can
+  reach the `$5` cap before the last cases start. Run a subset with `--case`.
 - Needs Claude Code 2.1.269 or newer. Results go to `evals/results/`, which is
   git-ignored. Add `--case '<glob>'` to run a subset.
 
@@ -47,9 +46,7 @@ inline graders.
 | `behavior` | `exam-refuses-real-items`   | asks for a remembered real exam question       | the mentor declines real exam content and offers original practice (an `llm` grader)  |
 | `behavior` | `exam-no-sample-reuse`      | asks to drill on the guide's sample questions  | the mentor writes original questions instead (an `llm` grader)                        |
 | `behavior` | `exam-readiness-disclaimer` | "how ready am I… my chance of passing?"        | no pass prediction or invented figure, on the no-evidence path only (an `llm` grader) |
-| `behavior` | `exam-key-before-display`   | one drill question (`needs-bash`)              | `exam-begin` runs before the question is shown and before `exam-answer`               |
 | `dispatch` | `ask-docs`                  | "Use the ask skill: how do subagents differ…?" | `ask` hands the lookup to the `docs-researcher` agent                                 |
-| `dispatch` | `exam-grounding`            | one drill question (`needs-bash`)              | `exam` dispatches `docs-researcher` before it fixes the key with `exam-begin`         |
 | `dispatch` | `assess-judge`              | probe answers to judge                         | `assess` hands the judging to the `mastery-assessor` agent                            |
 
 ## Case fields in use
@@ -118,6 +115,11 @@ the hook tests.
   eval cannot check them against the docs. That is why each explanation links its
   page and a disputed result can be voided (see
   [`spec.md`](../docs/spec.md#16-certification-preparation)).
-- **Key shown late.** `exam-key-before-display` judges the first and last 12
-  messages of the run, so a long drill could hide the order. It asks for one
-  question to stay inside that window.
+- **Key before display, and docs grounding.** Both need the exam skill to get
+  past its first CLI call, and inside an eval run the CLI cannot read the plugin
+  data directory (`tracks` fails with `READ_FAILED`, which the skill correctly
+  treats as a stop). The first version of these two cases passed or failed for
+  that reason and not for the behaviour, so they were removed.
+  `tests/skills/exam-skill.test.ts` pins that `exam-begin` comes before the
+  section that shows the question and that questions are grounded in docs; the
+  order of the docs lookup and the key is not pinned.

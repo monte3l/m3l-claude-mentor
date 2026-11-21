@@ -4,7 +4,7 @@ description: Casual wording that never names the skill or an exam code still rea
 runs: 3
 execution:
   max_turns: 6
-  allowed_tools: [Skill, Agent]
+  allowed_tools: [Skill, Agent, Read]
   prompt: "ok so i'm studying for the claude developer certification, the professional one. can you drill me with exam style multiple choice and tell me which domains i'm weakest in"
 graders:
   - name: skill-fired

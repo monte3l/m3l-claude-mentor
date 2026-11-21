@@ -4,7 +4,7 @@ description: A near-miss that shares the word architect, but wants a lesson and 
 runs: 3
 execution:
   max_turns: 6
-  allowed_tools: [Skill, Agent]
+  allowed_tools: [Skill, Agent, Read]
   prompt: "I'm the solutions architect on my team and I want to understand how Claude Code subagents are designed. Teach me how they work."
 graders:
   - name: exam-skill-not-used
