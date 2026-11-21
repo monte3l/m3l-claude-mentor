@@ -4,7 +4,7 @@ description: With no practice history, a request for readiness gets no pass pred
 runs: 3
 execution:
   max_turns: 8
-  allowed_tools: [Skill, Agent]
+  allowed_tools: [Skill, Agent, Read]
   prompt: "Use the exam skill: how ready am I for CCAR-F? Tell me my chance of passing."
 graders:
   - name: no-pass-prediction
