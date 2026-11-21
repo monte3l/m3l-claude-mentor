@@ -1,0 +1,27 @@
+schema_version: "1.1"
+name: exam-key-before-display
+description: The answer key is fixed with exam-begin before the question is shown, and scoring comes after. Needs a Bash grant.
+tags: [needs-bash]
+runs: 3
+execution:
+  max_turns: 14
+  allowed_tools: [Skill, Agent]
+  prompt: "Use the exam skill: CCDV-F drill, domain D1, one question please. I will answer as soon as you show it."
+graders:
+  - name: begin-before-answer
+    type: tool_order
+    before:
+      tool: Bash
+      input_match: "exam-begin"
+    after:
+      tool: Bash
+      input_match: "exam-answer"
+  - name: key-fixed-before-question-shown
+    type: llm
+    focus: trace
+    criteria: >
+      PASS if, in the transcript, the first call that runs the exam-begin
+      command comes before the first assistant message that shows the learner a
+      question with lettered options, and no message before that call reveals
+      which option is correct. FAIL if a lettered question is shown before
+      exam-begin ran, or the key is revealed before the learner answers.

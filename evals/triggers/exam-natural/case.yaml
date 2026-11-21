@@ -1,0 +1,14 @@
+schema_version: "1.1"
+name: exam-natural-trigger
+description: Casual wording that never names the skill or an exam code still reaches the exam skill, and beats quiz.
+runs: 3
+execution:
+  max_turns: 6
+  allowed_tools: [Skill, Agent]
+  prompt: "ok so i'm studying for the claude developer certification, the professional one. can you drill me with exam style multiple choice and tell me which domains i'm weakest in"
+graders:
+  - name: skill-fired
+    type: tool_used
+    arm: with-only
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?exam"'

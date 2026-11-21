@@ -1,0 +1,16 @@
+schema_version: "1.1"
+name: exam-negative-trigger
+description: A near-miss that shares the word architect, but wants a lesson and no exam, does not reach the exam skill.
+runs: 3
+execution:
+  max_turns: 6
+  allowed_tools: [Skill, Agent]
+  prompt: "I'm the solutions architect on my team and I want to understand how Claude Code subagents are designed. Teach me how they work."
+graders:
+  - name: exam-skill-not-used
+    type: tool_used
+    arm: both
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?exam"'
+    min: 0
+    max: 0
