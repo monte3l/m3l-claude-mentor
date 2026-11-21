@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.2.0](https://github.com/monte3l/m3l-claude-mentor/compare/m3l-claude-mentor--v1.1.0...m3l-claude-mentor--v1.2.0) (2026-11-21)
+
+
+### Features
+
+* **agents:** widen docs-researcher to API, MCP and engineering docs ([60443eb](https://github.com/monte3l/m3l-claude-mentor/commit/60443eb3359ffb7d2b8edcfae6040b56e66d52bb))
+* **catalog:** add the Professional exam topics ([94a97e7](https://github.com/monte3l/m3l-claude-mentor/commit/94a97e75be24e839208fa4db93a650198b73227e))
+* **catalog:** add the shared Foundations exam topics ([10a4b8d](https://github.com/monte3l/m3l-claude-mentor/commit/10a4b8d6cac254d98d5db1f4057f9269452a1767))
+* **catalog:** keep ambient-off topics out of unprompted surfaces ([3b90d90](https://github.com/monte3l/m3l-claude-mentor/commit/3b90d9027fd674041ef4a85488cf0b96264ce027))
+* **exam:** add the exam commands ([9f7645b](https://github.com/monte3l/m3l-claude-mentor/commit/9f7645bb2c06132cc64c8a46573e42cbb8c168d6))
+* **exam:** add the exam item log, pending exam and active track ([4959ace](https://github.com/monte3l/m3l-claude-mentor/commit/4959aceccaa74df38619d2c48ded538ddbfd23a0))
+* **exam:** add the exam skill ([7d8adac](https://github.com/monte3l/m3l-claude-mentor/commit/7d8adac7ffd0040493029851e3abcd2ca17ffdb4))
+* **exam:** cap how many items per objective count each day ([4ddccbe](https://github.com/monte3l/m3l-claude-mentor/commit/4ddccbe2dcbc1e319bb7f9307572a4fd43340aa7))
+* **exam:** compute per-domain exam readiness ([97740fb](https://github.com/monte3l/m3l-claude-mentor/commit/97740fb3013cc0d975bff63685ca725648a7eeba))
+* **exam:** let a disputed exam submission be voided ([ee6e99c](https://github.com/monte3l/m3l-claude-mentor/commit/ee6e99c5cad5116a3137103128db575195417c5e))
+* **exam:** let tracks describe one exam's objectives ([ce6907b](https://github.com/monte3l/m3l-claude-mentor/commit/ce6907bc2a7e4926bc037b1814d081199dfaf8ce))
+* **exam:** rank the active exam track first at session start, teach and quiz ([bb01d7e](https://github.com/monte3l/m3l-claude-mentor/commit/bb01d7e522594c8f91131998516b340d4d7fd683))
+* **tracks:** bundle the CCAR-P and CCDV-P exam tracks ([32d6551](https://github.com/monte3l/m3l-claude-mentor/commit/32d65516ee63e749f23c3b8454e66a9d791cd58f))
+* **tracks:** bundle the CCDV-F and CCAR-F exam tracks ([bb36b64](https://github.com/monte3l/m3l-claude-mentor/commit/bb36b64439486957d4051d0af4958a6fb67b1f18))
+
+
+### Bug Fixes
+
+* **exam:** load the exam skill for real-exam-question requests ([5f3c36d](https://github.com/monte3l/m3l-claude-mentor/commit/5f3c36d2c7253529d7ee5f3bbc49708a0dacd3f3))
+
 ## [1.1.0](https://github.com/monte3l/m3l-claude-mentor/compare/m3l-claude-mentor--v1.0.0...m3l-claude-mentor--v1.1.0) (2026-11-20)
 
 
