@@ -75,8 +75,10 @@ symlinks and case folding. The ones the roadmap adds:
   project's own and were never compared with real exam outcomes, so it is
   labelled a practice indicator and never a prediction.
 - **The exam guide links are unverified.** The certification pages refused
-  automated access, so each track's `sourceUrl` has not been opened by a script.
-  Check them in a browser.
+  automated access, so no `sourceUrl` has been opened. A web search on
+  2026-11-21 found the CCAR-F, CCDV-F and CCAR-P pages in its index but no
+  public CCDV-P page, whose `sourceUrl` is the shared partner-certifications
+  page. Open them in a browser and fix any that fail.
 
 ## Unverified
 
