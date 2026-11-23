@@ -17,6 +17,20 @@ updates:
     labels:
       - "dependencies"
 
+  # tools/ci/ pins the Claude Code version ci.yml's plugin lane installs. A
+  # bump can change what `claude plugin validate --strict` reports, so it
+  # arrives as a reviewed PR with a one-day cooldown.
+  - package-ecosystem: npm
+    directory: /tools/ci
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+    cooldown:
+      default-days: 1
+    labels:
+      - dependencies
+
   # tools/deploy/ pins the wrangler version docs.yml deploys with. A bump
   # can change how the site is published, so it arrives as a reviewed PR with a
   # one-day cooldown.
