@@ -106,7 +106,12 @@ export default defineConfig(
     ...configs.disableTypeChecked,
   },
   {
-    files: ["bin/**/*.mjs", "scripts/**/*.mjs", ".claude/hooks/**/*.mjs"],
+    files: [
+      "bin/**/*.mjs",
+      "scripts/**/*.mjs",
+      ".claude/hooks/**/*.mjs",
+      "tools/ci/**/*.mjs",
+    ],
     languageOptions: {
       globals: { ...globals.node },
     },
