@@ -1,6 +1,6 @@
 {
   "@context": "https://openvex.dev/ns/v0.2.0",
-  "@id": "https://github.com/monte3l/m3l-claude-mentor/blob/main/docs/m3l-claude-mentor.openvex.json",
+  "@id": "https://github.com/monte3l/m3l-claude-mentor/blob/main/docs/m3l-mentor.openvex.json",
   "author": "monte3l",
   "role": "Project maintainers",
   "timestamp": "2026-11-18T00:00:00Z",
