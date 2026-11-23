@@ -5,9 +5,9 @@
 // its README documents every key. Every tracked *.md file must be a page or be
 // excluded with a reason, or `node design/source/docs-kit/build.mjs --check` fails.
 export default {
-  title: "m3l-claude-mentor",
+  title: "m3l-mentor",
   repo: "https://github.com/monte3l/m3l-claude-mentor",
-  siteUrl: "https://claude-mentor.monte3l.com",
+  siteUrl: "https://mentor.monte3l.com",
   designDir: "design",
   brand: true,
   manifest: ".claude-plugin/plugin.json", // its homepage must equal siteUrl
