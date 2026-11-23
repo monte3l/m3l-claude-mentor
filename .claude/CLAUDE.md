@@ -4,7 +4,7 @@ This file provides guidance to Claude Code when working in this repository.
 
 ## What this is
 
-**m3l-claude-mentor** — a Claude Code plugin that mentors one learner on
+**m3l-mentor** — a Claude Code plugin that mentors one learner on
 Claude and Claude Code, adapting to their mastery level (see `docs/spec.md`).
 It installs at user scope and ships through a plugin manifest, not npm.
 Bootstrapped by [m3l-groundwork](https://github.com/monte3l/m3l-groundwork)
@@ -116,17 +116,22 @@ reports a writer `agent_type` with an `agent_id` (details and versions in
 agent-teams teammate has a documented `agent_id`, so one built from a writer
 definition that reports that `agent_type` would pass.
 
-**Four guards block when they fail, and a secrets deny rule ships in
+**Seven guards block when they fail, and a secrets deny rule ships in
 `settings.json`.** `guard-secret-writes`, `guard-hub-src-writes`,
-`guard-branch-isolation` and `guard-protected-paths` carry
+`guard-branch-isolation`, `guard-protected-paths`, `guard-shared-checkout`,
+`guard-git-push-signed` and `guard-double-background` carry
 `"onFailure": "block"` (Claude Code 2.1.295 or later): a hook that cannot
 start, times out, exits with any code other than 0 or 2, or prints invalid
-JSON blocks the call instead of letting it through. Each guard still handles
-bad input itself and exits 0 on purpose. Because `guard-hub-src-writes` is also
-on `Bash`, a missing `node` blocks every `Bash` call until fixed (run the
-command with the `!` prefix to get past it). The style guards and
-`guard-git-push-signed` stay fail-open on purpose: the push guard has its own
-parser and the remote's signed-commit rule is the authoritative layer.
+JSON blocks the call instead of letting it through. The three org starters
+(`guard-secret-writes`, `guard-git-push-signed`, `guard-double-background`)
+also exit 2 on a payload they cannot read as a JSON object; the other guards
+handle bad input themselves and exit 0 on purpose. Because
+`guard-hub-src-writes` is also on `Bash`, a missing `node` blocks every `Bash`
+call until fixed (run the command with the `!` prefix to get past it). The
+style guards (`guard-ts-extension`, `guard-no-commonjs`) stay fail-open on
+purpose. `guard-git-push-signed` lets a push through when it cannot work out
+the outgoing range, because the remote's signed-commit rule is the
+authoritative layer.
 `permissions.deny` blocks reading `.env`, `.env.*`, `secrets/`,
 `credentials.json` and `secrets.yaml` (which also covers `cat`, `head` and
 `tail` on them in `Bash`) and editing `pnpm-lock.yaml`, `package-lock.json`,
