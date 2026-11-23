@@ -19,7 +19,7 @@ describe("HookOutput.note", () => {
     );
     expect(result.stdout).toBe("");
     expect(result.stderr).toBe(
-      "m3l-claude-mentor: TestHook: degraded: LOCK_TIMEOUT\n",
+      "m3l-mentor: TestHook: degraded: LOCK_TIMEOUT\n",
     );
   });
 
@@ -38,7 +38,7 @@ describe("HookOutput.note", () => {
     );
     expect(noted.stdout).toBe(plain.stdout);
     expect(noted.stdout).not.toContain("degraded");
-    expect(noted.stderr).toBe("m3l-claude-mentor: TestHook: degraded\n");
+    expect(noted.stderr).toBe("m3l-mentor: TestHook: degraded\n");
   });
 
   test("a note plus a system message keeps both stdout fields and writes one stderr line", async () => {
@@ -48,7 +48,7 @@ describe("HookOutput.note", () => {
       emit({ systemMessage: "hello", note: "degraded" }),
     );
     expect(JSON.parse(result.stdout)).toEqual({ systemMessage: "hello" });
-    expect(result.stderr).toBe("m3l-claude-mentor: TestHook: degraded\n");
+    expect(result.stderr).toBe("m3l-mentor: TestHook: degraded\n");
   });
 
   test("a multi-line note is flattened to one line", async () => {
@@ -57,9 +57,7 @@ describe("HookOutput.note", () => {
       SESSION_JSON,
       emit({ note: "line one\nline two" }),
     );
-    expect(result.stderr).toBe(
-      "m3l-claude-mentor: TestHook: line one line two\n",
-    );
+    expect(result.stderr).toBe("m3l-mentor: TestHook: line one line two\n");
   });
 
   test("no note: no stderr (existing behaviour)", async () => {

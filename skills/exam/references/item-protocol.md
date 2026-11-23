@@ -18,7 +18,7 @@ before the learner sees anything, so the CLI scores the answer and you do not.
 
 ## 2. Ground it in the live docs
 
-- Dispatch the `m3l-claude-mentor:docs-researcher` agent with the Agent tool, once per
+- Dispatch the `m3l-mentor:docs-researcher` agent with the Agent tool, once per
   objective per session, and reuse the answer for up to 3 questions on that objective.
 - The prompt must be self-contained, because the agent sees no conversation. Give it the
   area, the objective `summary`, and the topic ids. Ask for the current documented

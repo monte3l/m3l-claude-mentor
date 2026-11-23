@@ -78,7 +78,7 @@ describe("a held foreign lock, real process, real 2 s wait", () => {
       expect(r.status).toBe(0);
       expect(r.stdout).toBe("");
       expect(r.stderr).toMatch(
-        new RegExp(`^m3l-claude-mentor: ${name}: LOCK_TIMEOUT: .+\\n$`),
+        new RegExp(`^m3l-mentor: ${name}: LOCK_TIMEOUT: .+\\n$`),
       );
       expect(r.elapsedMs).toBeGreaterThanOrEqual(1800); // it really waited
       expect(r.elapsedMs).toBeLessThan(8000);
@@ -92,7 +92,7 @@ describe("a held foreign lock, real process, real 2 s wait", () => {
     const r = await runEntryAsync(PROMPT, { input: json(PLAN), dataDir: dir });
     expect(r.status).toBe(0);
     expect(r.stderr).toMatch(
-      /^m3l-claude-mentor: UserPromptSubmit: .*LOCK_TIMEOUT.*\n$/,
+      /^m3l-mentor: UserPromptSubmit: .*LOCK_TIMEOUT.*\n$/,
     );
     expect(r.elapsedMs).toBeGreaterThanOrEqual(1800); // it really waited
     expect(r.elapsedMs).toBeLessThan(8000);
@@ -120,9 +120,7 @@ describe("a held foreign lock, real process, real 2 s wait", () => {
 function outcome(r: AsyncResult): "landed" | "timedOut" {
   expect(r.status).toBe(0);
   if (r.stderr === "") return "landed";
-  expect(r.stderr).toMatch(
-    /^m3l-claude-mentor: [A-Za-z]+: .*LOCK_TIMEOUT.*\n$/,
-  );
+  expect(r.stderr).toMatch(/^m3l-mentor: [A-Za-z]+: .*LOCK_TIMEOUT.*\n$/);
   return "timedOut";
 }
 

@@ -31,10 +31,23 @@ import {
  * @example
  * ```ts
  * import { BUNDLE_FORMAT } from "./export.ts";
- * BUNDLE_FORMAT; // "m3l-claude-mentor-export"
+ * BUNDLE_FORMAT; // "m3l-mentor-export"
  * ```
  */
-export const BUNDLE_FORMAT = "m3l-claude-mentor-export";
+export const BUNDLE_FORMAT = "m3l-mentor-export";
+
+/**
+ * The `format` tag bundles carried while the plugin was called
+ * `m3l-claude-mentor` (up to 1.2.0). The importer still accepts it, so an old
+ * export imports into the renamed plugin; new exports never use it.
+ *
+ * @example
+ * ```ts
+ * import { LEGACY_BUNDLE_FORMAT } from "./export.ts";
+ * LEGACY_BUNDLE_FORMAT; // "m3l-claude-mentor-export"
+ * ```
+ */
+export const LEGACY_BUNDLE_FORMAT = "m3l-claude-mentor-export";
 
 /**
  * The only bundle `version` this build reads or writes.
@@ -158,7 +171,9 @@ function parseExamItemList(value: unknown): Parsed<readonly ExamItem[]> {
 /**
  * Validates an export bundle. Every field is read once as an own property;
  * extra keys are ignored and not copied. `format` must equal
- * {@link BUNDLE_FORMAT} and `version` must be exactly {@link BUNDLE_VERSION}
+ * {@link BUNDLE_FORMAT} or the former {@link LEGACY_BUNDLE_FORMAT} (the
+ * result always carries the current one) and `version` must be exactly
+ * {@link BUNDLE_VERSION}
  * (any other version is rejected, never misread). Each section goes through
  * its own parser (`parseState`, `parseProfile`, `parseCatalogFile`, and
  * `parseEvidence` per item, whose failure names the zero-based index as
@@ -183,7 +198,8 @@ export function parseBundle(value: unknown): Parsed<Bundle> {
   const record = asRecord(value);
   if (record === null) return fail("bundle must be an object");
 
-  if (ownField(record, "format") !== BUNDLE_FORMAT) {
+  const format = ownField(record, "format");
+  if (format !== BUNDLE_FORMAT && format !== LEGACY_BUNDLE_FORMAT) {
     return fail(`bundle format must be ${BUNDLE_FORMAT}`);
   }
   if (ownField(record, "version") !== BUNDLE_VERSION) {

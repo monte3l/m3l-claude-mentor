@@ -1,4 +1,4 @@
-# m3l-claude-mentor
+# m3l-mentor
 
 [![CI](https://github.com/monte3l/m3l-claude-mentor/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/monte3l/m3l-claude-mentor/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/monte3l/m3l-claude-mentor/badge)](https://securityscorecards.dev/viewer/?uri=github.com/monte3l/m3l-claude-mentor)
@@ -6,11 +6,11 @@
 [![OpenSSF Baseline](https://www.bestpractices.dev/projects/16729/baseline)](https://www.bestpractices.dev/projects/16729)
 [![REUSE status](https://api.reuse.software/badge/github.com/monte3l/m3l-claude-mentor)](https://api.reuse.software/info/github.com/monte3l/m3l-claude-mentor)
 
-m3l-claude-mentor is a Claude Code plugin that mentors one learner on Claude
+m3l-mentor is a Claude Code plugin that mentors one learner on Claude
 and Claude Code. It keeps a private map of what you know, adds at most one short
 tip when it fits what you are doing, and teaches, quizzes and answers questions
 on request. It stays quiet on topics you have already shown you know. The
-docs are at [claude-mentor.monte3l.com](https://claude-mentor.monte3l.com).
+docs are at [mentor.monte3l.com](https://mentor.monte3l.com).
 
 ## Who is this for
 
@@ -29,31 +29,67 @@ You need Claude Code and Node (see [Requirements](#requirements)).
 
    ```bash
    claude plugin marketplace add monte3l/m3l-plugins
-   claude plugin install m3l-claude-mentor@monte3l
+   claude plugin install m3l-mentor@monte3l
    ```
 
    Or inside a Claude Code session:
 
    ```text
    /plugin marketplace add monte3l/m3l-plugins
-   /plugin install m3l-claude-mentor@monte3l
+   /plugin install m3l-mentor@monte3l
    ```
 
    To add the marketplace and install in one step, use
-   `claude plugin install m3l-claude-mentor --marketplace monte3l/m3l-plugins`
+   `claude plugin install m3l-mentor --marketplace monte3l/m3l-plugins`
    (Claude Code 2.1.292 or newer) or
-   `/plugin install m3l-claude-mentor --marketplace monte3l/m3l-plugins`
+   `/plugin install m3l-mentor --marketplace monte3l/m3l-plugins`
    (2.1.275 or newer).
 
    The shell form installs at user scope unless you pass `--scope project` or
    `--scope local`. The session form opens the plugin's details and asks you to
    pick a scope.
 
-2. Ask for a lesson, for example `/m3l-claude-mentor:teach hooks`. The mentor
+2. Ask for a lesson, for example `/m3l-mentor:teach hooks`. The mentor
    runs a short lesson, then records what you showed it. After a few prompts
    about a topic you have not mastered, you may see one `💡 Mentor tip:` line.
 
 To go deeper, see [Skills](#skills) and [Settings](#settings).
+
+### Moving from `m3l-claude-mentor`
+
+Until 1.2.0 the plugin was called `m3l-claude-mentor`. The new name is
+`m3l-mentor`. If you installed the old one, do this once:
+
+1. Refresh the catalog and install the renamed plugin:
+
+   ```bash
+   claude plugin marketplace update monte3l
+   claude plugin install m3l-mentor@monte3l
+   ```
+
+   Inside a session, use `/plugin marketplace update monte3l` and
+   `/plugin install m3l-mentor@monte3l`. The catalog lists the old name under
+   `renames`, so Claude Code moves your enabled setting across. If it reports
+   that the plugin is not cached, the install command above is all it needs.
+
+2. Use the new skill names: `/m3l-claude-mentor:teach` is now
+   `/m3l-mentor:teach`, and every other skill follows the same rule.
+
+3. Start a session. The first one copies your learner state (profile, evidence,
+   goals, catalog overrides, exam items and the rest) from the old data
+   directory, `~/.claude/plugins/data/m3l-claude-mentor-monte3l/`, into the new
+   one, `~/.claude/plugins/data/m3l-mentor-monte3l/`. It copies only files the
+   new directory does not have, never changes the old directory, and runs once.
+   If it fails, the session still starts and the mentor says so in one line;
+   the next session tries again.
+
+4. Once the new plugin has run a session, you can remove the old one with
+   `claude plugin uninstall m3l-claude-mentor@monte3l`. Do it after step 3:
+   Claude Code deletes a plugin's data directory on uninstall unless you pass
+   `--keep-data`.
+
+An export made before the rename (`m3l-claude-mentor-export`) still imports. New
+exports are tagged `m3l-mentor-export`.
 
 ## How it works
 
@@ -80,13 +116,13 @@ within 2 seconds skips that write instead of waiting.
 The `docs-researcher` agent uses Claude Code's web fetch tool on
 `code.claude.com` only, and `mastery-assessor` can only read files you name.
 Both are read-only. The opt-in output style
-`/output-style m3l-claude-mentor:mentor` gives a clear, encouraging teaching
+`/output-style m3l-mentor:mentor` gives a clear, encouraging teaching
 voice and keeps Claude Code's normal coding behaviour. It is never applied
 automatically.
 
 ## Skills
 
-Skills are namespaced `/m3l-claude-mentor:<name>`. Say "stop tips" or "resume
+Skills are namespaced `/m3l-mentor:<name>`. Say "stop tips" or "resume
 tips" at any time, in plain words.
 
 | Skill       | Use it to                                                                                                            |
@@ -101,7 +137,7 @@ tips" at any time, in plain words.
 
 ## Certification prep
 
-The `exam` skill helps you prepare for four official Claude certification exams: Claude Certified Developer - Foundations (`CCDV-F`), Architect - Foundations (`CCAR-F`), Architect - Professional (`CCAR-P`) and Developer - Professional (`CCDV-P`). Try `/m3l-claude-mentor:exam CCAR-F drill`, `mock`, `readiness` or `plan`.
+The `exam` skill helps you prepare for four official Claude certification exams: Claude Certified Developer - Foundations (`CCDV-F`), Architect - Foundations (`CCAR-F`), Architect - Professional (`CCAR-P`) and Developer - Professional (`CCDV-P`). Try `/m3l-mentor:exam CCAR-F drill`, `mock`, `readiness` or `plan`.
 
 - The practice questions are original, written by Claude from the live docs, and each explanation links its page. They are not real exam questions, and the mentor will not use or discuss real ones.
 - **A person does not review the questions or their answer keys.** If a key looks wrong, tell the mentor; when the docs agree with you, it can void that result so it leaves your readiness and levels.
@@ -120,14 +156,14 @@ Both options are plugin options in `/config`.
 
 ## Manage the plugin
 
-| Task                           | From your shell                                                                                          | Inside a session                                                                             |
-| ------------------------------ | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Update                         | `claude plugin update m3l-claude-mentor@monte3l`                                                         | `/plugin`, then **Installed**, the plugin, **Update now**                                    |
-| Update automatically           | Not available                                                                                            | `/plugin`, then **Marketplaces**, `monte3l`, **Enable auto-update**                          |
-| Turn off or on                 | `claude plugin disable m3l-claude-mentor@monte3l`, then `claude plugin enable m3l-claude-mentor@monte3l` | `/plugin disable m3l-claude-mentor@monte3l`, then `/plugin enable m3l-claude-mentor@monte3l` |
-| Uninstall                      | `claude plugin uninstall m3l-claude-mentor@monte3l`                                                      | `/plugin uninstall m3l-claude-mentor@monte3l`                                                |
-| Run a checkout for one session | `claude --plugin-dir /path/to/m3l-claude-mentor` (nothing to build: it runs from the source)             | Not available                                                                                |
-| Run an older release           | Check out its tag, `m3l-claude-mentor--vX.Y.Z`, then use `--plugin-dir`                                  | Not available                                                                                |
+| Task                           | From your shell                                                                                            | Inside a session                                                               |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Update                         | `claude plugin update m3l-mentor@monte3l`                                                                  | `/plugin`, then **Installed**, the plugin, **Update now**                      |
+| Update automatically           | Not available                                                                                              | `/plugin`, then **Marketplaces**, `monte3l`, **Enable auto-update**            |
+| Turn off or on                 | `claude plugin disable m3l-mentor@monte3l`, then `claude plugin enable m3l-mentor@monte3l`                 | `/plugin disable m3l-mentor@monte3l`, then `/plugin enable m3l-mentor@monte3l` |
+| Uninstall                      | `claude plugin uninstall m3l-mentor@monte3l`                                                               | `/plugin uninstall m3l-mentor@monte3l`                                         |
+| Run a checkout for one session | `claude --plugin-dir /path/to/m3l-mentor` (nothing to build: it runs from the source)                      | Not available                                                                  |
+| Run an older release           | Check out its tag, `m3l-mentor--vX.Y.Z` (`m3l-claude-mentor--vX.Y.Z` up to 1.2.0), then use `--plugin-dir` | Not available                                                                  |
 
 `monte3l` is not an official Anthropic marketplace, so Claude Code does not
 update its plugins automatically unless you turn auto-update on. Claude Code
@@ -258,7 +294,7 @@ agent workflow. The code of conduct and support are the
 
 ### Project docs
 
-- [Documentation site](https://claude-mentor.monte3l.com) -- these pages and
+- [Documentation site](https://mentor.monte3l.com) -- these pages and
   the skill and agent prompts, built from the repository's Markdown. A page is
   on it only if it is listed in `docs.config.mjs`.
 - [`docs/spec.md`](docs/spec.md) -- the specification: mastery model, ambient engine,
@@ -291,7 +327,7 @@ that may still change any of it in a minor release.
 
 **The contract** is:
 
-- the seven skill names, invoked as `/m3l-claude-mentor:<name>` (`ask`, `assess`,
+- the seven skill names, invoked as `/m3l-mentor:<name>` (`ask`, `assess`,
   `exam`, `profile`, `quiz`, `teach`, `whats-new`);
 - the two plugin options, `dial` and `transcriptAnalysis`, with their meaning and
   ranges;
@@ -320,8 +356,14 @@ fail it, because that is a minor release.
 | Minor | A new skill, option or topic, with existing ones unchanged                                                                            |
 | Patch | A fix, or a docs or CI change, with no change to the contract                                                                         |
 
+Renaming the plugin from `m3l-claude-mentor` to `m3l-mentor` changed the
+invocation prefix of every skill, so it ships as a major release, 2.0.0. The
+export format stays version 1, and an export written under the old name still
+imports.
+
 Release-please opens one release pull request from the Conventional Commits.
-Merging it tags `m3l-claude-mentor--vX.Y.Z` and publishes a GitHub release, and
+Merging it tags `m3l-mentor--vX.Y.Z` (releases up to 1.2.0 carry the earlier
+name, `m3l-claude-mentor--vX.Y.Z`) and publishes a GitHub release, and
 `CHANGELOG.md` lists what changed.
 
 ## License

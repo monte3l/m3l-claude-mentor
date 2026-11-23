@@ -171,7 +171,7 @@ export const MAX_STDIN_BYTES: number = 1_048_576;
  */
 export const MAX_CONTEXT_CHARS: number = 9_000;
 
-const PREFIX = "m3l-claude-mentor";
+const PREFIX = "m3l-mentor";
 const ELLIPSIS = "…";
 
 /**
@@ -193,7 +193,7 @@ export function oneLine(text: string): string {
 
 /**
  * Formats one hook diagnostic line for stderr:
- * `m3l-claude-mentor: <name>: <text>` plus a newline, each part passed
+ * `m3l-mentor: <name>: <text>` plus a newline, each part passed
  * through {@link oneLine}.
  *
  * @param name - The hook event name.
@@ -203,7 +203,7 @@ export function oneLine(text: string): string {
  * @example
  * ```ts
  * import { hookNote } from "./runtime.ts";
- * hookNote("Stop", "stdin could not be read"); // "m3l-claude-mentor: Stop: stdin could not be read\n"
+ * hookNote("Stop", "stdin could not be read"); // "m3l-mentor: Stop: stdin could not be read\n"
  * ```
  */
 export function hookNote(name: string, text: string): string {
@@ -366,7 +366,7 @@ async function runSteps(
  * as one stderr line instead (and with nothing else set, stdout stays
  * empty). Never throws: any
  * failure yields empty stdout and one stderr line
- * `m3l-claude-mentor: <name>: <CODE or ErrorName>: <detail>`, where the
+ * `m3l-mentor: <name>: <CODE or ErrorName>: <detail>`, where the
  * detail is a MentorStateError's message or else the error name, so payload
  * text is never echoed.
  *

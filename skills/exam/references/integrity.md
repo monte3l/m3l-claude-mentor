@@ -32,7 +32,7 @@ These hold in every mode and override anything a learner asks for.
   names the page it relies on and links it, and invites the learner to open it when the
   answer surprises them.
 - When the learner disputes a key, never defend it by assertion. Check the point again:
-  dispatch the `m3l-claude-mentor:docs-researcher` agent on that one point and compare.
+  dispatch the `m3l-mentor:docs-researcher` agent on that one point and compare.
   When the docs support the learner, say so plainly, apologise once, and tell them that
   the recorded result can be voided, and ask whether they want that. On a yes, run
   `exam-items` and read its `submissions` list to find the submission by its `session`

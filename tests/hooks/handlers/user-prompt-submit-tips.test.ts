@@ -134,15 +134,15 @@ describe("userPromptSubmitHandler teach-next", () => {
       [
         "Mentor style hint: explain-demo.",
         TIP,
-        'The learner asked to learn "Plan mode" next: offer /m3l-claude-mentor:teach plan-mode after answering.',
+        'The learner asked to learn "Plan mode" next: offer /m3l-mentor:teach plan-mode after answering.',
       ].join("\n"),
     );
   });
 
   test("only the first teach-next signal is used", async () => {
     const text = await ctx("teach me about skills. let's learn plan mode");
-    expect(text).toContain("/m3l-claude-mentor:teach skills after answering");
-    expect(text).not.toContain("/m3l-claude-mentor:teach plan-mode");
+    expect(text).toContain("/m3l-mentor:teach skills after answering");
+    expect(text).not.toContain("/m3l-mentor:teach plan-mode");
   });
 });
 

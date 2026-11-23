@@ -22,7 +22,7 @@ About 5 questions in one domain, with feedback after each.
 4. When the domain has too few topics or objectives to stay inside the limits, end the
    drill early and say why, instead of going over them.
 5. End with three lines: how many were right, which objectives were practised, and one
-   next step. Offer `/m3l-claude-mentor:teach <topic id>` for the weakest topic.
+   next step. Offer `/m3l-mentor:teach <topic id>` for the weakest topic.
 
 ## mock
 
@@ -80,7 +80,7 @@ node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DA
 2. Order the domains by `weight` times the gap that is left, and plan the top three,
    leaving out domains that cannot be practised. For each, pick the 2 or 3 objectives
    with the fewest questions, using the objective `summary` from `tracks --code '<code>'`.
-   Pair each with a lesson on a mapped topic (`/m3l-claude-mentor:teach <topic id>`) and
+   Pair each with a lesson on a mapped topic (`/m3l-mentor:teach <topic id>`) and
    a drill.
 3. Spread it over one or two weeks with about 30 minutes a day. For a Professional exam,
    run `readiness` for the exam it `assumes` too, and put a weak Foundations domain

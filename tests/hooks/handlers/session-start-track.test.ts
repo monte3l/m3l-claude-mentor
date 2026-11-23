@@ -24,7 +24,7 @@ afterEach(() => {
 });
 
 const CODE = "CCAR-F";
-const EXAM_LINE = `Exam track: ${CODE}, try /m3l-claude-mentor:exam ${CODE} drill`;
+const EXAM_LINE = `Exam track: ${CODE}, try /m3l-mentor:exam ${CODE} drill`;
 
 /** Topic id -> exam weight for the track (each objective's share split over its topics, in full). */
 function weights(code: string): Map<string, number> {

@@ -14,7 +14,7 @@ import {
 import { evidenceAt } from "./fixtures/export-data.ts";
 
 const valid = (): Record<string, unknown> => ({
-  format: "m3l-claude-mentor-export",
+  format: "m3l-mentor-export",
   version: 1,
   exportedAt: 1_700_000_000_000,
   state: JSON.parse(JSON.stringify(defaultState(5))),
@@ -32,7 +32,7 @@ const reason = (value: unknown): string => {
 
 describe("constants", () => {
   test("pin the format name and version", () => {
-    expect(BUNDLE_FORMAT).toBe("m3l-claude-mentor-export");
+    expect(BUNDLE_FORMAT).toBe("m3l-mentor-export");
     expect(BUNDLE_VERSION).toBe(1);
   });
 });
@@ -42,7 +42,7 @@ describe("parseBundle", () => {
     const r = parseBundle(valid());
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.value.format).toBe("m3l-claude-mentor-export");
+    expect(r.value.format).toBe("m3l-mentor-export");
     expect(r.value.version).toBe(1);
     expect(r.value.exportedAt).toBe(1_700_000_000_000);
     expect(r.value.goals).toBe("learn hooks");
@@ -165,7 +165,7 @@ describe("serializeBundle", () => {
   test("is pretty-printed JSON with two-space indent and a trailing newline", () => {
     const text = serializeBundle(bundle());
     expect(text.endsWith("}\n")).toBe(true);
-    expect(text).toContain('\n  "format": "m3l-claude-mentor-export"');
+    expect(text).toContain('\n  "format": "m3l-mentor-export"');
   });
 
   test("round-trips through parseBundle", () => {

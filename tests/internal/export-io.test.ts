@@ -57,7 +57,7 @@ describe("exportBundle", () => {
   test("returns every section of seeded data with exportedAt = now", async () => {
     await seed(src);
     const { bundle } = await exportBundle(src, NOW);
-    expect(bundle.format).toBe("m3l-claude-mentor-export");
+    expect(bundle.format).toBe("m3l-mentor-export");
     expect(bundle.version).toBe(1);
     expect(bundle.exportedAt).toBe(NOW);
     expect(bundle.state.muted).toBe(true);

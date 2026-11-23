@@ -242,7 +242,7 @@ describe("exam skill: answer-key risk disclosure and disputes", () => {
     "Never write a question you cannot back with a fetched docs page",
     "Every explanation names the page it relies on and links it",
     "never defend it by assertion",
-    "`m3l-claude-mentor:docs-researcher` agent on that one point",
+    "`m3l-mentor:docs-researcher` agent on that one point",
     "When the docs support the learner, say so plainly",
     "the recorded result can be voided",
     "Offer a fresh question on the same objective",

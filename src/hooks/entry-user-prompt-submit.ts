@@ -51,9 +51,7 @@ try {
   if (await isProcessEntry()) {
     process.stderr.on("error", () => undefined);
     const reason = loaded ? "failed unexpectedly" : "could not start";
-    process.stderr.write(
-      `m3l-claude-mentor: UserPromptSubmit: ${reason}; ignored\n`,
-    );
+    process.stderr.write(`m3l-mentor: UserPromptSubmit: ${reason}; ignored\n`);
     process.exitCode = 0;
   }
 }

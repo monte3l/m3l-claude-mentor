@@ -53,7 +53,7 @@ describe("SessionStart with an invalid state.json and evidence present", () => {
       );
       // No crash: a stderr note only, no context, no raised levels.
       expect(result.stdout).toBe("");
-      expect(result.stderr).toMatch(/^m3l-claude-mentor: TestHook: /);
+      expect(result.stderr).toMatch(/^m3l-mentor: TestHook: /);
       expect(snapshot(sb.dir)).toEqual(before);
     },
   );

@@ -1,12 +1,14 @@
 /**
  * The SessionStart hook: re-derives evidenced topic levels, then gives the
  * model a compact summary of the learner's state at session start and after
- * compaction. It writes only `profile.json`, and only when a level is
+ * compaction. Apart from the one-time carry-over of data from the plugin's
+ * former name, it writes only `profile.json`, and only when a level is
  * raised; it never lowers a level (the explicit `recompute` CLI command
- * does) and never writes `state.json`.
+ * does) and never writes `state.json` itself.
  */
 import { loadBundledTracks } from "../../internal/bundled-tracks.ts";
 import { isUnprompted } from "../../internal/catalog.ts";
+import { migrateLegacyData } from "../../internal/legacy-data.ts";
 import { isLockTimeout, withStateLock } from "../../internal/lock.ts";
 import { isReviewDue } from "../../internal/mastery.ts";
 import { recomputeProfile } from "../../internal/recompute.ts";
@@ -33,8 +35,7 @@ const MAX_SUMMARY_CHARS = 2_000;
 const MAX_BELOW_TARGET = 8;
 const MAX_REVIEWS = 5;
 const MAX_GOALS_CHARS = 400;
-const CLOSING_LINE =
-  "Use /m3l-claude-mentor:profile to see or change settings.";
+const CLOSING_LINE = "Use /m3l-mentor:profile to see or change settings.";
 
 /** Whether the summary follows a compaction (else it is a session start). */
 function isCompact(payload: Readonly<Record<string, unknown>>): boolean {
@@ -183,6 +184,21 @@ function fit(
   return text;
 }
 
+/**
+ * Carries the learner's data over from the plugin's former name (see
+ * `migrateLegacyData`), once. A failure never stops the session: it
+ * degrades to a note with `describeError`'s fixed text, and the next session
+ * tries again.
+ */
+async function carryOver(deps: HookDeps): Promise<string | undefined> {
+  try {
+    await migrateLegacyData(deps.dir, deps.lockOptions);
+    return undefined;
+  } catch (error) {
+    return describeError(error);
+  }
+}
+
 /** The profile to summarize, and a note when the refresh had to be skipped. */
 interface Refreshed {
   readonly profile: Profile;
@@ -279,6 +295,9 @@ async function refreshedProfile(deps: HookDeps): Promise<Refreshed> {
  * lock, taken only when something would be raised. If the lock times out,
  * the stored profile is summarized unrefreshed and the output carries a
  * `note` (one `LOCK_TIMEOUT` stderr line); any other failure propagates.
+ * First of all, once per learner, it carries the data of the plugin's former
+ * name (`m3l-claude-mentor`) over into the data directory
+ * (`migrateLegacyData`); a failure there only adds to the `note`.
  * An unreadable or invalid `state.json` (read for the mute flags and the
  * void list) therefore drops the whole level refresh and the summary, even
  * with dial 0, and nothing is written; the hook shell fails open (one
@@ -293,7 +312,7 @@ async function refreshedProfile(deps: HookDeps): Promise<Refreshed> {
  * profile command, all from the updated profile. Muted, disabled and
  * `ambient: false` topics are omitted. When `state.json` `activeTrack` names
  * a bundled exam track, the head also carries an
- * `Exam track: <code>, try /m3l-claude-mentor:exam <code> drill` line (never
+ * `Exam track: <code>, try /m3l-mentor:exam <code> drill` line (never
  * dropped to fit), and the topics that track maps (`ambient: false` ones
  * included; still not muted or disabled ones) lead both the below-target
  * and the review lines, by exam weight descending then catalog order,
@@ -317,8 +336,10 @@ async function refreshedProfile(deps: HookDeps): Promise<Refreshed> {
 export const sessionStartHandler: HookHandler = async (payload, deps) => {
   if (payloadSession(payload) === null) return null;
   const compact = isCompact(payload);
+  const carryNote = await carryOver(deps);
   const { profile, note: lockNote } = await refreshedProfile(deps);
-  const silent = lockNote === undefined ? null : { note: lockNote };
+  const earlyNote = mergeNotes(carryNote, lockNote);
+  const silent = earlyNote === undefined ? null : { note: earlyNote };
   if (deps.settings.dial === 0) return silent;
   const state = await loadState(deps.dir, deps.now);
   if (state.muted) return silent;
@@ -326,7 +347,7 @@ export const sessionStartHandler: HookHandler = async (payload, deps) => {
 
   const muted = new Set<string>(state.mutedTopics);
   const { focus, note: trackNote } = trackFocus(state, deps.catalog, muted);
-  const note = mergeNotes(lockNote, trackNote);
+  const note = mergeNotes(carryNote, lockNote, trackNote);
   const ranked = focus?.ranked ?? [];
   const inTrack = new Set(ranked.map((entry) => entry.id));
   const others = deps.catalog.filter(
@@ -337,12 +358,12 @@ export const sessionStartHandler: HookHandler = async (payload, deps) => {
   const reviews = reviewLines([...ranked, ...others], profile, deps.now);
 
   const head = [
-    `m3l-claude-mentor learner state (${compact ? "restored after compaction" : "session start"})`,
+    `m3l-mentor learner state (${compact ? "restored after compaction" : "session start"})`,
     `tip dial: ${String(deps.settings.dial)} (0 off, 5 most frequent)`,
     ...(focus === undefined
       ? []
       : [
-          `Exam track: ${focus.code}, try /m3l-claude-mentor:exam ${focus.code} drill`,
+          `Exam track: ${focus.code}, try /m3l-mentor:exam ${focus.code} drill`,
         ]),
   ];
   const topics = [

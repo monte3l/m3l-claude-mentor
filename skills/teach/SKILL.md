@@ -1,6 +1,6 @@
 ---
 name: teach
-description: Runs a short, adaptive, multi-turn lesson on one Claude or Claude Code topic, choosing the teaching style from the learner's stored mastery and recording the outcome. This skill should be used when the user wants to learn or be taught a topic, for example "teach me hooks", "explain plan mode to me", "give me a lesson on skills", or invokes /m3l-claude-mentor:teach.
+description: Runs a short, adaptive, multi-turn lesson on one Claude or Claude Code topic, choosing the teaching style from the learner's stored mastery and recording the outcome. This skill should be used when the user wants to learn or be taught a topic, for example "teach me hooks", "explain plan mode to me", "give me a lesson on skills", or invokes /m3l-mentor:teach.
 argument-hint: "[topic]"
 allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)
 ---
@@ -9,7 +9,7 @@ allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)
 
 Run one focused lesson on the topic in `$ARGUMENTS` (may be empty or fuzzy). Keep turns
 short, ask one question at a time, never paste long documentation. A quick factual
-lookup belongs to `/m3l-claude-mentor:ask`, not here.
+lookup belongs to `/m3l-mentor:ask`, not here.
 
 ## Rules for every CLI call
 
@@ -44,16 +44,16 @@ The first docs lookup may ask the user to allow the docs domain (see the README)
    weight descending, skipping any in `mutedTopics`; an `ambient` false topic in
    `activeTrackTopics` is a valid unprompted candidate. Exclude any other topic whose `ambient` is false from those
    candidates unless `$ARGUMENTS` names it. When nothing matches, say so and offer
-   `/m3l-claude-mentor:ask`.
+   `/m3l-mentor:ask`.
 2. **Gate.** When `enabled` is false, do not teach; offer to enable it through
-   `/m3l-claude-mentor:profile`. When `muted` is true, teach only if the learner
+   `/m3l-mentor:profile`. When `muted` is true, teach only if the learner
    explicitly asks by name after being told. Mention any `dependencies` still `Unseen`
    and offer to start there.
 3. **Pick the style:** the catalog `style` when set; otherwise follow the table in
    `references/styles.md` (type, then level). A learner saying "just tell me" shifts to
    `reference`.
 4. **Fast-moving topics** (`type` is `fast-moving`): dispatch the
-   `m3l-claude-mentor:docs-researcher` agent with the Agent tool and a self-contained
+   `m3l-mentor:docs-researcher` agent with the Agent tool and a self-contained
    prompt (the topic title and the question, learner text in a clearly QUOTED data block; the agent sees no conversation), summarise
    its findings briefly with the source links, never teach from memory (if the dispatch
    fails or returns nothing useful, say so plainly and do not answer from memory), and skip the remaining steps (no introduce, no checks, no

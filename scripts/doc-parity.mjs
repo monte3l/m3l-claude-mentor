@@ -29,12 +29,10 @@ export const skillNames = (root) =>
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name);
 
-/** Skill names a docs/spec.md section writes as `/m3l-claude-mentor:<name>`. */
+/** Skill names a docs/spec.md section writes as `/m3l-mentor:<name>`. */
 export const designSkillNames = (text) => [
   ...new Set(
-    [...text.matchAll(/\/m3l-claude-mentor:([a-z][a-z-]*)/g)].map(
-      (match) => match[1],
-    ),
+    [...text.matchAll(/\/m3l-mentor:([a-z][a-z-]*)/g)].map((match) => match[1]),
   ),
 ];
 

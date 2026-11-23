@@ -310,16 +310,16 @@ describe("rule 7: ask and whats-new source from official docs", () => {
   test.each(["ask", "whats-new", "teach", "exam"])(
     "%s dispatches the docs-researcher agent",
     (name) => {
-      expect(
-        hasPhrase(readSkill(name), "m3l-claude-mentor:docs-researcher"),
-      ).toBe(true);
+      expect(hasPhrase(readSkill(name), "m3l-mentor:docs-researcher")).toBe(
+        true,
+      );
     },
   );
 
   test("assess dispatches the mastery-assessor agent", () => {
-    expect(
-      hasPhrase(readSkill("assess"), "m3l-claude-mentor:mastery-assessor"),
-    ).toBe(true);
+    expect(hasPhrase(readSkill("assess"), "m3l-mentor:mastery-assessor")).toBe(
+      true,
+    );
   });
 
   test("exam does not mention mastery-assessor (it judges the follow-up itself)", () => {

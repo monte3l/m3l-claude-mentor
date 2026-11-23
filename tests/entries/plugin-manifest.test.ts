@@ -18,7 +18,7 @@ const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
 
 describe(".claude-plugin/plugin.json", () => {
   test("keeps its name and a semver version matching package.json", () => {
-    expect(manifest.name).toBe("m3l-claude-mentor");
+    expect(manifest.name).toBe("m3l-mentor");
     expect(manifest.version).toMatch(/^\d+\.\d+\.\d+$/);
     expect(manifest.version).toBe(pkg.version);
   });

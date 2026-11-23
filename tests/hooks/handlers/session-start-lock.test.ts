@@ -76,7 +76,7 @@ describe("SessionStart is optimistic: it locks only when the profile would chang
       noWaitLock(),
     );
     expect(result.stderr).toBe("");
-    expect(result.stdout).toContain("m3l-claude-mentor learner state");
+    expect(result.stdout).toContain("m3l-mentor learner state");
   });
 
   test("(a2) no evidence at all: same, no wait and no note", async () => {
@@ -89,7 +89,7 @@ describe("SessionStart is optimistic: it locks only when the profile would chang
       noWaitLock(),
     );
     expect(result.stderr).toBe("");
-    expect(result.stdout).toContain("m3l-claude-mentor learner state");
+    expect(result.stdout).toContain("m3l-mentor learner state");
   });
 
   test("(b) levels would change but the lock times out: context from the stored profile, one note, profile untouched", async () => {
@@ -107,7 +107,7 @@ describe("SessionStart is optimistic: it locks only when the profile would chang
     );
     expect(sleeps.length).toBeGreaterThan(0);
     expect(result.stderr).toMatch(
-      /^m3l-claude-mentor: SessionStart: .*LOCK_TIMEOUT.*\n$/,
+      /^m3l-mentor: SessionStart: .*LOCK_TIMEOUT.*\n$/,
     );
     const context = (
       JSON.parse(result.stdout) as {
@@ -129,7 +129,7 @@ describe("SessionStart is optimistic: it locks only when the profile would chang
       makeDeps(sb.dir, { lockOptions: lock }),
     );
     expect(out?.hookSpecificOutput?.additionalContext).toContain(
-      "m3l-claude-mentor learner state",
+      "m3l-mentor learner state",
     );
     expect(out?.note).toMatch(/LOCK_TIMEOUT/);
   });
@@ -173,7 +173,7 @@ describe("SessionStart silent paths still report the lock timeout", () => {
       );
       expect(result.stdout).toBe("");
       expect(result.stderr).toMatch(
-        /^m3l-claude-mentor: SessionStart: .*LOCK_TIMEOUT.*\n$/,
+        /^m3l-mentor: SessionStart: .*LOCK_TIMEOUT.*\n$/,
       );
     },
   );

@@ -1,5 +1,5 @@
 {
-  "description": "m3l-claude-mentor: tracks learner state and injects adaptive mentoring context.",
+  "description": "m3l-mentor: tracks learner state and injects adaptive mentoring context.",
   "hooks": {
     "SessionStart": [
       {

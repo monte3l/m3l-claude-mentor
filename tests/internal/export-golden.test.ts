@@ -4,6 +4,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import {
+  BUNDLE_FORMAT,
+  LEGACY_BUNDLE_FORMAT,
   exportBundle,
   importBundleFromFile,
   parseBundle,
@@ -28,7 +30,7 @@ function loadFixture(): Bundle {
 
 // Written by hand from bundle-v1.json, deliberately not derived from it.
 const EXPECTED = {
-  format: "m3l-claude-mentor-export",
+  format: "m3l-mentor-export",
   version: 1,
   exportedAt: 1_700_000_000_000,
   state: {
@@ -147,5 +149,74 @@ describe("golden v1 export bundle", () => {
     const original = loadFixture();
     const reparsed = parseBundle(JSON.parse(serializeBundle(original)));
     expect(reparsed).toEqual({ ok: true, value: original });
+  });
+});
+
+// An export written while the plugin was still called m3l-claude-mentor (up to
+// 1.2.0) carries the old format tag. It must keep importing, byte for byte the
+// same learner data, and the plugin must never write that tag again.
+describe("export bundle of the former plugin name", () => {
+  const LEGACY_FIXTURE = join(
+    dirname(fileURLToPath(import.meta.url)),
+    "fixtures",
+    "bundle-v1-legacy-format.json",
+  );
+
+  test("the legacy fixture differs from the golden one only in its format tag", () => {
+    const legacy = JSON.parse(readFileSync(LEGACY_FIXTURE, "utf8")) as Record<
+      string,
+      unknown
+    >;
+    const current = JSON.parse(readFileSync(FIXTURE, "utf8")) as Record<
+      string,
+      unknown
+    >;
+    expect(legacy["format"]).toBe(LEGACY_BUNDLE_FORMAT);
+    expect({ ...legacy, format: current["format"] }).toEqual(current);
+  });
+
+  test("parseBundle accepts it and returns the current format tag", () => {
+    const parsed = parseBundle(
+      JSON.parse(readFileSync(LEGACY_FIXTURE, "utf8")),
+    );
+    expect(parsed).toEqual({ ok: true, value: EXPECTED });
+    if (parsed.ok) expect(parsed.value.format).toBe(BUNDLE_FORMAT);
+  });
+
+  test("serializeBundle never writes the old tag", () => {
+    const parsed = parseBundle(
+      JSON.parse(readFileSync(LEGACY_FIXTURE, "utf8")),
+    );
+    if (!parsed.ok) throw new Error(parsed.reason);
+    expect(serializeBundle(parsed.value)).not.toContain(LEGACY_BUNDLE_FORMAT);
+  });
+
+  test("imports through the real path and exports the current format", async () => {
+    const dir = join(sandbox, "data");
+    const summary = await importBundleFromFile(dir, LEGACY_FIXTURE, {
+      replace: true,
+    });
+    expect(summary.evidenceEvents).toBe(3);
+    const { bundle } = await exportBundle(dir, NOW);
+    expect(bundle.format).toBe(BUNDLE_FORMAT);
+    expect(bundle.goals).toBe(EXPECTED.goals);
+  });
+
+  test("any other format tag is still rejected, naming the current one", () => {
+    const record = JSON.parse(readFileSync(FIXTURE, "utf8")) as Record<
+      string,
+      unknown
+    >;
+    for (const format of [
+      "m3l-other-export",
+      "m3l-claude-mentor-exports",
+      "",
+    ]) {
+      const parsed = parseBundle({ ...record, format });
+      expect(parsed).toEqual({
+        ok: false,
+        reason: `bundle format must be ${BUNDLE_FORMAT}`,
+      });
+    }
   });
 });

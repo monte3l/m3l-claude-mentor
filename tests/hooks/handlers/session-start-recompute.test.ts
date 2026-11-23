@@ -175,7 +175,7 @@ describe("sessionStartHandler recompute", () => {
     );
     expect(await levelOnDisk("claude-md")).toBe("Applied");
     expect(rows(out?.hookSpecificOutput?.additionalContext)[0]).toBe(
-      "m3l-claude-mentor learner state (restored after compaction)",
+      "m3l-mentor learner state (restored after compaction)",
     );
   });
 

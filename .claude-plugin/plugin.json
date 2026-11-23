@@ -1,12 +1,12 @@
 {
-  "name": "m3l-claude-mentor",
+  "name": "m3l-mentor",
   "version": "1.2.0",
   "description": "A Claude Code plugin that mentors you on Claude and Claude Code, adapting to your mastery level",
   "author": {
     "name": "Enrico Lionello",
     "email": "enri3l@monte3l.com"
   },
-  "homepage": "https://claude-mentor.monte3l.com",
+  "homepage": "https://mentor.monte3l.com",
   "repository": "https://github.com/monte3l/m3l-claude-mentor",
   "license": "MIT",
   "keywords": [

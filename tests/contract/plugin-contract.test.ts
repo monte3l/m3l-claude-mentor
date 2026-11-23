@@ -51,8 +51,8 @@ describe("plugin contract: skills", () => {
 });
 
 describe("plugin contract: plugin.json", () => {
-  test("the plugin name is m3l-claude-mentor", () => {
-    expect(manifest["name"]).toBe("m3l-claude-mentor");
+  test("the plugin name is m3l-mentor", () => {
+    expect(manifest["name"]).toBe("m3l-mentor");
   });
 
   // Presence, not equality: a new option is a MINOR release (README bump

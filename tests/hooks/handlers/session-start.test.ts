@@ -55,16 +55,14 @@ describe("sessionStartHandler summary", () => {
       undefined,
     ]) {
       const text = await summary(source === undefined ? {} : { source });
-      expect(lines(text)[0]).toBe(
-        "m3l-claude-mentor learner state (session start)",
-      );
+      expect(lines(text)[0]).toBe("m3l-mentor learner state (session start)");
     }
   });
 
   test("header says restored after compaction for source compact", async () => {
     const text = await summary({ source: "compact" });
     expect(lines(text)[0]).toBe(
-      "m3l-claude-mentor learner state (restored after compaction)",
+      "m3l-mentor learner state (restored after compaction)",
     );
   });
 
@@ -77,7 +75,7 @@ describe("sessionStartHandler summary", () => {
       true,
     );
     expect(lines(text).at(-1)).toBe(
-      "Use /m3l-claude-mentor:profile to see or change settings.",
+      "Use /m3l-mentor:profile to see or change settings.",
     );
     expect(text.length).toBeLessThanOrEqual(2_000);
   });

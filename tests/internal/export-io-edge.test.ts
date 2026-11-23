@@ -134,7 +134,7 @@ describe("exportBundle / exportBundleToFile guards", () => {
     await exportBundleToFile(src, NOW, target);
     const text = readFileSync(target, "utf8");
     expect(text).not.toContain("OLD CONTENT");
-    expect(text).toContain("m3l-claude-mentor-export");
+    expect(text).toContain("m3l-mentor-export");
   });
 });
 
