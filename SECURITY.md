@@ -61,7 +61,7 @@ its Security tab. None has been published so far.
 
 A published vulnerability in a component the plugin does not ship or use is
 recorded as not affected in an [OpenVEX](https://openvex.dev) document,
-[`docs/m3l-claude-mentor.openvex.json`](docs/m3l-claude-mentor.openvex.json),
+[`docs/m3l-mentor.openvex.json`](docs/m3l-mentor.openvex.json),
 with the reason. It holds one statement today: `picomatch`, a development-only
 dependency with no patched version.
 
@@ -119,13 +119,34 @@ advisory if anything was released or deployed with it.
 
 ## Verifying releases
 
-A release has a git tag named `m3l-claude-mentor--vX.Y.Z`, and the org tags
-ruleset stops a tag from being moved or deleted. From `0.2.1` on it also carries
-a source tarball (`m3l-claude-mentor-X.Y.Z.tar.gz`) and its Sigstore bundle
-(`m3l-claude-mentor-X.Y.Z.tar.gz.sigstore.json`). `0.1.0` and `0.2.0` were
-published without assets, so only their tags can be checked.
+A release has a git tag named `m3l-mentor--vX.Y.Z`, and the org tags
+ruleset stops a tag from being moved or deleted. It also carries a source
+tarball (`m3l-mentor-X.Y.Z.tar.gz`) and its Sigstore bundle
+(`m3l-mentor-X.Y.Z.tar.gz.sigstore.json`).
+
+**Releases before the rename.** The plugin was called `m3l-claude-mentor` until
+`1.2.0`. Those releases keep their tags (`m3l-claude-mentor--vX.Y.Z`) and, from
+`0.2.1` on, their tarballs (`m3l-claude-mentor-X.Y.Z.tar.gz`) and bundles. `0.1.0`
+and `0.2.0` were published without assets, so only their tags can be checked.
 
 **Integrity and authenticity of the tarball.** Download both assets, then run:
+
+```zsh
+gh attestation verify m3l-mentor-X.Y.Z.tar.gz \
+  --bundle m3l-mentor-X.Y.Z.tar.gz.sigstore.json \
+  -R monte3l/m3l-mentor \
+  --signer-workflow monte3l/m3l-mentor/.github/workflows/release.yml
+```
+
+A pass means the file is byte-for-byte what the release workflow built from this
+repository, and `--signer-workflow` pins the expected identity: that workflow
+file in this repository, and nothing else.
+
+**Use the repository name the release was built under.** The attestation
+records the repository and workflow path as they were at build time. For a
+release built while the repository was still named `m3l-claude-mentor` (every
+release up to `1.2.0`, and any release built before the repository was
+renamed), keep the old names in the command:
 
 ```zsh
 gh attestation verify m3l-claude-mentor-X.Y.Z.tar.gz \
@@ -134,9 +155,8 @@ gh attestation verify m3l-claude-mentor-X.Y.Z.tar.gz \
   --signer-workflow monte3l/m3l-claude-mentor/.github/workflows/release.yml
 ```
 
-A pass means the file is byte-for-byte what the release workflow built from this
-repository, and `--signer-workflow` pins the expected identity: that workflow
-file in this repository, and nothing else.
+If the new form fails for a release, try this one before concluding the file is
+not authentic.
 
 Installing through the catalog does not use the tarball. It clones this
 repository over HTTPS at a pinned tag and commit, so the commit it resolves to

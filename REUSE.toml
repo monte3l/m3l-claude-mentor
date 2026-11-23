@@ -1,5 +1,5 @@
 version = 1
-SPDX-PackageName = "m3l-claude-mentor"
+SPDX-PackageName = "m3l-mentor"
 SPDX-PackageSupplier = "monte3l"
 SPDX-PackageDownloadLocation = "https://github.com/monte3l/m3l-claude-mentor"
 
