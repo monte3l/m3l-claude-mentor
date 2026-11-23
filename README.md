@@ -252,7 +252,7 @@ the eval docs do not say how to seed `CLAUDE_PLUGIN_DATA`. Results go to
 `evals/results/`, which is git-ignored.
 
 Commits are Conventional Commits, signed, with a `Signed-off-by` trailer
-(`git commit -s`). See [`CLAUDE.md`](CLAUDE.md) for the conventions and the
+(`git commit -s`). See [`.claude/CLAUDE.md`](.claude/CLAUDE.md) for the conventions and the
 agent workflow. The code of conduct and support are the
 [organization defaults](https://github.com/monte3l/.github).
 
@@ -263,7 +263,7 @@ agent workflow. The code of conduct and support are the
   on it only if it is listed in `docs.config.mjs`.
 - [`docs/spec.md`](docs/spec.md) -- the specification: mastery model, ambient engine,
   state and privacy, evaluation, and the decisions behind them.
-- [`CLAUDE.md`](CLAUDE.md) -- the commands, conventions and agent operating
+- [`.claude/CLAUDE.md`](.claude/CLAUDE.md) -- the commands, conventions and agent operating
   model, written for Claude Code.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) -- how to report a bug, commit, open a
   pull request and release.
