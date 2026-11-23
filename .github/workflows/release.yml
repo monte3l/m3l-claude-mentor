@@ -80,8 +80,8 @@ jobs:
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           mkdir release-assets
-          git archive --format=tar.gz --prefix="m3l-claude-mentor-${VERSION}/" \
-            --output="release-assets/m3l-claude-mentor-${VERSION}.tar.gz" HEAD
+          git archive --format=tar.gz --prefix="m3l-mentor-${VERSION}/" \
+            --output="release-assets/m3l-mentor-${VERSION}.tar.gz" HEAD
 
       - name: Attest build provenance for the tarball
         id: attest
