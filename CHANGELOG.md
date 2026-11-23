@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/monte3l/m3l-mentor/compare/m3l-mentor--v1.2.0...m3l-mentor--v2.0.0) (2026-11-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* the plugin id and the skill prefix change from m3l-claude-mentor to m3l-mentor. Install it again once with `claude plugin marketplace update monte3l`, then `claude plugin install m3l-mentor@monte3l`. The m3l-plugins catalog lists the old name under renames.
+
+### Features
+
+* rename the plugin to m3l-mentor and carry the learner's data over ([db895ad](https://github.com/monte3l/m3l-mentor/commit/db895ade65449df634a1bcdeaa66f8172888a6cb))
+
 ## [1.2.0](https://github.com/monte3l/m3l-claude-mentor/compare/m3l-claude-mentor--v1.1.0...m3l-claude-mentor--v1.2.0) (2026-11-21)
 
 
