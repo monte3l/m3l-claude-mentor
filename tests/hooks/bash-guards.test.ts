@@ -94,8 +94,10 @@ describe("guard-double-background", () => {
     },
   );
 
-  test("fails open on malformed JSON", () => {
-    expect(runRaw(doubleBg, "{not json").status).toBe(0);
+  test("fails closed on malformed JSON", () => {
+    const result = runRaw(doubleBg, "{not json");
+    expect(result.status).toBe(2);
+    expect(result.stderr).toContain("could not read the hook payload");
   });
 });
 

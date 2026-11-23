@@ -16,3 +16,11 @@ design/SHA256SUMS
 
 # Prettier would pad the tables in design/README.md, which the siblings keep compact.
 design/README.md
+
+# Starters synced verbatim from monte3l/.github (template-sync). Reformatting one
+# makes it a custom copy, and the sync then stops refreshing it.
+.claude/hooks/guard-double-background.mjs
+.claude/hooks/guard-git-push-signed.mjs
+.claude/hooks/guard-secret-writes.mjs
+.claude/hooks/guard-shared-checkout.mjs
+bin/lib/signed-range.mjs
