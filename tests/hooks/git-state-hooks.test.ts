@@ -243,9 +243,11 @@ describe("guard-git-push-signed", () => {
     expect(bash(repo, 42).status).toBe(0);
   });
 
-  test("fails open on a malformed payload", () => {
+  test("fails closed on a malformed payload", () => {
     const repo = makeUnsignedFeatureRepo();
-    expect(run("guard-git-push-signed", "not json", repo).status).toBe(0);
+    const result = run("guard-git-push-signed", "not json", repo);
+    expect(result.status).toBe(2);
+    expect(result.stderr).toContain("could not read the hook payload");
   });
 });
 

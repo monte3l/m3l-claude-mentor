@@ -264,8 +264,10 @@ describe("guard-secret-writes", () => {
     expect(r).toEqual({ status: 0, stderr: "" });
   });
 
-  test("fails open on malformed JSON, missing file_path and no content", () => {
-    expect(runHook(hook, "{not json").status).toBe(0);
+  test("fails closed on malformed JSON, and allows a payload without file_path or content", () => {
+    const malformed = runHook(hook, "{not json");
+    expect(malformed.status).toBe(2);
+    expect(malformed.stderr).toContain("could not read the hook payload");
     expect(runHook(hook, {}).status).toBe(0);
     expect(runHook(hook, { tool_input: { content: awsKeyId } }).status).toBe(0);
     expect(
