@@ -251,7 +251,12 @@ function loadSnapshot(root) {
     agents: readEach(/^\.claude\/agents\/[^/]+\.md$/, ".claude/agents/"),
     skills,
     rules: readEach(/^\.claude\/rules\/[^/]+\.md$/, ".claude/rules/"),
-    claudeMd: readText(join(root, "CLAUDE.md")),
+    // Claude Code loads `./.claude/CLAUDE.md` as project instructions as well as
+    // `./CLAUDE.md`. A plugin keeps it under `.claude/`: `claude plugin validate
+    // --strict` warns about a CLAUDE.md at the plugin root.
+    claudeMd:
+      readText(join(root, ".claude", "CLAUDE.md")) ??
+      readText(join(root, "CLAUDE.md")),
     claudeTree: new Set(claudeEntries.map((entry) => entry.relPath)),
     projectFiles: entries
       .filter((entry) => !entry.isDirectory)

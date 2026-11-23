@@ -146,10 +146,6 @@ export default {
       reason: "release notes live on the GitHub releases page",
     },
     {
-      glob: "CLAUDE.md",
-      reason: "instructions for coding agents, not reader-facing",
-    },
-    {
       glob: ".claude/**",
       reason: "instructions for coding agents, not reader-facing",
     },

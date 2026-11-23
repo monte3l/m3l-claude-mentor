@@ -74,7 +74,7 @@
   "test_continuous_integration_status": "Met",
   "test_continuous_integration_justification": "The CI workflow runs the test lane with coverage on every pull request and push to `main`.",
   "test_policy_status": "Met",
-  "test_policy_justification": "https://github.com/monte3l/.github/blob/main/CONTRIBUTING.md requires tests for new behaviour and a regression test for a fix, and https://github.com/monte3l/m3l-claude-mentor/blob/main/CLAUDE.md makes `pnpm verify` the definition of done.",
+  "test_policy_justification": "https://github.com/monte3l/.github/blob/main/CONTRIBUTING.md requires tests for new behaviour and a regression test for a fix, and https://github.com/monte3l/m3l-claude-mentor/blob/main/.claude/CLAUDE.md makes `pnpm verify` the definition of done.",
   "tests_are_added_status": "Met",
   "tests_are_added_justification": "Each feature and fix of this project landed with tests in the same pull request: see the merged pull requests.",
   "tests_documented_added_status": "Met",

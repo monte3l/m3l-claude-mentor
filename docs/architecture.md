@@ -3,7 +3,7 @@
 This page shows the actors and actions in the system and every external
 interface the released plugin has. The design and the reasons behind it are in
 [`spec.md`](spec.md), and the conventions for working in the repository
-are in [`CLAUDE.md`](../CLAUDE.md). The threat analysis is in the
+are in [`.claude/CLAUDE.md`](../.claude/CLAUDE.md). The threat analysis is in the
 [assurance case](assurance-case.md).
 
 ## Actors and actions
