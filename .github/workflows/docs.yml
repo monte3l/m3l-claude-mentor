@@ -2,7 +2,7 @@ name: Docs
 
 # What this does: builds this repo's own docs site with the docs kit
 # (design/source/docs-kit/build.mjs) and deploys it to Cloudflare Workers Static
-# Assets at https://claude-mentor.monte3l.com, on a Custom Domain
+# Assets at https://mentor.monte3l.com, on a Custom Domain
 # (tools/deploy/wrangler.jsonc). Runs on every push to `main` and on
 # manual dispatch, not on every PR: `verify` already runs the kit's `--check`
 # on each PR, and this workflow is what ships the result.
@@ -70,7 +70,7 @@ jobs:
     timeout-minutes: 10
     environment:
       name: docs-cloudflare
-      url: https://claude-mentor.monte3l.com
+      url: https://mentor.monte3l.com
     permissions:
       contents: read
     steps:

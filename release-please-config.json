@@ -1,12 +1,13 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "signoff": "monte3l-release[bot] <333264726+monte3l-release[bot]@users.noreply.github.com>",
+  "last-release-sha": "1358609bc85c7b95ba1834f69e47997facbe6e61",
   "packages": {
     ".": {
       "release-type": "simple",
       "initial-version": "0.1.0",
-      "package-name": "m3l-claude-mentor",
-      "component": "m3l-claude-mentor",
+      "package-name": "m3l-mentor",
+      "component": "m3l-mentor",
       "include-component-in-tag": true,
       "tag-separator": "--",
       "draft": true,

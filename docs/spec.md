@@ -123,10 +123,10 @@ These values decide when the mentor stays quiet on a topic and when it quizzes a
 ## 5. Plugin architecture
 
 ```
-m3l-claude-mentor/
+m3l-mentor/
   .claude-plugin/plugin.json         # manifest (only `name` required); userConfig: dial, transcriptAnalysis
   output-styles/mentor.md            # voice and tip prefix; opt-in (no force-for-plugin)
-  skills/                            # namespaced /m3l-claude-mentor:<verb>
+  skills/                            # namespaced /m3l-mentor:<verb>
     teach/                           # on-demand lesson (style picker)
     ask/                             # reference lookup, live docs
     quiz/                            # Recall quiz and spaced review
@@ -159,13 +159,13 @@ Notes:
 - Hooks are the deterministic part (rate limiting, state loading, usage observation). The output style and skills carry the soft behavior.
 - `PostToolUse` only appends observed evidence. `SessionStart` then recomputes levels from that evidence, **raise-only**: it never lowers a stored level (decay and truncation of the evidence window could otherwise erase a quiz-earned level), and the explicit `recompute` command is the only path that lowers one. This keeps tips from firing on topics the learner already uses.
 - `Stop` `additionalContext` forces the conversation to continue, and `PreCompact`/`PostCompact` output cannot reach the model, so tips are injected on `UserPromptSubmit` and context is restored with `SessionStart` matcher `compact`.
-- Skills are namespaced by plugin: `/m3l-claude-mentor:teach`, not `/mentor teach`. State access from skills goes through a small CLI (`src/cli/mentor-state.ts`), so Markdown never hand-edits JSON.
+- Skills are namespaced by plugin: `/m3l-mentor:teach`, not `/mentor teach`. State access from skills goes through a small CLI (`src/cli/mentor-state.ts`), so Markdown never hand-edits JSON.
 - Plugin agents ignore `hooks`, `mcpServers` and `permissionMode` frontmatter; hooks ship at plugin level.
 - The CLI commands are `show`, `get-profile`, `record-evidence`, `record-batch`, `recompute`, `introduce`, `record-pass`, `set-mute`, `set-topic-mute`, `exclude-project`, `get-goals`, `set-goals`, `topics`, `set-topic-override`, `set-changelog-version`, `export`, `import` and `purge`, plus the exam commands of section 16 (`tracks`, `set-track`, `exam-begin`, `exam-answer`, `readiness`, `exam-items`, `exam-void` and `exam-unvoid`). A leading `--data-dir <absolute path>` beats the environment. `record-batch` takes 1 to 10 events, validates before the first write and saves once, so a lesson or quiz needs one save per answered group.
 - Every write to the state files takes one lock on the data directory, `.state.lock` (`src/internal/lock.ts`), created exclusively with a random token. A lock older than 5 s, judged by its modification time alone, is broken by exactly one waiter, and release removes the lock only if it is still ours. Hooks wait at most 2 s, well under their 10 s limit, and the CLI waits 6 s, longer than the stale window, so it always eventually succeeds. A lock that stays held ends in `LOCK_TIMEOUT` with fixed text, and an unwritable data directory fails at once with `WRITE_FAILED` instead of waiting. The store functions never lock; the callers do, around a whole load-compute-save. `import` stages every file it replaces before taking the lock and holds it only for the renames, `purge` locks only an existing directory, and `export` and the read-only commands take no lock.
 - On a lock timeout `Stop`, `PostCompact` and `PostToolUse` skip the write with the usual single stderr line and exit 0. `SessionStart` computes the refreshed profile without the lock, takes it only when a level would be raised, and on a timeout injects its context from the stored profile. `UserPromptSubmit` fails closed: no tip, no mute or resume notice (nothing was saved), and nothing at all for a learner who has muted tips, though a learner who has not still gets the style hint and teach offer. A hook that degrades this way reports it through the optional `note` of its output, one stderr line that never reaches the JSON.
 - A skill's `allowed-tools` pre-approval lasts only for the turn the learner invokes it, and a plugin cannot ship permission rules. The README therefore documents a one-time user rule for the CLI and a narrower rule set, checked live on Claude Code 2.1.327. The `docs-researcher` agent prompts per domain for `WebFetch`, which the README also covers.
-- Skills dispatch the agents by the scoped name `m3l-claude-mentor:<agent>`, with a self-contained prompt because a subagent sees no conversation. The `assess` skill rebuilds the `record-batch` tokens itself from the verdicts and never takes a token string from the agent. Both dispatches were confirmed live by the evals.
+- Skills dispatch the agents by the scoped name `m3l-mentor:<agent>`, with a self-contained prompt because a subagent sees no conversation. The `assess` skill rebuilds the `record-batch` tokens itself from the verdicts and never takes a token string from the agent. Both dispatches were confirmed live by the evals.
 - Hook event names and payload fields must be re-verified against current docs at build time.
 
 ## 6. Ambient engine
@@ -174,18 +174,18 @@ Notes:
 - A tip is only emitted if: it relates to the current task, the topic is below target mastery, the learner's dial permits, and the session is not in a "busy" state.
 - **Delivery (hybrid):** a command hook makes the deterministic decision (rate limit, dial, busy state, topic). The `UserPromptSubmit` hook then injects `additionalContext` asking the model to add one prefixed tip line after its answer. Compliance is soft; evals measure it.
 - Format: one or two lines, prefixed distinctly so it can be ignored or silenced; never blocks or alters the task result.
-- Controls: `userConfig` `dial` (0-5, default 2) and `transcriptAnalysis` (on/off), editable in `/config`; mute and per-topic mutes live in `state.json` and change through `/m3l-claude-mentor:profile` or conversation. Dial 0 means silent.
+- Controls: `userConfig` `dial` (0-5, default 2) and `transcriptAnalysis` (on/off), editable in `/config`; mute and per-topic mutes live in `state.json` and change through `/m3l-mentor:profile` or conversation. Dial 0 means silent.
 - Mastered topics are silent unless a spaced Recall quiz is due.
 
 ## 7. On-demand lessons and reference
 
-- `/m3l-claude-mentor:teach <topic>`: picks the style via section 3, runs a multi-turn lesson, updates the map.
-- `/m3l-claude-mentor:ask <question>`: Reference style, answer sourced from live docs with a link.
-- `/m3l-claude-mentor:quiz`: spaced Recall quiz from due items.
-- `/m3l-claude-mentor:whats-new`: changelog digest filtered to the learner's goals and mastery map.
-- `/m3l-claude-mentor:assess <topic>`: a verification probe for a claimed level, judged by the `mastery-assessor` agent. Applied and Fluent can only be refuted by a probe, never confirmed.
-- `/m3l-claude-mentor:profile`: goals, catalog, mutes, export/import, show-and-delete.
-- `/m3l-claude-mentor:exam <code> [drill|mock|readiness|plan] [domain]`: prepares the learner for one of four Claude certification exams with original, model-written practice questions grounded in live docs, a per-domain readiness view and a study plan. The answer key is fixed in the CLI before a question is shown, and the CLI scores the answer. The questions and keys are not reviewed by a person, so every explanation links its docs page. The readiness view is a coverage and practice indicator, never a score prediction.
+- `/m3l-mentor:teach <topic>`: picks the style via section 3, runs a multi-turn lesson, updates the map.
+- `/m3l-mentor:ask <question>`: Reference style, answer sourced from live docs with a link.
+- `/m3l-mentor:quiz`: spaced Recall quiz from due items.
+- `/m3l-mentor:whats-new`: changelog digest filtered to the learner's goals and mastery map.
+- `/m3l-mentor:assess <topic>`: a verification probe for a claimed level, judged by the `mastery-assessor` agent. Applied and Fluent can only be refuted by a probe, never confirmed.
+- `/m3l-mentor:profile`: goals, catalog, mutes, export/import, show-and-delete.
+- `/m3l-mentor:exam <code> [drill|mock|readiness|plan] [domain]`: prepares the learner for one of four Claude certification exams with original, model-written practice questions grounded in live docs, a per-domain readiness view and a study plan. The answer key is fixed in the CLI before a question is shown, and the CLI scores the answer. The questions and keys are not reviewed by a person, so every explanation links its docs page. The readiness view is a coverage and practice indicator, never a score prediction.
 
 ## 8. Customization
 
@@ -259,13 +259,13 @@ Confirmed by the user:
 3. **Weights and fluency:** 0.40/0.30/0.20/0.10 and "all required dimensions, 3+ sessions" are the shipped defaults, configurable in the catalog.
 4. **Segment:** task-based with a time floor. A segment ends at task completion or topic change, and at least about 15 minutes must have passed since the last tip.
 
-Defaults chosen by the designer (not asked; change freely): 5. **Name, license, publishing:** the name is `m3l-claude-mentor`, the license is MIT, and the plugin is published through the `monte3l/m3l-plugins` catalog (not npm). 6. **`mastery-assessor` memory:** none. It reads only files the learner names, and the calling skill passes it the data it needs, so all learner state stays in the state files. 7. **Output style:** opt-in, not forced for the plugin. Hooks and skills carry ambient behavior regardless, and the style is recommended during setup.
+Defaults chosen by the designer (not asked; change freely): 5. **Name, license, publishing:** the name is `m3l-mentor`, the license is MIT, and the plugin is published through the `monte3l/m3l-plugins` catalog (not npm). 6. **`mastery-assessor` memory:** none. It reads only files the learner names, and the calling skill passes it the data it needs, so all learner state stays in the state files. 7. **Output style:** opt-in, not forced for the plugin. Hooks and skills carry ambient behavior regardless, and the style is recommended during setup.
 
 ## 14. Decisions from the design audit (2026-11-05)
 
 Confirmed by the user after checking this spec against current official docs:
 
-8. **Commands:** separate skills, namespaced `/m3l-claude-mentor:<verb>`.
+8. **Commands:** separate skills, namespaced `/m3l-mentor:<verb>`.
 9. **Tips:** hybrid delivery (hook decides, model words the tip on `UserPromptSubmit`).
 10. **Hook build:** none. The hooks and the CLI run `src/*.ts` directly, because Node removes the types itself. This replaces the earlier decision to commit a built `dist/` (2026-11-18): a generated executable artifact in version control fails OpenSSF Baseline OSPS-QA-05.01, and a verify step (`no-dist`) now fails if build output is ever committed again.
 11. **Controls:** `userConfig` for `dial` and `transcriptAnalysis`; `state.json` for mutes.
@@ -278,7 +278,7 @@ Confirmed by the user after checking this spec against current official docs:
 
 Confirmed by the owner:
 
-16. **Plugin name:** it stays `m3l-claude-mentor`. `claude plugin validate` warns that the name reads as Anthropic's own because "claude" is a whole word in it. The warning is accepted: the name is part of the contract (every skill is invoked as `/m3l-claude-mentor:<name>`), the data directory, the catalog entry and the docs URL, so a rename is a migration, not a polish.
+16. **Plugin name:** `m3l-mentor`. Until 1.2.0 the plugin was called `m3l-claude-mentor`, and `claude plugin validate` warned that the name reads as Anthropic's own because "claude" is a whole word in it. The warning was accepted while the name was the contract (every skill is invoked as `/m3l-mentor:<name>`, and the data directory, the catalog entry and the docs URL carry it), and the rename removed it, so `--strict` now runs in CI. The rename is a migration: the marketplace lists it under `renames`, the first session copies the learner's data from the old data directory (`src/internal/legacy-data.ts`), and the importer still reads exports tagged `m3l-claude-mentor-export`.
 17. **Stale locks recover by age only:** a lock older than 5 s is broken. There is no process-liveness check, because it can wrongly break a live lock when containers or WSL share a volume with different process namespaces. A crashed holder costs at most a few seconds of skipped hook writes.
 18. **`UserPromptSubmit` fails closed on a lock timeout:** no tip, because a tip that cannot be recorded could be followed by a second in the same segment.
 19. **`export` stays lock-free** (it works from a read-only data directory, and may mix generations when it races a writer), and **the evidence log stays unbounded** with the cost written down in section 15.

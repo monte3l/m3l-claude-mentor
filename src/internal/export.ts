@@ -45,6 +45,7 @@ import {
 export {
   BUNDLE_FORMAT,
   BUNDLE_VERSION,
+  LEGACY_BUNDLE_FORMAT,
   parseBundle,
   serializeBundle,
   type Bundle,

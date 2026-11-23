@@ -67,7 +67,7 @@ describe("UserPromptSubmit when the lock times out (fails closed)", () => {
       lock,
     );
     expect(result.stderr).toMatch(
-      /^m3l-claude-mentor: UserPromptSubmit: .*LOCK_TIMEOUT.*\n$/,
+      /^m3l-mentor: UserPromptSubmit: .*LOCK_TIMEOUT.*\n$/,
     );
     expect(result.stdout).not.toContain(TIP_MARK);
     expect(result.stdout).toContain("Mentor style hint:");
@@ -82,7 +82,7 @@ describe("UserPromptSubmit when the lock times out (fails closed)", () => {
     );
     const text = out?.hookSpecificOutput?.additionalContext ?? "";
     expect(text).toContain("Mentor style hint:");
-    expect(text).toContain("/m3l-claude-mentor:teach plan-mode");
+    expect(text).toContain("/m3l-mentor:teach plan-mode");
     expect(text).not.toContain(TIP_MARK);
   });
 
@@ -171,7 +171,7 @@ describe("UserPromptSubmit and a muted learner under lock contention", () => {
       );
       expect(result.stdout).toBe("");
       expect(result.stderr).toMatch(
-        /^m3l-claude-mentor: UserPromptSubmit: .*LOCK_TIMEOUT.*\n$/,
+        /^m3l-mentor: UserPromptSubmit: .*LOCK_TIMEOUT.*\n$/,
       );
       expect(snapshot(sb.dir)).toEqual(before);
     },
@@ -205,7 +205,7 @@ describe("UserPromptSubmit and a muted learner under lock contention", () => {
     );
     expect(result.stdout).toBe("");
     expect(result.stderr).toMatch(
-      /^m3l-claude-mentor: UserPromptSubmit: [A-Z_]+: [^\n]+\n$/,
+      /^m3l-mentor: UserPromptSubmit: [A-Z_]+: [^\n]+\n$/,
     );
     expect(result.stderr).not.toContain("LOCK_TIMEOUT");
     expect(readFileSync(join(sb.dir, "state.json"), "utf8")).toBe("{not json");
@@ -225,7 +225,7 @@ describe("UserPromptSubmit non-timeout errors in the lock path are not turned in
     );
     expect(result.stdout).toBe("");
     expect(result.stderr).toMatch(
-      /^m3l-claude-mentor: UserPromptSubmit: [A-Z_]+: [^\n]+\n$/,
+      /^m3l-mentor: UserPromptSubmit: [A-Z_]+: [^\n]+\n$/,
     );
     expect(result.stderr).not.toContain("LOCK_TIMEOUT");
     expect(result.stderr).not.toContain(TIP_MARK);
@@ -248,7 +248,7 @@ describe("UserPromptSubmit non-timeout errors in the lock path are not turned in
       );
       expect(result.stdout).toBe("");
       expect(result.stderr).toMatch(
-        /^m3l-claude-mentor: UserPromptSubmit: WRITE_FAILED: [^\n]+\n$/,
+        /^m3l-mentor: UserPromptSubmit: WRITE_FAILED: [^\n]+\n$/,
       );
       expect(result.stderr).not.toContain("LOCK_TIMEOUT");
       expect(sleeps).toEqual([]);

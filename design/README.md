@@ -1,9 +1,9 @@
 # design/ -- m3l-design, vendored
 
-This directory is m3l-claude-mentor's copy of **m3l-design**, the shared
+This directory is m3l-mentor's copy of **m3l-design**, the shared
 design system for everything published under the `monte3l` GitHub org. It
 styles the docs site at
-[claude-mentor.monte3l.com](https://claude-mentor.monte3l.com).
+[mentor.monte3l.com](https://mentor.monte3l.com).
 
 - **Source:** [github.com/monte3l/m3l-design](https://github.com/monte3l/m3l-design)
 - **Version copied:** `v1.5.0`

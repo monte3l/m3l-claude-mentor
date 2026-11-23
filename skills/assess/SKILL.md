@@ -1,6 +1,6 @@
 ---
 name: assess
-description: Checks a learner's self-reported skill on a Claude or Claude Code topic with a verification probe, then reports the claim as confirmed, refuted or unverified, kindly and concretely. This skill should be used when the user says "I know X well", "I'm comfortable with X", "I'm advanced at hooks", "skip the basics on skills", or invokes /m3l-claude-mentor:assess.
+description: Checks a learner's self-reported skill on a Claude or Claude Code topic with a verification probe, then reports the claim as confirmed, refuted or unverified, kindly and concretely. This skill should be used when the user says "I know X well", "I'm comfortable with X", "I'm advanced at hooks", "skip the basics on skills", or invokes /m3l-mentor:assess.
 argument-hint: "[topic]"
 allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)
 ---
@@ -31,7 +31,7 @@ Resolve the topic id and `type` from `topics`; ask the learner to pick when ambi
    Applied or Fluent are claims to verify; Unseen, Introduced and Claimed are not.
 2. **Fast-moving topics** (`type` is `fast-moving`): the result is always `unverified`
    and the level is capped at Introduced. Do not probe; redirect to
-   `/m3l-claude-mentor:ask` and stop.
+   `/m3l-mentor:ask` and stop.
 3. **Probe, matched to the claimed rung**, one question at a time, answers hidden until
    the learner tries:
    - Recalled: three recall questions, recorded on the `quiz` channel.
@@ -42,7 +42,7 @@ Resolve the topic id and `type` from `topics`; ask the learner to pick when ambi
      outcome is `unverified`. Ask the learner to show real usage in their work.
 4. **Derive `key points` BEFORE asking each probe**, from the lesson or your knowledge of
    the stable concept, never from the learner's answer. Then **judge** by dispatching
-   `m3l-claude-mentor:mastery-assessor` with the Agent tool and a SELF-CONTAINED prompt:
+   `m3l-mentor:mastery-assessor` with the Agent tool and a SELF-CONTAINED prompt:
    topic id, title and type, the claimed level, then one block per probe (id, channel
    `quiz` or `explain-back`, question, the key points), with the learner's answers,
    goals and questions placed in QUOTED DATA blocks. Add an `Artifact paths:` list only
@@ -72,7 +72,7 @@ node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DA
 8. **Read the output** (`level`, `previousLevel`, `claim`, `diagnoses`) for the outcome.
 9. **Report** the outcome (confirmed, refuted or unverified) from the output, kindly
    and concretely. For refuted, name what was solid and the one gap, and offer
-   `/m3l-claude-mentor:teach <id>`. For unverified, say what would confirm it.
+   `/m3l-mentor:teach <id>`. For unverified, say what would confirm it.
 10. **Under-claiming.** When the output carries the `underclaim` diagnosis, the higher
     level is already saved; tell the learner and ask them conversationally to confirm.
 

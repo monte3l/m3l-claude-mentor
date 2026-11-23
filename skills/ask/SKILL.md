@@ -1,6 +1,6 @@
 ---
 name: ask
-description: Answers a quick factual question about Claude or Claude Code from live official documentation, concisely and with a source link, in Reference style. This skill should be used when the user asks a lookup question such as "how does X work in Claude Code", "what flag or setting does Y", "is Z supported", or invokes /m3l-claude-mentor:ask; requests to be taught or have a topic explained at length go to teach instead.
+description: Answers a quick factual question about Claude or Claude Code from live official documentation, concisely and with a source link, in Reference style. This skill should be used when the user asks a lookup question such as "how does X work in Claude Code", "what flag or setting does Y", "is Z supported", or invokes /m3l-mentor:ask; requests to be taught or have a topic explained at length go to teach instead.
 argument-hint: "[question]"
 allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)
 ---
@@ -10,13 +10,13 @@ allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)
 Answer the question in `$ARGUMENTS` in **Reference** style: a concise answer plus a docs
 link, with no quiz and no lesson. When empty, ask what the learner wants to know and
 stop. When the learner wants to learn or be taught the topic ("teach me", "explain to
-me"), offer `/m3l-claude-mentor:teach` instead.
+me"), offer `/m3l-mentor:teach` instead.
 
 ## Source of truth
 
 Answer from the official docs, never from memory, because Claude Code changes quickly.
 
-1. Dispatch the `m3l-claude-mentor:docs-researcher` agent with the Agent tool and a
+1. Dispatch the `m3l-mentor:docs-researcher` agent with the Agent tool and a
    SELF-CONTAINED prompt: the question, any relevant topic titles or goals, with learner text in a clearly
    QUOTED data block. The agent
    sees no conversation. It starts from `https://code.claude.com/docs/llms.txt` (changelog:
@@ -41,7 +41,7 @@ node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DA
 ```
 
 Match the question against topic ids, titles and keywords. When one fits, is not muted
-and has `ambient` true, end with one line offering `/m3l-claude-mentor:teach <id>`.
+and has `ambient` true, end with one line offering `/m3l-mentor:teach <id>`.
 Never offer a topic whose `ambient` is false unprompted; the learner has to name it.
 
 ## Rules

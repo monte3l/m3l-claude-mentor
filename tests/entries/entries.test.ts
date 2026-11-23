@@ -207,7 +207,7 @@ describe("SessionStart entry", () => {
     };
     expect(out.hookSpecificOutput.hookEventName).toBe("SessionStart");
     expect(out.hookSpecificOutput.additionalContext).toContain(
-      "m3l-claude-mentor learner state",
+      "m3l-mentor learner state",
     );
   });
 });

@@ -66,7 +66,7 @@ describe.each(HANDLERS)("%s", (name, handler, payload) => {
     const { lock, sleeps } = fakeLock();
     const result = await runWithLock(name, handler, payload, sb.dir, lock);
     expect(result.stderr).toMatch(
-      new RegExp(`^m3l-claude-mentor: ${name}: LOCK_TIMEOUT: .+\\n$`),
+      new RegExp(`^m3l-mentor: ${name}: LOCK_TIMEOUT: .+\\n$`),
     );
     expect(result.stderr).not.toContain("424242");
     expect(result.stdout).toBe("");

@@ -3,7 +3,7 @@
   // Workers Static Assets, the org standard for a docs site (see the org
   // .github repo's blueprint/docs-site.md). No "main" script is needed for an
   // assets-only Worker.
-  "name": "m3l-claude-mentor-docs",
+  "name": "m3l-mentor-docs",
   "compatibility_date": "2026-09-27",
   "assets": {
     // Resolved relative to this file (tools/deploy/), so it points at
@@ -18,7 +18,7 @@
     // A Custom Domain: Cloudflare creates the DNS record and an Advanced
     // Certificate automatically. The hostname must carry no existing CNAME
     // record in the zone (blueprint/docs-site.md, one-time setup).
-    { "pattern": "claude-mentor.monte3l.com", "custom_domain": true },
+    { "pattern": "mentor.monte3l.com", "custom_domain": true },
   ],
   // Both false: this is a public repo, and a workers.dev / version preview
   // URL is public by default with no way to restrict it on the Free plan.

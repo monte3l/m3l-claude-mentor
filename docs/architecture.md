@@ -10,7 +10,7 @@ are in [`.claude/CLAUDE.md`](../.claude/CLAUDE.md). The threat analysis is in th
 
 | Actor                               | What it does here                                                                                                                                                                                                                                                            |
 | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Learner**                         | Installs the plugin from the `monte3l/m3l-plugins` catalog, works in Claude Code as usual, and invokes the skills `/m3l-claude-mentor:<name>`                                                                                                                                |
+| **Learner**                         | Installs the plugin from the `monte3l/m3l-plugins` catalog, works in Claude Code as usual, and invokes the skills `/m3l-mentor:<name>`                                                                                                                                       |
 | **Claude Code**                     | Loads the plugin, runs the hooks with the event JSON on stdin, substitutes `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}`, and runs a skill's pre-approved command                                                                                                      |
 | **Hooks** (`src/hooks/entry-*.ts`)  | Load the profile at session start, decide whether a tip is due, record usage signals and activity. They read and write the state files only, make no network call and never block. A hook that writes takes a short lock on the data directory and skips the write after 2 s |
 | **Skills** (`skills/*/SKILL.md`)    | Teach, answer, quiz, prepare for certification exams, summarize what changed, verify a claim and manage the profile. They read and write state only through the CLI                                                                                                          |
@@ -47,7 +47,7 @@ through a list in `state.json`. See [`spec.md`](spec.md#16-certification-prepara
 ## External interfaces
 
 **Interface 1: the skills.** `teach`, `ask`, `quiz`, `whats-new`, `assess`, `exam`
-and `profile`, invoked as `/m3l-claude-mentor:<name>`. Each pre-approves exactly
+and `profile`, invoked as `/m3l-mentor:<name>`. Each pre-approves exactly
 `Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)` through its
 `allowed-tools`, and nothing else. This is part of the public contract.
 
@@ -80,5 +80,5 @@ rules. This is the only network use in the plugin.
 **Interface 7: distribution.** The plugin is installed from the
 `monte3l/m3l-plugins` catalog, which pins a release tag and commit over HTTPS.
 Nothing is built and no generated file is committed: Node runs `src/*.ts` directly by removing the types, so the hooks and CLI run from a plain clone.
-The docs site at `claude-mentor.monte3l.com` is static HTML deployed to
+The docs site at `mentor.monte3l.com` is static HTML deployed to
 Cloudflare Workers Static Assets.

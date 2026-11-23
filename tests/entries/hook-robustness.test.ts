@@ -258,7 +258,7 @@ describe("a broken install still exits 0", () => {
         expect(r.status).toBe(0);
         expect(r.stdout).toBe("");
         expect(r.stderr).toBe(
-          `m3l-claude-mentor: ${name}: could not start; ignored\n`,
+          `m3l-mentor: ${name}: could not start; ignored\n`,
         );
         expect(r.stderr).not.toMatch(noStack);
       },
@@ -283,7 +283,7 @@ describe("a broken install still exits 0", () => {
         expect(r.status).toBe(0);
         expect(r.stdout).toBe("");
         expect(r.stderr).toBe(
-          `m3l-claude-mentor: ${name}: failed unexpectedly; ignored\n`,
+          `m3l-mentor: ${name}: failed unexpectedly; ignored\n`,
         );
         expect(r.stderr).not.toMatch(noStack);
       },

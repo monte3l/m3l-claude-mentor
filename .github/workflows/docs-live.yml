@@ -1,7 +1,7 @@
 name: Docs Live Check (Scheduled)
 
 # What this does: once a day, builds the docs site from `main` and compares it
-# with what https://claude-mentor.monte3l.com actually serves (design/source/docs-kit/
+# with what https://mentor.monte3l.com actually serves (design/source/docs-kit/
 # check-live.mjs). `docs.yml` runs the same site check right after each
 # deploy; this run catches drift that appears later with no deploy at all, such
 # as a Cloudflare zone setting changed in the dashboard. It never deploys. A

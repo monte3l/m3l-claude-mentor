@@ -99,9 +99,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: node bin/verify.mjs --group test
 
-  # Not a `verify.mjs` group: this lane reads the live GitHub repository, so it
-  # needs the network and a token, which a local `pnpm verify` and the pre-push
-  # lanes should not.
+  # Not a `verify.mjs` group: this lane reads the live GitHub repository and
+  # installs a pinned Claude Code, so it needs the network and a token, which a
+  # local `pnpm verify` and the pre-push lanes should not.
   plugin:
     name: Plugin
     runs-on: ubuntu-latest
@@ -113,6 +113,13 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: .node-version
+      # The Claude Code version is pinned in tools/ci/package.json and verified
+      # by the committed lockfile's integrity hash.
+      - run: npm ci --prefix tools/ci
+      - run: echo "$PWD/tools/ci/node_modules/.bin" >> "$GITHUB_PATH"
+      # `--strict` makes every warning an error. The plugin name no longer
+      # contains "claude", which the validator reads as one of Anthropic's own.
+      - run: claude plugin validate --strict .
       # org policy, not something `claude plugin validate` checks: `description`
       # equals the GitHub repository description, and `keywords`, if set, equal
       # its topics. The script is the org's verbatim starter

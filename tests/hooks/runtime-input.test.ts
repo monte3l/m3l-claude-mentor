@@ -134,7 +134,7 @@ describe("runHookCore never throws", () => {
     expect(result).toEqual({
       stdout: "",
       stderr:
-        "m3l-claude-mentor: TestHook: WRITE_FAILED: could not write state.json\n",
+        "m3l-mentor: TestHook: WRITE_FAILED: could not write state.json\n",
     });
   });
 
@@ -148,7 +148,7 @@ describe("runHookCore never throws", () => {
     );
     expect(result).toEqual({
       stdout: "",
-      stderr: "m3l-claude-mentor: TestHook: TypeError: TypeError\n",
+      stderr: "m3l-mentor: TestHook: TypeError: TypeError\n",
     });
   });
 

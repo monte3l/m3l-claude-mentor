@@ -1,6 +1,6 @@
 ---
 name: quiz
-description: Runs a short spaced recall quiz on Claude and Claude Code topics the learner has already seen, judging answers and recording the results. This skill should be used when the user asks to "quiz me", "quiz me on hooks", "test what I know", "test my recall" or "review what I learned", or invokes /m3l-claude-mentor:quiz, optionally with a topic.
+description: Runs a short spaced recall quiz on Claude and Claude Code topics the learner has already seen, judging answers and recording the results. This skill should be used when the user asks to "quiz me", "quiz me on hooks", "test what I know", "test my recall" or "review what I learned", or invokes /m3l-mentor:quiz, optionally with a topic.
 argument-hint: "[topic]"
 allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)
 ---
@@ -38,11 +38,11 @@ types and `enabled`.
    `activeTrackTopics` (from `get-profile`) is non-empty, due topics in it are offered
    first, ordered by weight descending. When nothing
    is due, say so and offer a quiz on an introduced topic, or
-   `/m3l-claude-mentor:teach`.
+   `/m3l-mentor:teach`.
 2. **Skip muted and disabled topics, even when named.** Say why and offer
-   `/m3l-claude-mentor:profile`.
+   `/m3l-mentor:profile`.
 3. **Skip fast-moving topics entirely** (`type` is `fast-moving`): say why (their
-   facts change too quickly to quiz from memory) and offer `/m3l-claude-mentor:ask`.
+   facts change too quickly to quiz from memory) and offer `/m3l-mentor:ask`.
    Never answer their questions from memory, and never record anything for them.
 4. **Ask three recall questions per topic when possible, one at a time**, on facts, terms
    and the why. Fewer questions cannot raise a level; say so honestly. Wait for each answer. Never reveal an answer before the learner tries; give
@@ -63,6 +63,6 @@ node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DA
 8. Repeat from step 4 for the next topic.
 9. **Summarise** in two or three lines: what was solid, what to revisit, and the
    returned level. Levels change after repeated evidence, not one quiz; say so honestly
-   and never promise a level change. Point weak topics to `/m3l-claude-mentor:teach <id>`.
+   and never promise a level change. Point weak topics to `/m3l-mentor:teach <id>`.
 
 Quiz recall only; no coding tasks. At most three topics per run.

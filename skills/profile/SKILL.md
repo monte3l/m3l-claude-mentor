@@ -1,6 +1,6 @@
 ---
 name: profile
-description: Shows the learner's mentoring profile and changes its settings, such as goals, mutes, project exclusions and topic overrides, plus export, import and deletion of stored data. This skill should be used when the user asks to "show my learning profile", "change my goals", "mute tips about a topic", "export my mentor data", "delete everything the mentor stored", or invokes /m3l-claude-mentor:profile.
+description: Shows the learner's mentoring profile and changes its settings, such as goals, mutes, project exclusions and topic overrides, plus export, import and deletion of stored data. This skill should be used when the user asks to "show my learning profile", "change my goals", "mute tips about a topic", "export my mentor data", "delete everything the mentor stored", or invokes /m3l-mentor:profile.
 argument-hint: "[show | goals | mute | topic | export | import | delete]"
 allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)
 ---

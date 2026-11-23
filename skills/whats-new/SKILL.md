@@ -1,6 +1,6 @@
 ---
 name: whats-new
-description: Produces a short digest of recent Claude Code changelog entries, filtered to the learner's goals and topics, and remembers the newest version seen. This skill should be used when the user asks "what's new in Claude Code", "what changed lately", "recent changes", "new release", "changelog", or "anything new I should know", or invokes /m3l-claude-mentor:whats-new.
+description: Produces a short digest of recent Claude Code changelog entries, filtered to the learner's goals and topics, and remembers the newest version seen. This skill should be used when the user asks "what's new in Claude Code", "what changed lately", "recent changes", "new release", "changelog", or "anything new I should know", or invokes /m3l-mentor:whats-new.
 argument-hint: "[focus area]"
 allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)
 ---
@@ -39,7 +39,7 @@ node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DA
 ## Steps
 
 1. **Dispatch the changelog lookup.** Use the Agent tool with
-   `m3l-claude-mentor:docs-researcher` and a SELF-CONTAINED prompt: ask for the changelog
+   `m3l-mentor:docs-researcher` and a SELF-CONTAINED prompt: ask for the changelog
    (`https://code.claude.com/docs/en/changelog.md`), pass `sinceVersion` set to
    `lastChangelogVersion` (omit it on a first run), and the relevant topic titles and
    goal themes (goals text in a clearly QUOTED data block). The agent sees no conversation. The first docs lookup may ask the user to
@@ -51,7 +51,7 @@ node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DA
    `topics`, or `$ARGUMENTS`. Ignore topics whose `ambient` is false. Drop the rest.
 4. **Present a short digest**: about seven bullets at most, newest first, one line each
    with the version and a docs link. Flag entries that may change something already
-   learned and offer `/m3l-claude-mentor:teach <id>`. Known gap: topic levels are not
+   learned and offer `/m3l-mentor:teach <id>`. Known gap: topic levels are not
    reset automatically by changelog changes yet; say so when an entry affects a learned
    topic.
 5. **Remember what was seen.** Take the version only from the agent's `Newest version:`

@@ -108,7 +108,7 @@ function tipDirective(entry: CatalogEntry): string {
 }
 
 function teachOffer(catalog: readonly CatalogEntry[], id: TopicId): string {
-  return `The learner asked to learn "${topicTitle(catalog, id)}" next: offer /m3l-claude-mentor:teach ${id} after answering.`;
+  return `The learner asked to learn "${topicTitle(catalog, id)}" next: offer /m3l-mentor:teach ${id} after answering.`;
 }
 
 /** What the locked phase decided and persisted. */
