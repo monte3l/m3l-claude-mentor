@@ -1,6 +1,6 @@
 {
   "name": "m3l-mentor",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "description": "A Claude Code plugin that mentors you on Claude and Claude Code, adapting to your mastery level",
