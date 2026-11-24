@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * `pnpm verify` -- runs every step in VERIFY_STEPS (bin/lib/verify-steps.mjs)
+ * `pnpm verify` -- runs every step in VERIFY_STEPS (tools/lib/verify-steps.mjs)
  * sequentially and reports pass/fail for each. `--step <id>` runs a single
  * named step; `--group <name>` runs every step in one of the five fixed
  * groups (format/lint/typecheck/build/test). `.github/workflows/ci.yml` and

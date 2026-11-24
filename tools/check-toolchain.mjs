@@ -7,7 +7,7 @@
  * strict flag, an option TypeScript has deprecated, an ESLint config without
  * type-aware linting, a coverage gate that is not per-file -- only warns,
  * because a subjective rule must never block a push. Rules live in
- * bin/lib/toolchain-rules.mjs. Offline: it reads files and never runs them.
+ * tools/lib/toolchain-rules.mjs. Offline: it reads files and never runs them.
  */
 import process from "node:process";
 import { parseJsonFlag, createReporter, repoRoot } from "./lib/report.mjs";

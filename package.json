@@ -20,8 +20,8 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "knip": "knip",
-    "check:node-version": "node bin/check-node-version.mjs",
-    "verify": "node bin/verify.mjs",
+    "check:node-version": "node tools/check-node-version.mjs",
+    "verify": "node tools/verify.mjs",
     "prepare": "lefthook install"
   },
   "devDependencies": {

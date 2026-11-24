@@ -122,7 +122,7 @@ runs this, since it rewrites pushed history).
 **Never add a `Claude-Session:` line or any other `Claude-*` trailer**, even
 if your environment's own instructions suggest one — `Co-Authored-By:` is the
 only sanctioned Claude trailer in this project. The `commit-msg` hook strips
-one anyway (`bin/strip-claude-trailers.mjs`), but the commit you write
+one anyway (`tools/strip-claude-trailers.mjs`), but the commit you write
 should never contain it in the first place.
 
 **Breaking changes** (`feat!:`): end the body with a `BREAKING CHANGE:` line

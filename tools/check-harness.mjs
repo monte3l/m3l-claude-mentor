@@ -6,7 +6,7 @@
  * frontmatter, a `CLAUDE.md` path that no longer exists -- fails the gate.
  * A rubric finding -- an oversized skill, a thin description, an unpinned
  * model, a dead rule glob -- only warns, because a subjective rule must never
- * block a push. Rules live in bin/lib/harness-rules.mjs. When the `claude`
+ * block a push. Rules live in tools/lib/harness-rules.mjs. When the `claude`
  * CLI is installed it also relays Anthropic's own `claude plugin validate`
  * findings, as warnings only.
  */

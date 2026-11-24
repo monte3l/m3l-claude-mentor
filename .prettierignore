@@ -23,5 +23,5 @@ design/README.md
 .claude/hooks/guard-git-push-signed.mjs
 .claude/hooks/guard-secret-writes.mjs
 .claude/hooks/guard-shared-checkout.mjs
-bin/lib/signed-range.mjs
+.claude/hooks/lib/signed-range.mjs
 tools/ci/check-plugin-metadata.mjs

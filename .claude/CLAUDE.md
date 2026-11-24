@@ -37,7 +37,7 @@ locally.
 ## Git Workflow
 
 **Conventional Commits (required)**, enforced by the `commit-msg` hook
-(`bin/lint-commit.mjs`, run after `bin/strip-claude-trailers.mjs` removes
+(`tools/lint-commit.mjs`, run after `tools/strip-claude-trailers.mjs` removes
 harness-injected `Claude-*` trailers). Add a `Co-Authored-By:` trailer when Claude
 authored or substantially assisted a commit — see `.claude/skills/writing-commits/`.
 
@@ -170,16 +170,20 @@ CI to catch it after the fact.
 `pnpm verify` passes; a public API change carries a Conventional Commit with
 the correct semver impact; new/changed exports have TSDoc and tests. If you
 touched the harness itself (hooks, agents, skills, rules, `settings.json`),
-`pnpm verify`'s `harness` step (`bin/check-harness.mjs`) must stay green: it
+`pnpm verify`'s `harness` step (`tools/check-harness.mjs`) must stay green: it
 fails on broken wiring and only warns on quality.
-The `toolchain` step (`bin/check-toolchain.mjs`) runs on every
+The `toolchain` step (`tools/check-toolchain.mjs`) runs on every
 `pnpm verify`, and must stay green when you touch the TypeScript toolchain
 (`tsconfig*.json`, `eslint.config.js`, `vitest.config.ts`,
-`bin/lib/verify-steps.mjs`, the toolchain pins in `package.json`) the same way: it fails on wiring `tsc` and ESLint do not catch (a build
+`tools/lib/verify-steps.mjs`, the toolchain pins in `package.json`) the same way: it fails on wiring `tsc` and ESLint do not catch (a build
 project that emits nowhere, a verify step naming a script that does not exist)
 and only warns on quality (a missing strict flag, an option TypeScript has
 deprecated). Never silence it by deleting the check or lowering a threshold --
 fix the config it points at.
+Repository scripts live in `tools/`, never in a top-level `bin/`: Claude Code puts a
+plugin's `bin/` on the Bash tool's PATH while the plugin is enabled. The repository has
+no `bin/`. The org's `signed-range.mjs` lives in `.claude/hooks/lib/`, beside the push
+guard that imports it.
 
 ## Forbidden Patterns
 
