@@ -71,14 +71,14 @@ the first failure, typically the last 50–100 lines before the run aborted.
 
 ### 3 — Map to the pipeline step
 
-`.github/workflows/ci.yml`'s lanes each run `node bin/verify.mjs --group <name>`
+`.github/workflows/ci.yml`'s lanes each run `node tools/verify.mjs --group <name>`
 (`format`, `lint`, `typecheck`, `build`, `test`); a group runs every step
-in it from `bin/lib/verify-steps.mjs`, and that file's `cmd` field IS the
+in it from `tools/lib/verify-steps.mjs`, and that file's `cmd` field IS the
 local reproduction command. Find the `▶ <step name> (<id>)` line the log
-prints just before the failure, then reproduce with `node bin/verify.mjs
+prints just before the failure, then reproduce with `node tools/verify.mjs
 --step <id>` (or the step's `cmd` array joined as a shell command). If no
 `▶` line is visible, match the failing job's name to its group and run
-`node bin/verify.mjs --group <name>`. `--step` is for local debugging only
+`node tools/verify.mjs --group <name>`. `--step` is for local debugging only
 and never appears in a workflow file.
 
 ### 4 — Report the diagnosis
@@ -89,7 +89,7 @@ Output a concise structured report — no prose padding:
 ## CI Triage — Run #<id>
 
 **Failed step:** <step name>
-**Reproduce locally:** <exact command, e.g. `node bin/verify.mjs --step lint`>
+**Reproduce locally:** <exact command, e.g. `node tools/verify.mjs --step lint`>
 **Root cause:** <one sentence>
 **Error excerpt:**
 <quoted lines from the log — enough to identify the file/rule/test>

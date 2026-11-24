@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Each lane job below invokes `node bin/verify.mjs --group <name>`, naming
-  # one of the five fixed groups from bin/lib/verify-steps.mjs. This is the
+  # Each lane job below invokes `node tools/verify.mjs --group <name>`, naming
+  # one of the five fixed groups from tools/lib/verify-steps.mjs. This is the
   # whole parity guarantee: the local `lefthook.yml` pre-push lanes and every
   # job here read the same step list by group, so a step -- core or
   # pack-contributed -- can never run in one place and not the other.
@@ -33,7 +33,7 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: node bin/verify.mjs --group format
+      - run: node tools/verify.mjs --group format
 
   lint:
     name: Lint
@@ -49,7 +49,7 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: node bin/verify.mjs --group lint
+      - run: node tools/verify.mjs --group lint
 
   typecheck:
     name: Type check
@@ -65,7 +65,7 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: node bin/verify.mjs --group typecheck
+      - run: node tools/verify.mjs --group typecheck
 
   build:
     name: Build
@@ -81,7 +81,7 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: node bin/verify.mjs --group build
+      - run: node tools/verify.mjs --group build
 
   test:
     name: Test (coverage)
@@ -97,7 +97,7 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: node bin/verify.mjs --group test
+      - run: node tools/verify.mjs --group test
 
   # Not a `verify.mjs` group: this lane reads the live GitHub repository and
   # installs a pinned Claude Code, so it needs the network and a token, which a

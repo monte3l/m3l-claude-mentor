@@ -1,7 +1,7 @@
 /**
  * Grades this project's TypeScript toolchain: the tsconfig `extends` chain,
  * module/target settings, the ESLint config, the coverage gate, the wiring of
- * `bin/lib/verify-steps.mjs`, and the toolchain pins in `package.json`.
+ * `tools/lib/verify-steps.mjs`, and the toolchain pins in `package.json`.
  * `gradeToolchain` reads everything once into a snapshot, then runs each rule
  * over it. Structural rules catch wiring defects `tsc` and ESLint do not --
  * a build project that emits nowhere, a verify step naming a script that does
@@ -673,8 +673,8 @@ function loadSnapshot(root) {
 
   const flatName = FLAT_ESLINT.find((name) => projectFiles.has(name));
   const vitestName = VITEST_CONFIGS.find((name) => projectFiles.has(name));
-  const stepsPath = "bin/lib/verify-steps.mjs";
-  const packsPath = "bin/lib/verify-steps.packs.json";
+  const stepsPath = "tools/lib/verify-steps.mjs";
+  const packsPath = "tools/lib/verify-steps.packs.json";
   const stepsText = projectFiles.has(stepsPath)
     ? readSource(join(root, stepsPath))
     : undefined;
@@ -1220,7 +1220,7 @@ const eslintTypedLinting = {
   },
 };
 
-/** `bin/**` and `.claude/hooks/**` are code this project actually runs, not incidental scripts -- if ESLint has no config block for them, or actively ignores src, they ship unlinted. */
+/** `bin/**`, `tools/**` and `.claude/hooks/**` are code this project actually runs, not incidental scripts -- if ESLint has no config block for them, or actively ignores src, they ship unlinted. */
 const eslintCoversEmittedCode = {
   id: "eslint-covers-emitted-code",
   level: "rubric",
@@ -1243,6 +1243,7 @@ const eslintCoversEmittedCode = {
     const files = [...s.projectFiles];
     const scopes = [
       ["bin/", /\.(?:mjs|js)$/, /["']bin\/[^"']*["']/],
+      ["tools/", /\.(?:mjs|js)$/, /["']tools\/[^"']*["']/],
       [".claude/hooks/", /\.(?:mjs|js)$/, /["']\.claude\/hooks\/[^"']*["']/],
     ];
     for (const [prefix, extension, block] of scopes) {
@@ -1364,7 +1365,7 @@ export const RULES = [
 // --- grading and reporting -------------------------------------------------
 
 /**
- * Prints a grade through a `bin/lib/report.mjs` reporter. Kept here rather
+ * Prints a grade through a `tools/lib/report.mjs` reporter. Kept here rather
  * than in each gate script so the repo's own wrapper and the emitted gate
  * cannot report the same grade differently.
  */

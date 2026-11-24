@@ -49,13 +49,13 @@ export const CORE_STEPS = [
     id: "harness",
     group: "lint",
     name: "Check Claude Code harness",
-    cmd: ["node", "bin/check-harness.mjs"],
+    cmd: ["node", "tools/check-harness.mjs"],
   },
   {
     id: "toolchain",
     group: "lint",
     name: "Check TypeScript toolchain",
-    cmd: ["node", "bin/check-toolchain.mjs"],
+    cmd: ["node", "tools/check-toolchain.mjs"],
   },
   {
     id: "knip",
@@ -79,19 +79,19 @@ export const CORE_STEPS = [
     id: "node-version",
     group: "build",
     name: "Check Node version pin",
-    cmd: ["node", "bin/check-node-version.mjs"],
+    cmd: ["node", "tools/check-node-version.mjs"],
   },
   {
     id: "no-dist",
     group: "build",
     name: "Check no build output is committed",
-    cmd: ["node", "bin/check-no-dist.mjs"],
+    cmd: ["node", "tools/check-no-dist.mjs"],
   },
   {
     id: "version-sync",
     group: "lint",
     name: "Check plugin.json and package.json versions agree",
-    cmd: ["node", "bin/check-version-sync.mjs"],
+    cmd: ["node", "tools/check-version-sync.mjs"],
   },
   {
     id: "docs",

@@ -22,7 +22,7 @@
  *   (b) the call is not from an authorised writer spoke -- i.e. `agent_id`
  *       is absent/empty/whitespace-only/non-string, or `agent_type` is NOT the name of a
  *       writer (`code-implementer` or `test-author`, per WRITER_SPOKES in
- *        bin/lib/agent-roster.mjs).
+ *        tools/lib/agent-roster.mjs).
  *
  * Hub calls (no agent_id, whatever agent_type says) and non-writer subagents
  * are treated identically -- both are blocked from guarded paths. Writer
@@ -200,8 +200,8 @@ import {
   canonicalize,
   isAbsoluteLike,
   isProtectedPath,
-} from "../../bin/lib/protected-paths.mjs";
-import { WRITER_SPOKES } from "../../bin/lib/agent-roster.mjs";
+} from "../../tools/lib/protected-paths.mjs";
+import { WRITER_SPOKES } from "../../tools/lib/agent-roster.mjs";
 
 function isWriterSpoke(agentType) {
   return (

@@ -8,9 +8,9 @@
  * the hard `dist/`/`coverage/` protections in guard-protected-paths.mjs.
  *
  * Scope (blocked while on `main`): any `src/` or `tests/` path segment --
- * see bin/lib/protected-paths.mjs's `isProtectedPath` for the exact shape,
+ * see tools/lib/protected-paths.mjs's `isProtectedPath` for the exact shape,
  * which covers both a flat layout and a nested `packages/<pkg>/src/` one.
- * Anything else (docs, .claude/, bin/, config) is allowed on `main`.
+ * Anything else (docs, .claude/, tools/, config) is allowed on `main`.
  *
  * The branch is resolved against the git working tree that *contains the
  * file* (via `git -C <file-dir>`), not `process.cwd()`. This means:
@@ -34,7 +34,7 @@ import {
   canonicalize,
   isAbsoluteLike,
   isProtectedPath,
-} from "../../bin/lib/protected-paths.mjs";
+} from "../../tools/lib/protected-paths.mjs";
 export { isProtectedPath };
 
 /**

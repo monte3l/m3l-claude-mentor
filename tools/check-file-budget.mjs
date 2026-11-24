@@ -8,7 +8,7 @@
  * retrofitting a split becomes structurally difficult to do in one PR.
  *
  * A flat ceiling is not viable once a project has real debt, so this is a
- * **ratchet**, not a cap: a committed baseline (`bin/file-budget-
+ * **ratchet**, not a cap: a committed baseline (`tools/file-budget-
  * baseline.json`) is the sparse "debt list" of files that already exceeded
  * their ceiling when this gate was adopted. A baselined file may shrink
  * freely but never **grow** past its recorded size; any file not in the
@@ -26,9 +26,9 @@
  * each package's `src`/`tests` pair.
  *
  * Usage:
- *   node bin/check-file-budget.mjs            # verify (fails on growth/new-over-ceiling)
- *   node bin/check-file-budget.mjs --update    # rewrite the baseline from current sizes
- *   node bin/check-file-budget.mjs --ref <ref> # verify a committed ref instead of the working tree (no checkout/worktree required); incompatible with --update
+ *   node tools/check-file-budget.mjs            # verify (fails on growth/new-over-ceiling)
+ *   node tools/check-file-budget.mjs --update    # rewrite the baseline from current sizes
+ *   node tools/check-file-budget.mjs --ref <ref> # verify a committed ref instead of the working tree (no checkout/worktree required); incompatible with --update
  */
 import process from "node:process";
 import {
@@ -44,7 +44,7 @@ import { fileURLToPath } from "node:url";
 import { parseJsonFlag, createReporter, repoRoot } from "./lib/report.mjs";
 
 const root = repoRoot();
-const baselineRel = "bin/file-budget-baseline.json";
+const baselineRel = "tools/file-budget-baseline.json";
 const baselinePath = join(root, baselineRel);
 
 /** Each root's `src`/`tests` pair to scan, relative to the repo root. */
@@ -216,7 +216,7 @@ export function collectBudgetEntriesAtRef(ref) {
 }
 
 /**
- * {@link readFileSync}/`JSON.parse` of `bin/file-budget-baseline.json`, but
+ * {@link readFileSync}/`JSON.parse` of `tools/file-budget-baseline.json`, but
  * against a committed ref instead of the working tree. A baseline absent at
  * `ref` yields `{}`; a present-but-invalid baseline's `JSON.parse` failure
  * propagates uncaught, same as the working-tree path.
@@ -386,13 +386,13 @@ if (isEntryPoint()) {
     if (v.baselined) {
       reporter.fail(
         `${v.path}: ${v.bytes} bytes -- grew past its baselined ceiling of ${v.limit} ` +
-          `(bin/file-budget-baseline.json). Split the file before adding more to it.`,
+          `(tools/file-budget-baseline.json). Split the file before adding more to it.`,
       );
     } else {
       reporter.fail(
         `${v.path}: ${v.bytes} bytes -- exceeds the ${v.limit}-byte ceiling and is not in the ` +
           `baseline. Split it, or if the size is deliberate, run ` +
-          `\`node bin/check-file-budget.mjs --update\` and explain why in the PR body.`,
+          `\`node tools/check-file-budget.mjs --update\` and explain why in the PR body.`,
       );
     }
   }
