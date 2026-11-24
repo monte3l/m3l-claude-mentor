@@ -108,6 +108,8 @@ export default defineConfig(
   {
     files: [
       "bin/**/*.mjs",
+      "tools/*.mjs",
+      "tools/lib/**/*.mjs",
       "scripts/**/*.mjs",
       ".claude/hooks/**/*.mjs",
       "tools/ci/**/*.mjs",

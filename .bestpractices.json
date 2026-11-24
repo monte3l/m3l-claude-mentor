@@ -316,7 +316,7 @@
   "osps_qa_04_02_status": "N/A",
   "osps_qa_04_02_justification": "This is one repository, so there are no subprojects.",
   "osps_qa_05_01_status": "Met",
-  "osps_qa_05_01_justification": "No generated executable artifact is tracked. The plugin runs src/*.ts directly, dist/ is ignored, and the no-dist step of pnpm verify fails if any build output is committed: https://github.com/monte3l/m3l-claude-mentor/blob/main/bin/check-no-dist.mjs.",
+  "osps_qa_05_01_justification": "No generated executable artifact is tracked. The plugin runs src/*.ts directly, dist/ is ignored, and the no-dist step of pnpm verify fails if any build output is committed: https://github.com/monte3l/m3l-claude-mentor/blob/main/tools/check-no-dist.mjs.",
   "osps_qa_05_02_status": "Met",
   "osps_qa_05_02_justification": "Every tracked file is text except 7 PNG images and 2 WOFF2 fonts, which are assets. No executable, library or other unreviewable binary is tracked.",
   "osps_qa_06_01_status": "Met",

@@ -5,6 +5,7 @@
     "src/cli/mentor-state.ts",
     "tests/**/*.test.ts",
     "bin/*.mjs",
+    "tools/*.mjs",
     "scripts/*.mjs",
     ".claude/hooks/*.mjs"
   ],
@@ -12,6 +13,8 @@
     "src/**/*.ts",
     "tests/**/*.ts",
     "bin/**/*.mjs",
+    "tools/*.mjs",
+    "tools/lib/**/*.mjs",
     "scripts/**/*.mjs",
     ".claude/hooks/**/*.mjs"
   ],

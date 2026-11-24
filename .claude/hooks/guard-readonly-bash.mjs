@@ -15,7 +15,7 @@
  *
  * The read-only roster is derived here, not hardcoded: every defined agent
  * under `.claude/agents/*.md` whose frontmatter `name` is not in
- * `WRITER_SPOKES` (`bin/lib/agent-roster.mjs` -- the same source
+ * `WRITER_SPOKES` (`tools/lib/agent-roster.mjs` -- the same source
  * `guard-hub-src-writes.mjs` uses) counts as read-only, so the two
  * enforcement points can't drift apart on who's authorized to write what.
  *
@@ -112,7 +112,7 @@ import process from "node:process";
 import { existsSync, readdirSync, readFileSync, realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { WRITER_SPOKES } from "../../bin/lib/agent-roster.mjs";
+import { WRITER_SPOKES } from "../../tools/lib/agent-roster.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
 

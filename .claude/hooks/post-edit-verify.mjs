@@ -44,7 +44,7 @@ import { fileURLToPath } from "node:url";
 import {
   canonicalize,
   isProtectedPath,
-} from "../../bin/lib/protected-paths.mjs";
+} from "../../tools/lib/protected-paths.mjs";
 
 async function readStdin() {
   const chunks = [];

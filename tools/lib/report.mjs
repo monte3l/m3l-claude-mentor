@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Shared structured-reporter contract every bin/check-*.mjs and bin/verify.mjs
+ * Shared structured-reporter contract every tools/check-*.mjs and tools/verify.mjs
  * gate routes through, so output is consistent (human-readable by default,
  * `--json` for machine consumption) without each gate reimplementing it.
  */
