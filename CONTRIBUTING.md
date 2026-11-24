@@ -98,11 +98,7 @@ request before you merge it.
 3. Merging it tags `m3l-mentor--vX.Y.Z` and creates the GitHub release as
    a draft with that changelog section as its notes. The workflow then
    publishes it. Nothing is tagged by hand. Releases up to 1.2.0 carry the
-   earlier name, `m3l-claude-mentor--vX.Y.Z`. Because the component changed with
-   the rename, `release-please-config.json` names the last old release
-   (`last-release-sha`, the merge commit of `m3l-claude-mentor--v1.2.0`). Remove
-   that key in the pull request that follows the first `m3l-mentor` release: it is
-   never ignored, so it would pin every later release to the same start.
+   earlier name, `m3l-claude-mentor--vX.Y.Z`.
 4. The workflow sends `release-published` to `monte3l/m3l-plugins`, which opens
    a pull request that moves the catalog pin.
 
