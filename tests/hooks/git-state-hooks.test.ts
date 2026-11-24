@@ -13,7 +13,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 
 vi.setConfig({ testTimeout: 15_000 });
 
-// HOOK_TEST_ROOT lets a mutated copy of .claude/hooks + bin/lib be exercised
+// HOOK_TEST_ROOT lets a mutated copy of .claude/hooks (and its lib/) be exercised
 // (mutation testing) without ever editing the real hooks.
 const OVERRIDE = process.env["HOOK_TEST_ROOT"];
 if (OVERRIDE !== undefined && process.env["CI"]) {

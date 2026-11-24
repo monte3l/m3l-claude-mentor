@@ -4,7 +4,6 @@
     "src/hooks/entry-*.ts",
     "src/cli/mentor-state.ts",
     "tests/**/*.test.ts",
-    "bin/*.mjs",
     "tools/*.mjs",
     "scripts/*.mjs",
     ".claude/hooks/*.mjs"
@@ -12,12 +11,12 @@
   "project": [
     "src/**/*.ts",
     "tests/**/*.ts",
-    "bin/**/*.mjs",
     "tools/*.mjs",
     "tools/lib/**/*.mjs",
     "scripts/**/*.mjs",
     ".claude/hooks/**/*.mjs"
   ],
+  "ignoreUnresolved": ["../../bin/lib/signed-range.mjs"],
   "ignoreExportsUsedInFile": true,
   "ignoreBinaries": ["wrangler", "mkfifo"],
   "ignoreDependencies": ["@commitlint/config-conventional", "@commitlint/types"]
