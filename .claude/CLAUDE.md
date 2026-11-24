@@ -181,8 +181,9 @@ and only warns on quality (a missing strict flag, an option TypeScript has
 deprecated). Never silence it by deleting the check or lowering a threshold --
 fix the config it points at.
 Repository scripts live in `tools/`, never in a top-level `bin/`: Claude Code puts a
-plugin's `bin/` on the Bash tool's PATH while the plugin is enabled. The one file left
-in `bin/lib/` is the org's `signed-range.mjs`, which the push guard imports from there.
+plugin's `bin/` on the Bash tool's PATH while the plugin is enabled. The repository has
+no `bin/`. The org's `signed-range.mjs` lives in `.claude/hooks/lib/`, beside the push
+guard that imports it.
 
 ## Forbidden Patterns
 
