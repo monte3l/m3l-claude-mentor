@@ -299,7 +299,6 @@ None blocking. Still open:
   - `evidence.jsonl` grows without bound, about 5 MiB a year of heavy use, and only the last 2 MiB is read.
   - Project exclusion follows symlinks and folds case on macOS and Windows. It stays case-sensitive on Linux mounts that are case-insensitive and does not fold Unicode normalisation forms. Resolving a path on a hung network mount can block until the hook times out, which fails safe.
   - A broken install or an unwritable data directory makes a hook print one stderr line per event. Claude Code shows that only in verbose output, so the learner sees nothing. A `doctor` command could surface it and is not planned.
-  - `UserPromptSubmit` can say "Mentor tips muted for X" when the 500-topic cap stopped the mute from being saved. It predates the lock and is not fixed yet.
 
 ## 16. Certification preparation
 

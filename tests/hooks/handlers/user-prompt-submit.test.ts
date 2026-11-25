@@ -80,13 +80,31 @@ describe("userPromptSubmitHandler persistent signals", () => {
       topicId(`t-${String(i)}`),
     );
     await seedState(sb.dir, { mutedTopics: full });
-    await userPromptSubmitHandler(
+    const out = await userPromptSubmitHandler(
       payload({ prompt: "stop tips about plan mode" }),
       makeDeps(sb.dir),
     );
     const state = await loadStateAt(sb.dir);
     expect(state.mutedTopics).toHaveLength(500);
     expect(state.mutedTopics).not.toContain("plan-mode");
+    expect(out?.systemMessage).toBe(
+      "Mentor tips not muted for Plan mode: the topic mute list is full (500 topics). Unmute some with /m3l-mentor:profile.",
+    );
+    expect(out?.systemMessage).not.toBe("Mentor tips muted for Plan mode.");
+  });
+
+  test("a full mute list that already holds the topic keeps the muted notice", async () => {
+    const full = [
+      topicId("plan-mode"),
+      ...Array.from({ length: 499 }, (_, i) => topicId(`t-${String(i)}`)),
+    ];
+    await seedState(sb.dir, { mutedTopics: full });
+    const out = await userPromptSubmitHandler(
+      payload({ prompt: "stop tips about plan mode" }),
+      makeDeps(sb.dir),
+    );
+    expect(out?.systemMessage).toBe("Mentor tips muted for Plan mode.");
+    expect((await loadStateAt(sb.dir)).mutedTopics).toEqual(full);
   });
 });
 

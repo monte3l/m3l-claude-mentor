@@ -130,9 +130,6 @@ The architecture is in [Architecture](architecture.md).
   case-insensitive, and it does not fold Unicode normalisation forms. Resolving a
   path on a hung network mount can block until the hook times out, which fails
   safe because nothing is recorded.
-- **A known notice bug.** `UserPromptSubmit` can say "Mentor tips muted for X"
-  when the 500-topic cap stopped the mute from being saved. It predates the lock
-  and is not fixed yet.
 - **A plugin cannot ship permission rules.** The learner chooses the allow rules
   in the README, and the broad one also covers the delete and import commands.
 - **The accepted CI install script.** See [`SECURITY.md`](../SECURITY.md).

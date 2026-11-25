@@ -63,17 +63,20 @@ function applySignals(
         next = { ...next, muted: false };
         notices.push(RESUMED_NOTICE);
         break;
-      case "stop-tips-topic":
-        if (
-          !next.mutedTopics.includes(signal.topic) &&
-          next.mutedTopics.length < MAX_MUTED_TOPICS
-        ) {
+      case "stop-tips-topic": {
+        const title = topicTitle(catalog, signal.topic);
+        if (next.mutedTopics.includes(signal.topic)) {
+          notices.push(`Mentor tips muted for ${title}.`);
+        } else if (next.mutedTopics.length < MAX_MUTED_TOPICS) {
           next = { ...next, mutedTopics: [...next.mutedTopics, signal.topic] };
+          notices.push(`Mentor tips muted for ${title}.`);
+        } else {
+          notices.push(
+            `Mentor tips not muted for ${title}: the topic mute list is full (${String(MAX_MUTED_TOPICS)} topics). Unmute some with /m3l-mentor:profile.`,
+          );
         }
-        notices.push(
-          `Mentor tips muted for ${topicTitle(catalog, signal.topic)}.`,
-        );
         break;
+      }
       case "just-tell-me":
       case "teach-next":
         break;
@@ -191,7 +194,8 @@ async function lockedOrNote(
  * runs in two phases. Unlocked: detect the prompt signals, match the topic
  * and load the profile (read only). Locked (`withStateLock`, the locked
  * state read is authoritative): apply "stop tips" / "resume tips" / "stop
- * tips about <topic>" (the topic mute list stops at 500) with a
+ * tips about <topic>" (the topic mute list stops at 500; a full list
+ * leaves the state unchanged and yields a "not muted" notice) with a
  * user-visible `systemMessage`; advance the segment with the matched topic;
  * ask {@link decideTip} whether a tip is due and record it; save the state
  * only when it changed. So parallel prompts in one segment emit at most one
