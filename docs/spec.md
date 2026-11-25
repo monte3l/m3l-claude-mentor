@@ -110,15 +110,15 @@ These values decide when the mentor stays quiet on a topic and when it quizzes a
 
 ### 4.5 Conflict reconciliation table
 
-| Situation                                      | Resolution                                                                           |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Self-report high, probe fails                  | Level from evidence; calibration down; targeted Explain + demo                       |
-| Self-report high, observed usage confirms      | Raise to `Applied`; calibration up                                                   |
-| Quiz pass, observed misuse                     | Observed wins on Apply; flag "knows but does not apply"; targeted Explain + demo     |
-| Observed correct usage, explain-back fails     | Apply stands; Understand stays low; flag "works by rote"; Socratic lesson on the why |
-| Explain-back strong, quiz fails on a term      | Keep Understand; Recall low; Reference plus spaced Recall quiz                       |
-| Old evidence contradicts newer evidence        | Newer wins; decay old                                                                |
-| Product change (changelog) invalidates a topic | Reset affected dimensions to `Introduced`; digest and re-teach                       |
+| Situation                                      | Resolution                                                                                              |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Self-report high, probe fails                  | Level from evidence; calibration down; targeted Explain + demo                                          |
+| Self-report high, observed usage confirms      | Raise to `Applied`; calibration up                                                                      |
+| Quiz pass, observed misuse                     | Observed wins on Apply; flag "knows but does not apply"; targeted Explain + demo                        |
+| Observed correct usage, explain-back fails     | Apply stands; Understand stays low; flag "works by rote"; Socratic lesson on the why                    |
+| Explain-back strong, quiz fails on a term      | Keep Understand; Recall low; Reference plus spaced Recall quiz                                          |
+| Old evidence contradicts newer evidence        | Newer wins; decay old                                                                                   |
+| Product change (changelog) invalidates a topic | Reset the topic to `Introduced` after the learner agrees (`reset-topic`, undoable); digest and re-teach |
 
 ## 5. Plugin architecture
 
@@ -157,11 +157,11 @@ Hook events (command hooks only):
 Notes:
 
 - Hooks are the deterministic part (rate limiting, state loading, usage observation). The output style and skills carry the soft behavior.
-- `PostToolUse` only appends observed evidence. `SessionStart` then recomputes levels from that evidence, **raise-only**: it never lowers a stored level (decay and truncation of the evidence window could otherwise erase a quiz-earned level), and the explicit `recompute` command is the only path that lowers one. This keeps tips from firing on topics the learner already uses.
+- `PostToolUse` only appends observed evidence. `SessionStart` then recomputes levels from that evidence, **raise-only**: it never lowers a stored level (decay and truncation of the evidence window could otherwise erase a quiz-earned level), and the explicit `recompute` command and the learner-confirmed `reset-topic` are the only paths that lower one. This keeps tips from firing on topics the learner already uses.
 - `Stop` `additionalContext` forces the conversation to continue, and `PreCompact`/`PostCompact` output cannot reach the model, so tips are injected on `UserPromptSubmit` and context is restored with `SessionStart` matcher `compact`.
 - Skills are namespaced by plugin: `/m3l-mentor:teach`, not `/mentor teach`. State access from skills goes through a small CLI (`src/cli/mentor-state.ts`), so Markdown never hand-edits JSON.
 - Plugin agents ignore `hooks`, `mcpServers` and `permissionMode` frontmatter; hooks ship at plugin level.
-- The CLI commands are `show`, `get-profile`, `record-evidence`, `record-batch`, `recompute`, `introduce`, `record-pass`, `set-mute`, `set-topic-mute`, `exclude-project`, `get-goals`, `set-goals`, `topics`, `set-topic-override`, `set-changelog-version`, `export`, `import` and `purge`, plus the exam commands of section 16 (`tracks`, `set-track`, `exam-begin`, `exam-answer`, `readiness`, `exam-items`, `exam-void` and `exam-unvoid`). A leading `--data-dir <absolute path>` beats the environment. `record-batch` takes 1 to 10 events, validates before the first write and saves once, so a lesson or quiz needs one save per answered group.
+- The CLI commands are `show`, `get-profile`, `record-evidence`, `record-batch`, `recompute`, `introduce`, `record-pass`, `set-mute`, `set-topic-mute`, `exclude-project`, `get-goals`, `set-goals`, `topics`, `set-topic-override`, `set-changelog-version`, `reset-topic`, `export`, `import` and `purge`, plus the exam commands of section 16 (`tracks`, `set-track`, `exam-begin`, `exam-answer`, `readiness`, `exam-items`, `exam-void` and `exam-unvoid`). A leading `--data-dir <absolute path>` beats the environment. `record-batch` takes 1 to 10 events, validates before the first write and saves once, so a lesson or quiz needs one save per answered group.
 - Every write to the state files takes one lock on the data directory, `.state.lock` (`src/internal/lock.ts`), created exclusively with a random token. A lock older than 5 s, judged by its modification time alone, is broken by exactly one waiter, and release removes the lock only if it is still ours. Hooks wait at most 2 s, well under their 10 s limit, and the CLI waits 6 s, longer than the stale window, so it always eventually succeeds. A lock that stays held ends in `LOCK_TIMEOUT` with fixed text, and an unwritable data directory fails at once with `WRITE_FAILED` instead of waiting. The store functions never lock; the callers do, around a whole load-compute-save. `import` stages every file it replaces before taking the lock and holds it only for the renames, `purge` locks only an existing directory, and `export` and the read-only commands take no lock.
 - On a lock timeout `Stop`, `PostCompact` and `PostToolUse` skip the write with the usual single stderr line and exit 0. `SessionStart` computes the refreshed profile without the lock, takes it only when a level would be raised, and on a timeout injects its context from the stored profile. `UserPromptSubmit` fails closed: no tip, no mute or resume notice (nothing was saved), and nothing at all for a learner who has muted tips, though a learner who has not still gets the style hint and teach offer. A hook that degrades this way reports it through the optional `note` of its output, one stderr line that never reaches the JSON.
 - A skill's `allowed-tools` pre-approval lasts only for the turn the learner invokes it, and a plugin cannot ship permission rules. The README therefore documents a one-time user rule for the CLI and a narrower rule set, checked live on Claude Code 2.1.327. The `docs-researcher` agent prompts per domain for `WebFetch`, which the README also covers.
@@ -270,7 +270,7 @@ Confirmed by the user after checking this spec against current official docs:
 9. **Tips:** hybrid delivery (hook decides, model words the tip on `UserPromptSubmit`).
 10. **Hook build:** none. The hooks and the CLI run `src/*.ts` directly, because Node removes the types itself. This replaces the earlier decision to commit a built `dist/` (2026-11-18): a generated executable artifact in version control fails OpenSSF Baseline OSPS-QA-05.01, and a verify step (`no-dist`) now fails if build output is ever committed again.
 11. **Controls:** `userConfig` for `dial` and `transcriptAnalysis`; `state.json` for mutes.
-12. **Recompute:** the SessionStart recompute is raise-only; only the explicit `recompute` command lowers a level.
+12. **Recompute:** the SessionStart recompute is raise-only; only the explicit `recompute` command and `reset-topic` lower a level.
 13. **Segments:** a segment ends on a topic change or a 30-minute idle gap. `Stop` and `PostCompact` only record activity.
 14. **Topic matching:** no generic single-word keywords, slash keywords match only at a word start, and model keywords are Claude-specific.
 15. **Confirming a level:** three good events are needed in practice (see section 4.3).
@@ -285,6 +285,7 @@ Confirmed by the owner:
 19. **`export` stays lock-free** (it works from a read-only data directory, and may mix generations when it races a writer), and **the evidence log stays unbounded** with the cost written down in section 15.
 20. **Hook output may carry a note:** an optional field that becomes one stderr line, so a hook that degrades keeps its normal output.
 21. **The 1.0.0 contract freeze:** from 1.0.0 the six skill names, the `dial` and `transcriptAnalysis` options, export format version 1 (every 1.x release imports it) and the guarantees in the ROADMAP's "What this project will not do" list change only in a major release. The hook internals, the `mentor-state` CLI and its path, the evals, the topic catalogue and the data directory layout beyond the export format are outside it, because the skills ship in the same plugin version as the CLI they call. A contract test and a committed version 1 export pin it, and adding a skill or an option is a minor release and does not fail them.
+22. **Changelog reset:** `reset-topic --topic <id>` drops a learned topic to `Introduced` when the learner agrees after a `whats-new` digest. It stores `resetAt` and a `resetFrom` snapshot (level, passes, last pass, introduced) on the topic, and every level derivation then ignores evidence older than `resetAt`. The evidence log is never changed, so `reset-topic --topic <id> --undo` restores the snapshot exactly. Undo returns to the snapshot even if post-reset practice raised the topic further; passes earned after the reset are lost, and levels re-derive from the intact log at the next recompute. It resets the whole topic, not single dimensions, and clears its review history until undone. A profile written by an older plugin version drops `resetAt` and `resetFrom` on its next save, so a downgrade ends the reset.
 
 ## 15. Open questions
 

@@ -180,3 +180,42 @@ describe("serializeBundle", () => {
     expect(parseBundle({ ...valid(), catalog: parsed.catalog }).ok).toBe(true);
   });
 });
+
+describe("resetAt / resetFrom survive serialize and parse", () => {
+  test("a reset topic round-trips through the bundle", () => {
+    const raw = valid();
+    raw["profile"] = {
+      schemaVersion: 1,
+      topics: {
+        "plan-mode": {
+          introduced: true,
+          level: "Introduced",
+          lastPassAt: null,
+          passes: 0,
+          resetAt: 1234,
+          resetFrom: {
+            level: "Applied",
+            passes: 2,
+            lastPassAt: 99,
+            introduced: false,
+          },
+        },
+      },
+      calibration: { confirmed: 0, refuted: 0 },
+    };
+    const first = parseBundle(raw);
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    const second = parseBundle(JSON.parse(serializeBundle(first.value)));
+    expect(second.ok).toBe(true);
+    if (!second.ok) return;
+    const topic = second.value.profile.topics["plan-mode"];
+    expect(topic?.resetAt).toBe(1234);
+    expect(topic?.resetFrom).toEqual({
+      level: "Applied",
+      passes: 2,
+      lastPassAt: 99,
+      introduced: false,
+    });
+  });
+});

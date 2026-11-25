@@ -51,17 +51,29 @@ node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DA
    `topics`, or `$ARGUMENTS`. Ignore topics whose `ambient` is false. Drop the rest.
 4. **Present a short digest**: about seven bullets at most, newest first, one line each
    with the version and a docs link. Flag entries that may change something already
-   learned and offer `/m3l-mentor:teach <id>`. Known gap: topic levels are not
-   reset automatically by changelog changes yet; say so when an entry affects a learned
-   topic.
-5. **Remember what was seen.** Take the version only from the agent's `Newest version:`
+   learned and offer `/m3l-mentor:teach <id>`.
+5. **Offer a reset for learned topics a change affects.** For each entry that changes a
+   topic the learner holds above `Introduced` (check `get-profile`; only ids that appear
+   in `topics`), name the topic and the entry and ASK before changing anything. A reset
+   drops the topic to `Introduced` and ignores its earlier evidence and review history,
+   and it can be undone. Only on a clear yes, one command per topic:
+
+   ```bash
+   node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} reset-topic --topic '<id>'
+   ```
+
+   Report each result and offer `/m3l-mentor:teach <id>`. To restore a topic the learner
+   wants back, run the same command with `--undo`. Skip this step when the learner
+   declines or no learned topic is affected.
+
+6. **Remember what was seen.** Take the version only from the agent's `Newest version:`
    line, and only when it looks like `x.y.z` (digits and dots); otherwise skip this step:
 
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} set-changelog-version --version <newest seen>
-```
+   ```bash
+   node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir ${CLAUDE_PLUGIN_DATA} set-changelog-version --version <newest seen>
+   ```
 
-Skip step 5 when the fetch failed and say so.
+Skip step 6 when the fetch failed and say so.
 
 ## Rules
 

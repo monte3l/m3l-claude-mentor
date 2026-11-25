@@ -116,6 +116,7 @@ const WRITERS: readonly (readonly [string, readonly string[]])[] = [
   ],
   ["recompute", ["recompute", "--topic", "plan-mode"]],
   ["introduce", ["introduce", "--topic", "plan-mode"]],
+  ["reset-topic", ["reset-topic", "--topic", "plan-mode"]],
   ["record-pass", ["record-pass", "--topic", "plan-mode", "--result", "pass"]],
   [
     "set-topic-override",

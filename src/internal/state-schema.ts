@@ -12,7 +12,14 @@
 
 import type { Calibration } from "./reconcile.ts";
 import {
-  LEVELS,
+  asRecord,
+  fail,
+  isCount,
+  isTimestamp,
+  ok,
+  ownField,
+} from "./record-fields.ts";
+import {
   parseSessionId,
   parseTopicId,
   type Level,
@@ -20,6 +27,13 @@ import {
   type TopicId,
 } from "./schema.ts";
 import { newSegment, type SegmentState } from "./segment.ts";
+import {
+  clampNullable,
+  clampTopicReset,
+  parseTopicProgress,
+  parseTopicReset,
+  type TopicResetSnapshot,
+} from "./topic-reset.ts";
 import { TRACK_CODE_PATTERN } from "./track-ids.ts";
 import { pairKey, type VoidedExam } from "./voids.ts";
 
@@ -89,6 +103,18 @@ export interface TopicProfile {
   readonly lastPassAt: number | null;
   /** Consecutive recall passes: an integer from 0 to 1,000,000,000. */
   readonly passes: number;
+  /**
+   * When a product change reset this topic (finite, non-negative ms).
+   * Evidence recorded before it no longer counts toward the level. Present
+   * exactly when `resetFrom` is; absent (no own key) otherwise.
+   */
+  readonly resetAt?: number;
+  /**
+   * The values (including `introduced`) the topic held before its first
+   * outstanding reset, kept so the reset can be undone. Present exactly when
+   * `resetAt` is; absent (no own key) when there is nothing to undo.
+   */
+  readonly resetFrom?: TopicResetSnapshot;
 }
 
 /**
@@ -133,7 +159,6 @@ const MAX_EXCLUDED_PROJECTS = 200;
 export const MAX_PROJECT_LENGTH: number = 1024;
 const MAX_VERSION_LENGTH = 64;
 const VERSION_PATTERN = /^[0-9A-Za-z.+-]+$/;
-const MAX_PASSES = 1_000_000_000;
 /**
  * The most voided exam submissions `state.json` may hold.
  *
@@ -144,38 +169,6 @@ const MAX_PASSES = 1_000_000_000;
  * ```
  */
 export const MAX_VOIDED_EXAMS: number = 100;
-
-function ok<T>(value: T): Parsed<T> {
-  return { ok: true, value };
-}
-
-function fail<T>(reason: string): Parsed<T> {
-  return { ok: false, reason };
-}
-
-/** A non-null, non-array object, viewed as a read-only record. */
-function asRecord(value: unknown): Readonly<Record<string, unknown>> | null {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    return null;
-  }
-  return value as Readonly<Record<string, unknown>>;
-}
-
-/** Reads an own field exactly once; `undefined` when absent or inherited. */
-function ownField(
-  record: Readonly<Record<string, unknown>>,
-  key: string,
-): unknown {
-  return Object.hasOwn(record, key) ? record[key] : undefined;
-}
-
-function isTimestamp(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value) && value >= 0;
-}
-
-function isCount(value: unknown): value is number {
-  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
-}
 
 /**
  * Validates an array of distinct items, at most `max` long, each through
@@ -499,12 +492,6 @@ export function defaultProfile(): Profile {
   };
 }
 
-function isLevel(value: unknown): value is Level {
-  return (
-    typeof value === "string" && (LEVELS as readonly string[]).includes(value)
-  );
-}
-
 function parseTopicProfile(value: unknown): Parsed<TopicProfile> {
   const record = asRecord(value);
   if (record === null) return fail(`topic must be an object`);
@@ -514,26 +501,14 @@ function parseTopicProfile(value: unknown): Parsed<TopicProfile> {
     return fail(`topic introduced must be a boolean`);
   }
 
-  const level = ownField(record, "level");
-  if (!isLevel(level)) {
-    return fail(`topic level is invalid`);
-  }
+  const progress = parseTopicProgress(record, "topic");
+  if (!progress.ok) return fail(progress.reason);
+  const { level, lastPassAt, passes } = progress.value;
 
-  const lastPassAt = ownField(record, "lastPassAt");
-  if (lastPassAt !== null && !isTimestamp(lastPassAt)) {
-    return fail(
-      `topic lastPassAt must be null or a finite, non-negative number`,
-    );
-  }
+  const reset = parseTopicReset(record);
+  if (!reset.ok) return fail(reset.reason);
 
-  const passes = ownField(record, "passes");
-  if (!isCount(passes) || passes > MAX_PASSES) {
-    return fail(
-      `topic passes must be an integer from 0 to ${String(MAX_PASSES)}`,
-    );
-  }
-
-  return ok({ introduced, level, lastPassAt, passes });
+  return ok({ introduced, level, lastPassAt, passes, ...reset.value });
 }
 
 function parseTopics(
@@ -665,9 +640,10 @@ export function clampStateToNow(state: MentorState, now: number): MentorState {
 }
 
 /**
- * Returns a copy of `profile` with every topic `lastPassAt` later than `now`
- * set to `now`; `null` and earlier values, and every other field, are
- * carried over unchanged. The input is never mutated. Pure: the caller
+ * Returns a copy of `profile` with every topic `lastPassAt`, `resetAt` and
+ * `resetFrom.lastPassAt` later than `now` set to `now`; `null` and earlier
+ * values, and every other field, are carried over unchanged (an absent
+ * `resetAt`/`resetFrom` stays absent). The input is never mutated. Pure: the caller
  * supplies the clock.
  *
  * @param profile - A profile from {@link parseProfile} or
@@ -685,12 +661,12 @@ export function clampProfileToNow(profile: Profile, now: number): Profile {
   checkNow(now);
   const topics = new Map<string, TopicProfile>();
   for (const [id, topic] of Object.entries(profile.topics)) {
-    const lastPassAt = topic.lastPassAt;
     topics.set(id, {
       introduced: topic.introduced,
       level: topic.level,
-      lastPassAt: lastPassAt === null ? null : Math.min(lastPassAt, now),
+      lastPassAt: clampNullable(topic.lastPassAt, now),
       passes: topic.passes,
+      ...clampTopicReset(topic, now),
     });
   }
   return {
