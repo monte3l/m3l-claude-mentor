@@ -81,12 +81,6 @@ symlinks and case folding. The ones the roadmap adds:
   public CCDV-P page, whose `sourceUrl` is the shared partner-certifications
   page. Open them in a browser and fix any that fail.
 
-## Unverified
-
-| Claim                                                                                                                          | Source                                                                                                                                                      | Date       |
-| ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| Claude Code versions other than 2.1.327 that support `userConfig` work. The minimum supported version has not been established | [`spec.md`](spec.md#15-open-questions), carried over and not re-tested for this change. Tracked in [#101](https://github.com/monte3l/m3l-mentor/issues/101) | 2026-11-20 |
-
 ## What this project will not do
 
 - **Store conversation content.** Only feature-usage signals are kept, never

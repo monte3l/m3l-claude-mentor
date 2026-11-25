@@ -167,6 +167,7 @@ Notes:
 - A skill's `allowed-tools` pre-approval lasts only for the turn the learner invokes it, and a plugin cannot ship permission rules. The README therefore documents a one-time user rule for the CLI and a narrower rule set, checked live on Claude Code 2.1.327. The `docs-researcher` agent prompts per domain for `WebFetch`, which the README also covers.
 - Skills dispatch the agents by the scoped name `m3l-mentor:<agent>`, with a self-contained prompt because a subagent sees no conversation. The `assess` skill rebuilds the `record-batch` tokens itself from the verdicts and never takes a token string from the agent. Both dispatches were confirmed live by the evals.
 - Hook event names and payload fields must be re-verified against current docs at build time.
+- **Minimum Claude Code version: 2.1.207** (Claude Code CHANGELOG, read 2026-11-25). `PostCompact` arrived in 2.1.76, `${CLAUDE_PLUGIN_DATA}` in 2.1.78, plugin options (`userConfig`) in 2.1.83 and the hook exec form (`command` plus `args`, used by every hook) in 2.1.139. The hooks read `dial` and `transcriptAnalysis` from `CLAUDE_PLUGIN_OPTION_*`, whose introduction the changelog does not date; 2.1.207 is the first entry that documents it, so that sets the floor. Releases 2.1.139 to 2.1.206 may work but are not claimed. The `fork` SessionStart source (2.1.214) does not raise it: earlier versions report `resume`, which the same matcher covers. No skill or agent frontmatter field in use is newer. Only 2.1.327 was run live.
 
 ## 6. Ambient engine
 
@@ -289,7 +290,7 @@ Confirmed by the owner:
 
 None blocking. Still open:
 
-- Untested: any Claude Code version other than 2.1.327. The minimum supported version has not been established, so the README says older versions with `userConfig` support are expected to work but are untested.
+- Claude Code versions from 2.1.207 up to 2.1.327 are supported on the strength of the changelog (section 5) and have not been run live.
 - CI wiring for the evals (section 11). The tip rate limit and mastered-topic silence cannot be evals today, because the eval case format cannot seed the plugin data directory, set `userConfig` or run two live prompts; they are covered by tests that run the hooks as real processes. An upstream request for those three capabilities is optional and not filed.
 - Known limits, accepted for the 2.x series:
   - The state lock is best effort at its edges: a holder that runs past the 5 s stale window loses exclusion, and two processes breaking the same stale lock can briefly overlap. Both fall back to last-writer-wins. Network filesystems with large clock skew are approximate.

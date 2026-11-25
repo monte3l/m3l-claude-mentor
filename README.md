@@ -246,10 +246,13 @@ ever asks to fetch some other domain, deny it.
 
 ## Requirements
 
-- **Claude Code**, a version that supports plugins with `userConfig`. It was
-  checked in a live session on 2.1.327. Older versions that support plugins with
-  `userConfig` are expected to work but are untested. `claude plugin eval` needs
-  2.1.269 or newer.
+- **Claude Code 2.1.207 or newer.** Plugin options (`userConfig`) arrived in
+  2.1.83 and the hook exec form (`command` plus `args`) in 2.1.139, but the
+  hooks read the two settings through `CLAUDE_PLUGIN_OPTION_*`, and 2.1.207 is
+  the first release whose changelog documents that variable. Source: the Claude
+  Code [CHANGELOG](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md),
+  read 2026-11-25. Only 2.1.327 was run live; the releases in between rest on
+  the changelog alone. `claude plugin eval` needs 2.1.269 or newer.
 - **Node 24.3 or newer** on your `PATH`, because the hooks and the CLI run as
   `node src/...ts`. Node removes the types itself, so nothing is built. Node
   24.0 to 24.2 print an experimental-feature warning every time they run
