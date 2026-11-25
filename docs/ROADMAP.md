@@ -49,7 +49,7 @@ symlinks and case folding. The ones the roadmap adds:
   Tests that run the real hooks cover them (see
   [`evals/README.md`](../evals/README.md)). They would become evals if those
   three capabilities arrive. An upstream request for them is optional and not
-  filed.
+  filed. Whether the eval docs support them is under [Unverified](#unverified).
 - **The evidence log is never rotated.** It grows by about 5 MiB a year of heavy
   use, and only the last 2 MiB is read. That is accepted for 2.x, and no size
   trigger is set. Add one if a report shows it matters. A compaction step that
@@ -61,13 +61,22 @@ symlinks and case folding. The ones the roadmap adds:
 - **Few people can run the project.** See [Governance](GOVERNANCE.md#bus-factor).
   It needs contributors from outside the organization. There is no committed
   timeline.
-
 - **Exam practice has no human review.** The questions and answer keys are written
   by the model, and a wrong key is caught only when a learner disputes it, which
   then needs `exam-void`. A reviewed question bank is not planned.
 - **Exam readiness is unvalidated.** Its weights, decay and thresholds are this
   project's own and were never compared with real exam outcomes, so it is
   labelled a practice indicator and never a prediction.
+
+## Unverified
+
+Claims the project relies on but has not checked. Each row names the source and
+the date it was last looked at, so a reader can judge it. Open an issue of type
+Verify when someone intends to check one.
+
+| Claim                                                                                                  | Source                                                                                                                                                       | Date       |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
+| A `claude plugin eval` case cannot seed `CLAUDE_PLUGIN_DATA`, set `userConfig` or run two live prompts | [Test plugins with evals](https://code.claude.com/docs/en/plugin-evals.md): it documents none of the three, and says nothing on whether they are unsupported | 2026-11-26 |
 
 ## What this project will not do
 
