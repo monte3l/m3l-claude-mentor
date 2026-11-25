@@ -28,6 +28,7 @@ import {
   introduce,
   recompute,
   recordPass,
+  resetTopic,
 } from "./profile-commands.ts";
 
 const ON_OFF = ["on", "off"] as const;
@@ -64,6 +65,9 @@ const COMMANDS = {
     ["topic", "events", "pass", "claim"],
   ),
   introduce: spec("introduce --topic <id>", ["topic"]),
+  "reset-topic": spec("reset-topic --topic <id> [--undo]", ["topic"], {
+    booleanFlags: ["undo"],
+  }),
   "record-pass": spec("record-pass --topic <id> --result <pass|fail>", [
     "topic",
     "result",
@@ -211,6 +215,8 @@ function dispatch(
       return recordBatch(args, env);
     case "introduce":
       return introduce(args, env);
+    case "reset-topic":
+      return resetTopic(args, env);
     case "record-pass":
       return recordPass(args, env);
     case "set-mute":

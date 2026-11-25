@@ -259,3 +259,81 @@ describe("parseProfile", () => {
     }
   });
 });
+
+describe("parseProfile resetAt / resetFrom (changelog topic reset)", () => {
+  const snapshot = {
+    level: "Applied",
+    passes: 4,
+    lastPassAt: 500,
+    introduced: false,
+  };
+
+  test("keeps a valid resetAt and resetFrom", () => {
+    const input = withTopic({ resetAt: 2000, resetFrom: { ...snapshot } });
+    expect(parseProfile(input)).toEqual({ ok: true, value: input });
+  });
+
+  test("accepts resetAt 0 and a null resetFrom.lastPassAt", () => {
+    const input = withTopic({
+      resetAt: 0,
+      resetFrom: {
+        level: "Fluent",
+        passes: 0,
+        lastPassAt: null,
+        introduced: true,
+      },
+    });
+    expect(parseProfile(input)).toEqual({ ok: true, value: input });
+  });
+
+  test("omits both keys when absent", () => {
+    const r = parseProfile(withTopic({}));
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(Object.hasOwn(r.value.topics["a"] ?? {}, "resetAt")).toBe(false);
+    expect(Object.hasOwn(r.value.topics["a"] ?? {}, "resetFrom")).toBe(false);
+  });
+
+  test.each([
+    ["negative", -1],
+    ["NaN", Number.NaN],
+    ["Infinity", Number.POSITIVE_INFINITY],
+    ["a string", "1000"],
+    ["null", null],
+  ])("rejects a resetAt that is %s", (_n, resetAt) => {
+    expect(
+      parseProfile(withTopic({ resetAt, resetFrom: { ...snapshot } })).ok,
+    ).toBe(false);
+  });
+
+  test.each([
+    ["not an object", "x"],
+    ["null", null],
+    ["an unknown level", { ...snapshot, level: "Godlike" }],
+    ["a negative passes", { ...snapshot, passes: -1 }],
+    ["a fractional passes", { ...snapshot, passes: 1.5 }],
+    ["a string lastPassAt", { ...snapshot, lastPassAt: "5" }],
+    ["a negative lastPassAt", { ...snapshot, lastPassAt: -1 }],
+    ["a missing level", { passes: 1, lastPassAt: null }],
+    [
+      "a missing passes",
+      { level: "Applied", lastPassAt: null, introduced: true },
+    ],
+    ["a missing introduced", { level: "Applied", passes: 1, lastPassAt: null }],
+    ["a string introduced", { ...snapshot, introduced: "true" }],
+    ["a null introduced", { ...snapshot, introduced: null }],
+    ["a numeric introduced", { ...snapshot, introduced: 1 }],
+  ])("rejects a resetFrom that is %s", (_n, resetFrom) => {
+    expect(parseProfile(withTopic({ resetAt: 10, resetFrom })).ok).toBe(false);
+  });
+
+  test("rejects a resetAt without a resetFrom", () => {
+    expect(parseProfile(withTopic({ resetAt: 10 })).ok).toBe(false);
+  });
+
+  test("rejects a resetFrom without a resetAt", () => {
+    expect(parseProfile(withTopic({ resetFrom: { ...snapshot } })).ok).toBe(
+      false,
+    );
+  });
+});

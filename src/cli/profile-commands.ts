@@ -1,5 +1,6 @@
 import { isReviewDue } from "../internal/mastery.ts";
 import {
+  applyProductChange,
   calibrationScore,
   reconcile,
   updateCalibration,
@@ -182,7 +183,8 @@ export interface RecomputeView {
  * topic's stored `passes`.
  * The calibration counts a `confirmed` or `refuted` outcome only when
  * `claimedLevel` is given. Quiz evidence of a voided exam submission
- * (`state.json` `voidedExams`) is not counted. Reads evidence and the state;
+ * (`state.json` `voidedExams`) is not counted, nor is evidence older than the
+ * topic's `resetAt` (see `reset-topic`). Reads evidence and the state;
  * writes nothing: the caller saves the returned profile once.
  *
  * Known limitation: only the evidence tail window `readEvidence` returns
@@ -217,9 +219,13 @@ export async function recomputeTopic(
   const { voidedExams = [] } = await loadState(env.dir, env.now);
   const counted = excludeVoidedEvidence(events, voidedExams);
   const previous = existingTopic(profile, topic) ?? UNSEEN_TOPIC;
+  const own = counted.filter((event) => event.topic === topic);
   const result = reconcile({
     type: entry.type,
-    events: counted.filter((event) => event.topic === topic),
+    events:
+      previous.resetAt === undefined
+        ? own
+        : applyProductChange(own, previous.resetAt),
     introduced: previous.introduced,
     now: env.now,
     ...(claimedLevel !== undefined ? { claimedLevel } : {}),
@@ -354,6 +360,123 @@ export async function introduce(
     return raised;
   });
   return { topic, level };
+}
+
+/**
+ * What `reset-topic` reports: `reset: true` (with the `previousLevel`) when
+ * the topic was lowered to `Introduced`, `reset: false` when nothing was
+ * written; `--undo` reports `restored` instead.
+ *
+ * @example
+ * ```ts
+ * import type { ResetTopicView } from "./profile-commands.ts";
+ * const v: ResetTopicView = { topic: "plan-mode", level: "Unseen", reset: false };
+ * ```
+ */
+export type ResetTopicView =
+  | {
+      readonly topic: TopicId;
+      readonly level: "Introduced";
+      readonly previousLevel: Level;
+      readonly reset: true;
+    }
+  | { readonly topic: TopicId; readonly level: Level; readonly reset: false }
+  | {
+      readonly topic: TopicId;
+      readonly level: Level;
+      readonly restored: boolean;
+    };
+
+function resetEntry(
+  previous: TopicProfile,
+  now: number,
+): TopicProfile | undefined {
+  if (compareLevels(previous.level, "Introduced") <= 0) return undefined;
+  return {
+    ...previous,
+    introduced: true,
+    level: "Introduced",
+    lastPassAt: null,
+    passes: 0,
+    resetAt: now,
+    // A repeat reset keeps the first snapshot so undo returns to it.
+    resetFrom: previous.resetFrom ?? {
+      level: previous.level,
+      passes: previous.passes,
+      lastPassAt: previous.lastPassAt,
+      introduced: previous.introduced,
+    },
+  };
+}
+
+function undoEntry(previous: TopicProfile): TopicProfile | undefined {
+  const { resetFrom } = previous;
+  if (resetFrom === undefined) return undefined;
+  // Built field by field so `resetAt` and `resetFrom` are dropped.
+  return {
+    introduced: resetFrom.introduced,
+    level: resetFrom.level,
+    lastPassAt: resetFrom.lastPassAt,
+    passes: resetFrom.passes,
+  };
+}
+
+/**
+ * `reset-topic --topic <id> [--undo]`: after a product change invalidates
+ * what the learner knew, lowers a topic held above `Introduced` to
+ * `Introduced` (`passes: 0`, `lastPassAt: null`), stamps `resetAt = now`
+ * so evidence recorded before it no longer counts (see
+ * {@link recomputeTopic}), and snapshots the old level, `passes`,
+ * `lastPassAt` and `introduced` as `resetFrom`. A topic that is absent or at or below
+ * `Introduced` is left untouched (`reset: false`); a repeat reset keeps the
+ * first snapshot. `--undo` restores the snapshot and drops `resetAt` and
+ * `resetFrom` (`restored: true`), or is a no-op when there is no snapshot.
+ * Records no evidence and never modifies the evidence log. The profile's
+ * load and save run under the data lock ({@link lockedState}).
+ *
+ * @throws CliUsageError for a malformed or unknown topic.
+ *
+ * @example
+ * ```ts
+ * import { resetTopic } from "./profile-commands.ts";
+ * const view = await resetTopic(args, env);
+ * ```
+ */
+export async function resetTopic(
+  args: ParsedArgs,
+  env: CommandEnv,
+): Promise<ResetTopicView> {
+  const topic = requireTopicId(args);
+  const undo = args.booleans.has("undo");
+  const { entries } = await loadMergedCatalog(env);
+  requireCatalogEntry(entries, topic);
+  return lockedState(env, async (): Promise<ResetTopicView> => {
+    const profile = await loadProfile(env.dir, env.now);
+    const stored = existingTopic(profile, topic);
+    const previous = stored ?? UNSEEN_TOPIC;
+    let next: TopicProfile | undefined;
+    if (stored !== undefined) {
+      next = undo ? undoEntry(stored) : resetEntry(stored, env.now);
+    }
+    if (next !== undefined) {
+      await saveProfile(env.dir, withTopic(profile, topic, next));
+    }
+    if (undo) {
+      return {
+        topic,
+        level: (next ?? previous).level,
+        restored: next !== undefined,
+      };
+    }
+    return next === undefined
+      ? { topic, level: previous.level, reset: false }
+      : {
+          topic,
+          level: "Introduced",
+          previousLevel: previous.level,
+          reset: true,
+        };
+  });
 }
 
 /**

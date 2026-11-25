@@ -239,3 +239,44 @@ describe("sessionStartHandler recompute", () => {
     expect(await levelOnDisk("context-window")).toBe("Fluent");
   });
 });
+
+describe("sessionStartHandler recompute after a topic reset", () => {
+  test("does not re-raise a reset topic from evidence older than resetAt", async () => {
+    await seedProfile(sb.dir, {
+      "claude-md": {
+        introduced: true,
+        level: "Introduced",
+        resetAt: NOW - DAY,
+        resetFrom: {
+          level: "Applied",
+          passes: 0,
+          lastPassAt: null,
+          introduced: true,
+        },
+      },
+    });
+    await add("claude-md", "observed", 3, NOW - 5 * DAY);
+    await sessionStartHandler(payload(), makeDeps(sb.dir));
+    expect(await levelOnDisk("claude-md")).toBe("Introduced");
+  });
+
+  test("evidence after resetAt raises the topic again", async () => {
+    await seedProfile(sb.dir, {
+      "claude-md": {
+        introduced: true,
+        level: "Introduced",
+        resetAt: NOW - DAY,
+        resetFrom: {
+          level: "Applied",
+          passes: 0,
+          lastPassAt: null,
+          introduced: true,
+        },
+      },
+    });
+    await add("claude-md", "observed", 3, NOW - 5 * DAY);
+    await add("claude-md", "observed", 2, NOW);
+    await sessionStartHandler(payload(), makeDeps(sb.dir));
+    expect(await levelOnDisk("claude-md")).toBe("Applied");
+  });
+});

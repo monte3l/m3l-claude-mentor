@@ -245,3 +245,57 @@ describe("clampProfileToNow", () => {
     expect(() => clampProfileToNow(defaultProfile(), now)).toThrowError(/now/);
   });
 });
+
+describe("clampProfileToNow resetAt / resetFrom", () => {
+  const withReset = (resetAt: number, lastPassAt: number | null): Profile =>
+    mustProfile({
+      ...defaultProfile(),
+      topics: {
+        a: {
+          introduced: true,
+          level: "Introduced",
+          lastPassAt: null,
+          passes: 0,
+          resetAt,
+          resetFrom: {
+            level: "Applied",
+            passes: 3,
+            lastPassAt,
+            introduced: false,
+          },
+        },
+      },
+    });
+
+  test("a future resetAt and resetFrom.lastPassAt are clamped to now", () => {
+    const r = clampProfileToNow(withReset(9e15, 8e15), 1000);
+    expect(r.topics["a"]?.resetAt).toBe(1000);
+    expect(r.topics["a"]?.resetFrom).toEqual({
+      level: "Applied",
+      passes: 3,
+      lastPassAt: 1000,
+      introduced: false,
+    });
+  });
+
+  test("past values and a null lastPassAt are kept", () => {
+    const r = clampProfileToNow(withReset(5, null), 1000);
+    expect(r.topics["a"]?.resetAt).toBe(5);
+    expect(r.topics["a"]?.resetFrom?.lastPassAt).toBeNull();
+    const r2 = clampProfileToNow(withReset(5, 7), 1000);
+    expect(r2.topics["a"]?.resetFrom?.lastPassAt).toBe(7);
+  });
+
+  test("resetFrom.introduced is left alone", () => {
+    const r = clampProfileToNow(withReset(9e15, 8e15), 1000);
+    expect(r.topics["a"]?.resetFrom?.introduced).toBe(false);
+  });
+
+  test("topics without a reset gain no resetAt/resetFrom keys", () => {
+    const r = clampProfileToNow(frozenProfile(), 1000);
+    for (const t of Object.values(r.topics)) {
+      expect(Object.hasOwn(t, "resetAt")).toBe(false);
+      expect(Object.hasOwn(t, "resetFrom")).toBe(false);
+    }
+  });
+});

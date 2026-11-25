@@ -466,3 +466,83 @@ describe("recomputeProfile validation and purity", () => {
     >();
   });
 });
+
+describe("recomputeProfile honours resetAt", () => {
+  const RESET_AT = NOW - days(1);
+  const reset = (
+    over: Partial<TopicProfile> = {},
+  ): Record<string, Partial<TopicProfile>> => ({
+    [CONCEPT]: {
+      introduced: true,
+      level: "Introduced",
+      resetAt: RESET_AT,
+      ...over,
+    },
+  });
+
+  test("evidence older than resetAt is ignored (stays Introduced)", () => {
+    const events = many(3, "quiz", CONCEPT, "positive", days(5));
+    const out = run(events, profileOf(reset()));
+    expect(levelOf(out, CONCEPT)).toBe("Introduced");
+  });
+
+  test("evidence after resetAt counts again", () => {
+    const events = [
+      ...many(3, "quiz", CONCEPT, "positive", days(5)),
+      ...many(2, "quiz", CONCEPT, "positive", 0),
+    ];
+    const out = run(events, profileOf(reset()));
+    expect(levelOf(out, CONCEPT)).toBe("Recalled");
+    expect(out.profile.topics[CONCEPT]?.resetAt).toBe(RESET_AT);
+  });
+
+  test("only post-reset evidence counts: one new quiz is not enough for Recalled", () => {
+    const events = [
+      ...many(3, "quiz", CONCEPT, "positive", days(5)),
+      ...many(1, "quiz", CONCEPT, "positive", 0),
+    ];
+    expect(levelOf(run(events, profileOf(reset())), CONCEPT)).toBe(
+      "Introduced",
+    );
+  });
+
+  test("evidence exactly at resetAt still counts (only at < resetAt is dropped)", () => {
+    const events = many(3, "quiz", CONCEPT, "positive", days(1));
+    expect(levelOf(run(events, profileOf(reset())), CONCEPT)).toBe("Recalled");
+  });
+
+  test("raise-only does not re-raise a reset topic from old evidence", () => {
+    const events = many(3, "quiz", CONCEPT, "positive", days(5));
+    const out = run(events, profileOf(reset()), {}, CATALOG, true);
+    expect(levelOf(out, CONCEPT)).toBe("Introduced");
+    expect(out.changed).toEqual([]);
+  });
+
+  test("raise-only raises a reset topic from post-reset evidence", () => {
+    const events = [
+      ...many(3, "quiz", CONCEPT, "positive", days(5)),
+      ...many(2, "quiz", CONCEPT, "positive", 0),
+    ];
+    const out = run(events, profileOf(reset()), {}, CATALOG, true);
+    expect(levelOf(out, CONCEPT)).toBe("Recalled");
+  });
+
+  test("a topic without resetAt still counts its old evidence", () => {
+    const events = many(3, "quiz", CONCEPT, "positive", days(5));
+    const out = run(
+      events,
+      profileOf({ [CONCEPT]: { introduced: true, level: "Introduced" } }),
+    );
+    expect(levelOf(out, CONCEPT)).toBe("Recalled");
+  });
+
+  test("resetAt on one topic does not filter another topic's evidence", () => {
+    const events = [
+      ...many(3, "quiz", CONCEPT, "positive", days(5)),
+      ...many(3, "observed", FEATURE, "positive", days(5)),
+    ];
+    const out = run(events, profileOf(reset()));
+    expect(levelOf(out, CONCEPT)).toBe("Introduced");
+    expect(levelOf(out, FEATURE)).toBe("Applied");
+  });
+});

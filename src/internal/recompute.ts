@@ -2,7 +2,7 @@
  * Pure re-derivation of every evidenced topic's stored level from its
  * evidence, used by the SessionStart hook so levels follow observed usage.
  */
-import { reconcile } from "./reconcile.ts";
+import { applyProductChange, reconcile } from "./reconcile.ts";
 import {
   levelRank,
   MAX_EVIDENCE_EVENTS,
@@ -113,7 +113,8 @@ function groupByTopic(
  * `passes` and `lastPassAt` (with `raiseOnly`, only a HIGHER derived level
  * replaces the stored one; a lower one is ignored); a missing entry is created (`introduced: false`,
  * `lastPassAt: null`, `passes: 0`) only when the level is above `Unseen` and
- * the profile holds fewer than 500 topics. Topics with no events, and events
+ * the profile holds fewer than 500 topics. An entry with `resetAt` counts
+ * only its events at or after that time. Topics with no events, and events
  * for unknown or disabled topics, are left alone. The calibration is carried
  * through. Pure: inputs are never mutated, and the same `profile` object is
  * returned when nothing changed.
@@ -148,9 +149,12 @@ export function recomputeProfile(input: RecomputeInput): RecomputeOutcome {
 
   for (const entry of catalog) {
     if (!entry.enabled) continue;
-    const events = byTopic.get(entry.id);
-    if (events === undefined) continue;
+    const grouped = byTopic.get(entry.id);
+    if (grouped === undefined) continue;
     const previous = topics.get(entry.id);
+    const resetAt = previous?.resetAt;
+    const events =
+      resetAt === undefined ? grouped : applyProductChange(grouped, resetAt);
     const { level } = reconcile({
       type: entry.type,
       events,
