@@ -277,7 +277,8 @@ node scripts/doc-parity.mjs                        # only the doc-versus-code pa
 ```
 
 The evals call a real model, so each case run costs about $0.20. Run them
-locally, with a cost cap. CI does not run them:
+locally, with a cost cap. CI runs them weekly and on demand with pinned models
+and a $10 cap (`.github/workflows/evals.yml`):
 
 ```bash
 claude plugin eval . --trust-plugin --ablation none --max-cost-usd 5

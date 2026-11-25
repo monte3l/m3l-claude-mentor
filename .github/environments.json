@@ -7,6 +7,12 @@
         "branches": ["main"]
       }
     },
+    "evals": {
+      "retain": 0,
+      "expect": {
+        "branches": ["main"]
+      }
+    },
     "env-janitor": {
       "retain": 0,
       "expect": {

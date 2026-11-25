@@ -30,9 +30,6 @@ file and any topics it needs.
 
 ## Next 12 months
 
-- **Run the evals in CI.** Tracked in
-  [#99](https://github.com/monte3l/m3l-mentor/issues/99). It needs a pinned model and a credential, and has no
-  date. What the evals cannot cover today is under Known limits.
 - **Reach the OpenSSF Silver badge and the Baseline levels the project can
   honestly meet.** Tracked in
   [#67](https://github.com/monte3l/m3l-mentor/issues/67). See

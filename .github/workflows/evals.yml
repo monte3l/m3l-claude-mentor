@@ -1,0 +1,90 @@
+name: Evals
+
+# What this does: weekly, and on demand, runs the `claude plugin eval` suite in
+# evals/ against a real model. Evals spend money, so everything that decides the
+# cost is pinned here: the case model, the judge model and a hard cost ceiling.
+#
+# - Claude Code itself is pinned in tools/ci/package.json (lockfile integrity
+#   hash). Bump the model ids below by hand, in a reviewed PR, because a new
+#   default model can change every score with no code change.
+# - `--max-cost-usd 10`: the run stops before the next case starts once the
+#   estimate passes $10 and exits 2 with partial results. A full run costs about
+#   $6 to $9 (roughly $0.40 a case).
+# - `--threshold 0.8`: a case needs 0.8 to pass, not the default 1.0, because the
+#   cases run 3 times and some use an `llm` grader, so one flaky run in a case
+#   should not fail the week. A case below it exits 1 and a hit cost cap exits 2.
+#   Both fail the run, which GitHub emails to the maintainer.
+# - The credential is the ANTHROPIC_API_KEY secret of the `evals` environment,
+#   which is restricted to `main`. Use a key from a workspace with its own spend
+#   limit.
+# - Results are uploaded as a run artifact for 14 days.
+on:
+  schedule:
+    # Mondays 07:00 UTC, offset from the other weekly jobs.
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+    inputs:
+      case:
+        description: "Only run cases whose name matches this glob (empty runs all)"
+        type: string
+        default: ""
+
+permissions: {}
+
+concurrency:
+  group: evals
+  cancel-in-progress: false
+
+jobs:
+  evals:
+    name: Run evals
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment:
+      name: evals
+      # No deployment of its own: the environment only scopes the secret to `main`.
+    permissions:
+      contents: read
+    steps:
+      # Always `main`, whatever ref a manual dispatch picked: the secret is
+      # scoped to `main`, and the plugin under test is the released line.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: main
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .node-version
+
+      - run: npm ci --prefix tools/ci
+      - run: echo "$PWD/tools/ci/node_modules/.bin" >> "$GITHUB_PATH"
+
+      - name: Run the evals
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Passed through the environment, never interpolated into the script.
+          CASE: ${{ inputs.case }}
+        run: |
+          args=()
+          if [ -n "$CASE" ]; then
+            args+=(--case "$CASE")
+          fi
+          claude plugin eval . \
+            --trust-plugin \
+            --ablation none \
+            --model claude-sonnet-5-5 \
+            --judge-model claude-haiku-5-5 \
+            --max-cost-usd 10 \
+            --threshold 0.8 \
+            --no-publish \
+            --output-dir evals/results/ci \
+            "${args[@]}"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: eval-results
+          path: evals/results/ci/
+          retention-days: 14
+          if-no-files-found: warn
