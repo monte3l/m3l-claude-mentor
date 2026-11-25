@@ -8,11 +8,12 @@ name: Evals
 #   hash). Bump the model ids below by hand, in a reviewed PR, because a new
 #   default model can change every score with no code change.
 # - `--max-cost-usd 10`: the run stops before the next case starts once the
-#   estimate passes $10 and exits 2 with partial results. A full run costs about
-#   $6 to $9 (roughly $0.40 a case).
-# - `--threshold 0.8`: a case needs 0.8 to pass, not the default 1.0, because the
-#   cases run 3 times and some use an `llm` grader, so one flaky run in a case
-#   should not fail the week. A case below it exits 1 and a hit cost cap exits 2.
+#   estimate passes $10 and exits 2 with partial results. A full run of the 13
+#   cases cost $1.71 when measured, so the cap is headroom, not the expected bill.
+# - `--threshold 0.66`: a case passes with 2 of its 3 runs (2/3 = 0.667), not the
+#   default 1.0, because some cases use an `llm` grader or depend on the model
+#   choosing to dispatch an agent, so one flaky run should not fail the week.
+#   Do not set 0.67: 2/3 is below it. A case below it exits 1 and a hit cost cap exits 2.
 #   Both fail the run, which GitHub emails to the maintainer.
 # - The credential is the ANTHROPIC_API_KEY secret of the `evals` environment,
 #   which is restricted to `main`. Use a key from a workspace with its own spend
@@ -76,7 +77,7 @@ jobs:
             --model claude-sonnet-5-5 \
             --judge-model claude-haiku-5-5 \
             --max-cost-usd 10 \
-            --threshold 0.8 \
+            --threshold 0.66 \
             --no-publish \
             --output-dir evals/results/ci \
             "${args[@]}"
