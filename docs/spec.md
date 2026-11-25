@@ -291,7 +291,7 @@ None blocking. Still open:
 
 - Untested: any Claude Code version other than 2.1.327. The minimum supported version has not been established, so the README says older versions with `userConfig` support are expected to work but are untested.
 - CI wiring for the evals (section 11). The tip rate limit and mastered-topic silence cannot be evals today, because the eval case format cannot seed the plugin data directory, set `userConfig` or run two live prompts; they are covered by tests that run the hooks as real processes. An upstream request for those three capabilities is optional and not filed.
-- Known limits, accepted for 1.0:
+- Known limits, accepted for the 2.x series:
   - The state lock is best effort at its edges: a holder that runs past the 5 s stale window loses exclusion, and two processes breaking the same stale lock can briefly overlap. Both fall back to last-writer-wins. Network filesystems with large clock skew are approximate.
   - A hook that cannot get the lock within 2 s skips its write (see section 5).
   - `export` can mix generations when it races a writer.
