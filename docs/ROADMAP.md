@@ -12,13 +12,12 @@ something changes is written here, so it survives outside any one tool. The rule
 for which goes where is the org's [tracking
 policy](https://github.com/monte3l/.github/blob/main/blueprint/tracking.md).
 
-## Now: the road to 1.0.0, then the 1.x series
+## Now: the 2.x series
 
 The contract in the [Versioning policy](../README.md#versioning-policy) is
-frozen from 1.0.0 on and changes only in a major release. The 0.x releases
-before that may still change it in a minor release. What is left before 1.0.0
-is the release itself. From then on fixes, docs and CI changes ship as patch
-releases, and a new skill, option or topic ships as a minor release.
+frozen since 1.0.0 and changes only in a major release. The plugin is at 2.0.0,
+the release that renamed it to m3l-mentor. Fixes, docs and CI changes ship as
+patch releases, and a new skill, option or topic ships as a minor release.
 
 Keep the lessons current. Re-check the topic catalogue against the Claude Code
 docs when its behaviour changes. This is ordinary maintenance, not a milestone.
@@ -31,17 +30,18 @@ file and any topics it needs.
 
 ## Next 12 months
 
-- **Run the evals in CI.** It needs a pinned model and a credential, and has no
+- **Run the evals in CI.** Tracked in
+  [#99](https://github.com/monte3l/m3l-mentor/issues/99). It needs a pinned model and a credential, and has no
   date. What the evals cannot cover today is under Known limits.
 - **Reach the OpenSSF Silver badge and the Baseline levels the project can
   honestly meet.** Tracked in
-  [#67](https://github.com/monte3l/m3l-claude-mentor/issues/67). See
+  [#67](https://github.com/monte3l/m3l-mentor/issues/67). See
   [Governance](GOVERNANCE.md#gold-level-criteria-this-project-does-not-meet) for
   what Gold needs and why it is out of reach.
 
 ## Known limits
 
-The limits accepted for 1.0 are listed in
+The limits accepted for the 2.x series are listed in
 [`spec.md`](spec.md#15-open-questions): the best-effort state lock, a skipped
 write after a 2 s lock wait, `export` racing a writer, and project exclusion on
 symlinks and case folding. The ones the roadmap adds:
@@ -54,16 +54,16 @@ symlinks and case folding. The ones the roadmap adds:
   three capabilities arrive. An upstream request for them is optional and not
   filed.
 - **The evidence log is never rotated.** It grows by about 5 MiB a year of heavy
-  use, and only the last 2 MiB is read. That is accepted for 1.0, and no size
+  use, and only the last 2 MiB is read. That is accepted for 2.x, and no size
   trigger is set. Add one if a report shows it matters. A compaction step that
   keeps the last events, run under the state lock, is the likely shape.
 - **A broken install shows the learner nothing.** A broken install or an
   unwritable data directory only shows in Claude Code's verbose output. A
   `doctor` command that checks the install could surface it. It is considered
-  and not planned for 1.x.
+  and not planned for 2.x.
 - **The "tips muted" notice can be false.** `UserPromptSubmit` can say "Mentor
   tips muted for X" when the 500-topic cap stopped the mute from being saved.
-  Tracked in [#66](https://github.com/monte3l/m3l-claude-mentor/issues/66).
+  Tracked in [#66](https://github.com/monte3l/m3l-mentor/issues/66).
 - **Few people can run the project.** See [Governance](GOVERNANCE.md#bus-factor).
   It needs contributors from outside the organization. There is no committed
   timeline.
@@ -74,7 +74,8 @@ symlinks and case folding. The ones the roadmap adds:
 - **Exam readiness is unvalidated.** Its weights, decay and thresholds are this
   project's own and were never compared with real exam outcomes, so it is
   labelled a practice indicator and never a prediction.
-- **The exam guide links are unverified.** The certification pages refused
+- **The exam guide links are unverified.** Tracked in
+  [#100](https://github.com/monte3l/m3l-mentor/issues/100). The certification pages refused
   automated access, so no `sourceUrl` has been opened. A web search on
   2026-11-21 found the CCAR-F, CCDV-F and CCAR-P pages in its index but no
   public CCDV-P page, whose `sourceUrl` is the shared partner-certifications
@@ -82,9 +83,9 @@ symlinks and case folding. The ones the roadmap adds:
 
 ## Unverified
 
-| Claim                                                                                                                          | Source                                                                                 | Date       |
-| ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ---------- |
-| Claude Code versions other than 2.1.327 that support `userConfig` work. The minimum supported version has not been established | [`spec.md`](spec.md#15-open-questions), carried over and not re-tested for this change | 2026-11-20 |
+| Claim                                                                                                                          | Source                                                                                                                                                      | Date       |
+| ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Claude Code versions other than 2.1.327 that support `userConfig` work. The minimum supported version has not been established | [`spec.md`](spec.md#15-open-questions), carried over and not re-tested for this change. Tracked in [#101](https://github.com/monte3l/m3l-mentor/issues/101) | 2026-11-20 |
 
 ## What this project will not do
 
