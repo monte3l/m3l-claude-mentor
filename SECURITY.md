@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-Use GitHub's [private vulnerability reporting](https://github.com/monte3l/m3l-claude-mentor/security/advisories/new):
+Use GitHub's [private vulnerability reporting](https://github.com/monte3l/m3l-mentor/security/advisories/new):
 open the repository's **Security** tab, then **Report a vulnerability**.
 
 > [!IMPORTANT]
@@ -67,12 +67,12 @@ dependency with no patched version.
 
 ## Dependency and code-scanning findings
 
-| Tool                                        | What it checks                                                                                           | Threshold                                                                                                        |
-| ------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Dependency Review (`dependency-review.yml`) | Dependencies a pull request adds or changes: known vulnerabilities and licenses                          | Fails the pull request on a `high` or `critical` vulnerability, or a license outside the allow list              |
-| Dependabot                                  | Pinned Actions, the development packages and the docs deploy tool in `tools/deploy/`                     | A bump arrives as a pull request after a cooldown. A security advisory it cannot resolve is fixed by an override |
-| CodeQL (default setup, extended suite)      | Static analysis of the JavaScript, the TypeScript and the workflows, on pushes, pull requests and weekly | A required check, so a finding blocks the merge                                                                  |
-| zizmor and actionlint                       | The workflows                                                                                            | Fail the `workflow-lint` check                                                                                   |
+| Tool                                        | What it checks                                                                                           | Threshold                                                                                                                                                                                                                                                                               |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dependency Review (`dependency-review.yml`) | Dependencies a pull request adds or changes: known vulnerabilities and licenses                          | Fails the pull request on a `high` or `critical` vulnerability, or a license outside the allow list                                                                                                                                                                                     |
+| Dependabot                                  | Pinned Actions, and the lockfiles of `tools/ci/` and `tools/deploy/`                                     | A bump arrives as a pull request, after a cooldown for the tool lockfiles. The root development packages are not Dependabot-managed: `pnpm audit` (`security-audit.yml`, daily) and Dependency Review cover them. A security advisory Dependabot cannot resolve is fixed by an override |
+| CodeQL (default setup, extended suite)      | Static analysis of the JavaScript, the TypeScript and the workflows, on pushes, pull requests and weekly | A required check, so a finding blocks the merge                                                                                                                                                                                                                                         |
+| zizmor and actionlint                       | The workflows                                                                                            | Fail the `workflow-lint` check                                                                                                                                                                                                                                                          |
 
 **Remediation thresholds.** A `critical` or `high` finding in a dependency or in
 the code is fixed before the change that introduced it merges, or before the next
@@ -96,9 +96,11 @@ web fetch tool. These are the credentials the repository's automation uses.
 | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`    | Organization secrets shared with this repository, read by the deploy job of `docs.yml`, which runs in the `docs-cloudflare` environment | Deploys the static docs site                                                                |
 | `JANITOR_APP_CLIENT_ID`, `JANITOR_APP_PRIVATE_KEY` | Organization secrets, read by `environments.yml`                                                                                        | A GitHub App that deletes stale deployment environments                                     |
 | `GITLEAKS_LICENSE`                                 | Organization secret shared with this repository                                                                                         | A free license for the Gitleaks action. It reads nothing in the repository                  |
+| `ANTHROPIC_API_KEY`                                | Secret of the `evals` environment, read only by the weekly `evals.yml`                                                                  | Runs `claude plugin eval` against a real model, with a cost cap                             |
 
-No workflow holds an Anthropic API key. The evals use whichever credential
-`claude` resolves on the maintainer's machine and never run in CI.
+Only `evals.yml` holds an Anthropic API key, and it runs weekly and on demand,
+never on a pull request. Run by hand, the evals use whichever credential
+`claude` resolves on the maintainer's machine.
 
 **Storing.** A credential lives only in GitHub's secret store, or in the
 maintainer's password manager. It is never written to a file in the repository,

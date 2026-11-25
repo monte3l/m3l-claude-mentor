@@ -8,7 +8,7 @@ request, the issue is the contribution, and a collaborator will pick it up.
 ## Reporting a bug
 
 Open an issue at
-[`monte3l/m3l-claude-mentor`](https://github.com/monte3l/m3l-claude-mentor/issues/new/choose)
+[`monte3l/m3l-mentor`](https://github.com/monte3l/m3l-mentor/issues/new/choose)
 and say:
 
 - the plugin version, and your Claude Code and Node versions,
@@ -35,7 +35,7 @@ Report a suspected security vulnerability privately. See
 | TypeScript with `strict: true` and ESM only: no `require`, no `module.exports`          | `tsc` in the typecheck step, and `.claude/hooks/guard-no-commonjs.mjs`                                                |
 | ESLint with the typed recommended rules, named exports and exhaustive `switch`          | The lint step of `pnpm verify` and CI                                                                                 |
 | TSDoc on exports and tests for every module, with coverage of at least 80% of each file | The test step runs Vitest with a per-file coverage gate                                                               |
-| No file over 25,000 bytes                                                               | The file-budget step                                                                                                  |
+| No source file over 25,000 bytes and no test file over 60,000                           | The file-budget step                                                                                                  |
 | Relative imports end in `.ts`, and no build output is committed                         | `.claude/hooks/guard-ts-extension.mjs`, and the `no-dist` step, because the hooks and the CLI run `src/*.ts` directly |
 
 ## Building and testing
@@ -47,7 +47,7 @@ the commands in the [README](README.md#working-on-this-repo).
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Before you push                                | `pnpm verify`, which runs every gate below in one command                                                                                                                                                                                                                                                                                        |
 | On every pull request and every push to `main` | The `CI` workflow runs the format, lint, typecheck, build and test lanes with the coverage gate, and a `Plugin` lane that checks `plugin.json` against the GitHub repository (change the description or the topics on GitHub first). CodeQL, Dependency Review, Gitleaks, REUSE, ScanCode, actionlint, zizmor, DCO and commit lint run beside it |
-| Never in CI                                    | `claude plugin eval`, because it calls a real model and costs money. Run it by hand with `--max-cost-usd`                                                                                                                                                                                                                                        |
+| Weekly and on demand, never on a pull request  | `claude plugin eval` (`evals.yml`), because it calls a real model and costs money. It runs with pinned models and `--max-cost-usd 10`. Run it by hand with `--max-cost-usd` too                                                                                                                                                                  |
 
 ## Dependencies
 
@@ -55,7 +55,8 @@ The hooks and the CLI use no runtime package. The development packages are
 pinned by `pnpm-lock.yaml`, and the docs deploy tool in `tools/deploy/` by its
 own lockfile, installed with `npm ci --ignore-scripts`. Every GitHub Action is
 pinned by commit SHA, and a repository setting allows only a short list of them.
-Dependabot proposes bumps weekly after a cooldown, and Dependency Review fails a
+Dependabot proposes Action pin bumps weekly, and bumps for the `tools/ci/` and
+`tools/deploy/` lockfiles after a cooldown, and Dependency Review fails a
 pull request that adds a high-severity vulnerability or a license outside the
 allow list (see [`SECURITY.md`](SECURITY.md)). Adding a runtime dependency needs
 a reason in the pull request and the maintainer's agreement, because having none

@@ -30,11 +30,13 @@ file and any topics it needs.
 
 ## Next 12 months
 
-- **Reach the OpenSSF Silver badge and the Baseline levels the project can
-  honestly meet.** Tracked in
-  [#67](https://github.com/monte3l/m3l-mentor/issues/67). See
+- **Keep the OpenSSF Silver badge and Baseline 3 current.** Both were reached on
+  2026-11-17 (tracked in
+  [#67](https://github.com/monte3l/m3l-mentor/issues/67)). The answers in
+  `.bestpractices.json` are refreshed with each release so they stay true of the
+  repository. Gold is not the goal: see
   [Governance](GOVERNANCE.md#gold-level-criteria-this-project-does-not-meet) for
-  what Gold needs and why it is out of reach.
+  what it needs and why it is out of reach.
 
 ## Known limits
 
