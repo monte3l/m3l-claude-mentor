@@ -42,14 +42,14 @@ The architecture is in [Architecture](architecture.md).
 
 ## Attack surface and critical code paths
 
-| Code path                                   | Input                                                      | Exposure                                                                                                                                                                                 |
-| ------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hook entry points (`dist/hooks/entry-*.js`) | The event JSON on stdin                                    | Validated at the boundary, with unknown fields ignored. No network, no shell, no `eval`. A failure exits 0 with one stderr line                                                          |
-| Prompt and tool-use signal detectors        | Text from the prompt and fields of the tool call           | Pattern matching only. The tool-use extractor reads `tool_name` and `tool_input`, never `tool_response`, and returns only names from a fixed allowlist, never a substring of the payload |
-| The state store and `import`                | Files in the data directory and a bundle the learner picks | Parsed and validated against a schema before use. Writes are atomic, and an unreadable file is reported, not trusted                                                                     |
-| The CLI arguments                           | Command-line values from a skill                           | The data directory must be an absolute path. Values from the learner are single-quoted by the skill and validated by the CLI                                                             |
-| The `docs-researcher` agent                 | Pages on `code.claude.com`                                 | Read-only tool, fetched text treated as data, and the domain prompt is the permission guard                                                                                              |
-| CI workflows                                | Pull request branches and metadata                         | Read-only tokens, event values passed through `env:`                                                                                                                                     |
+| Code path                                  | Input                                                      | Exposure                                                                                                                                                                                 |
+| ------------------------------------------ | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hook entry points (`src/hooks/entry-*.ts`) | The event JSON on stdin                                    | Validated at the boundary, with unknown fields ignored. No network, no shell, no `eval`. A failure exits 0 with one stderr line                                                          |
+| Prompt and tool-use signal detectors       | Text from the prompt and fields of the tool call           | Pattern matching only. The tool-use extractor reads `tool_name` and `tool_input`, never `tool_response`, and returns only names from a fixed allowlist, never a substring of the payload |
+| The state store and `import`               | Files in the data directory and a bundle the learner picks | Parsed and validated against a schema before use. Writes are atomic, and an unreadable file is reported, not trusted                                                                     |
+| The CLI arguments                          | Command-line values from a skill                           | The data directory must be an absolute path. Values from the learner are single-quoted by the skill and validated by the CLI                                                             |
+| The `docs-researcher` agent                | Pages on `code.claude.com`                                 | Read-only tool, fetched text treated as data, and the domain prompt is the permission guard                                                                                              |
+| CI workflows                               | Pull request branches and metadata                         | Read-only tokens, event values passed through `env:`                                                                                                                                     |
 
 ## Trust boundaries
 
@@ -86,17 +86,17 @@ The architecture is in [Architecture](architecture.md).
 
 ## Common implementation weaknesses countered
 
-| Weakness                                     | Counter                                                                                                                        | Where                                          |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------- |
-| CWE-200 information exposure                 | Only feature names from a fixed allowlist are stored. The extractor never reads tool output and returns no part of the payload | `src/internal/signals.ts`, its tests           |
-| CWE-20 improper input validation             | Hook payloads, state files and import bundles are validated, and the CLI rejects relative paths and bad values                 | `src/internal/schema.ts`, `src/cli/`, tests    |
-| CWE-78 and CWE-94 command and code injection | No shell and no `eval` in the hooks or CLI. Learner text is single-quoted in skill commands. Workflows use `env:`              | Skill tests, zizmor, CodeQL                    |
-| CWE-22 path traversal                        | The data directory must be absolute, and project exclusion matches normalised absolute paths and their real paths              | `src/cli/`, `src/internal/paths.ts`, tests     |
-| CWE-367 time-of-check to time-of-use         | Reads do not stat first, writes are atomic (temporary file, then rename), and every write takes a short data-directory lock    | `src/internal/fs-atomic.ts`, `lock.ts`, CodeQL |
-| CWE-77 prompt injection through fetched text | Fetched pages and agent answers are data, never instructions, and the skills say so                                            | `agents/docs-researcher.md`, the skills' tests |
-| CWE-798 hard-coded credentials               | Secret scanning, push protection and Gitleaks on every push                                                                    | `.github/workflows/gitleaks.yml`               |
-| CWE-1357 untrusted components                | Actions are pinned by commit SHA, the CI tools by lockfile hash, and Dependabot proposes bumps after a cooldown                | `.github/dependabot.yml`, Scorecard            |
-| CWE-829 inclusion of untrusted functionality | A repository setting allows only listed actions and requires SHA pins                                                          | Actions permissions                            |
+| Weakness                                     | Counter                                                                                                                                  | Where                                          |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| CWE-200 information exposure                 | Only feature names from a fixed allowlist are stored. The extractor never reads tool output and returns no part of the payload           | `src/internal/signals.ts`, its tests           |
+| CWE-20 improper input validation             | Hook payloads, state files and import bundles are validated, and the CLI rejects relative paths and bad values                           | `src/internal/schema.ts`, `src/cli/`, tests    |
+| CWE-78 and CWE-94 command and code injection | No shell and no `eval` in the hooks or CLI. Learner text is single-quoted in skill commands. Workflows use `env:`                        | Skill tests, zizmor, CodeQL                    |
+| CWE-22 path traversal                        | The data directory must be absolute, and project exclusion matches normalised absolute paths and their real paths                        | `src/cli/`, `src/internal/paths.ts`, tests     |
+| CWE-367 time-of-check to time-of-use         | Reads do not stat first, writes are atomic (temporary file, then rename), and every write takes a short data-directory lock              | `src/internal/fs-atomic.ts`, `lock.ts`, CodeQL |
+| CWE-77 prompt injection through fetched text | Fetched pages and agent answers are data, never instructions, and the skills say so                                                      | `agents/docs-researcher.md`, the skills' tests |
+| CWE-798 hard-coded credentials               | Secret scanning, push protection and Gitleaks on every push and pull request to `main`, and weekly                                       | `.github/workflows/gitleaks.yml`               |
+| CWE-1357 untrusted components                | Actions are pinned by commit SHA, the CI tools by lockfile hash, and Dependabot proposes bumps (after a cooldown for the tool lockfiles) | `.github/dependabot.yml`, Scorecard            |
+| CWE-829 inclusion of untrusted functionality | A repository setting allows only listed actions and requires SHA pins                                                                    | Actions permissions                            |
 
 ## Residual risks
 

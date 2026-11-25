@@ -1,10 +1,10 @@
 # m3l-mentor
 
-[![CI](https://github.com/monte3l/m3l-claude-mentor/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/monte3l/m3l-claude-mentor/actions/workflows/ci.yml)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/monte3l/m3l-claude-mentor/badge)](https://securityscorecards.dev/viewer/?uri=github.com/monte3l/m3l-claude-mentor)
+[![CI](https://github.com/monte3l/m3l-mentor/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/monte3l/m3l-mentor/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/monte3l/m3l-mentor/badge)](https://securityscorecards.dev/viewer/?uri=github.com/monte3l/m3l-mentor)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/16729/badge)](https://www.bestpractices.dev/projects/16729)
 [![OpenSSF Baseline](https://www.bestpractices.dev/projects/16729/baseline)](https://www.bestpractices.dev/projects/16729)
-[![REUSE status](https://api.reuse.software/badge/github.com/monte3l/m3l-claude-mentor)](https://api.reuse.software/info/github.com/monte3l/m3l-claude-mentor)
+[![REUSE status](https://api.reuse.software/badge/github.com/monte3l/m3l-mentor)](https://api.reuse.software/info/github.com/monte3l/m3l-mentor)
 
 m3l-mentor is a Claude Code plugin that mentors one learner on Claude
 and Claude Code. It keeps a private map of what you know, adds at most one short
@@ -284,7 +284,7 @@ and a $10 cap (`.github/workflows/evals.yml`):
 claude plugin eval . --trust-plugin --ablation none --max-cost-usd 5
 ```
 
-The seven cases in `evals/` cover skill triggers for natural phrasing, the
+The 13 cases in `evals/` cover skill triggers for natural phrasing, the
 over-claim probe, and agent dispatch by `ask` and `assess`. The skill and agent
 graders are `with-only` indicators, so they only score with `--ablation none`.
 The tip rate limit and the mastered-topic silence are not covered yet, because
