@@ -10,7 +10,7 @@ call a real model, so they run under a cost cap, by hand or in CI.
 `.github/workflows/evals.yml` runs the suite every Monday and on demand
 (`gh workflow run evals.yml -f case='quiz-*'` runs a subset). It pins
 `--model claude-sonnet-5-5`, `--judge-model claude-haiku-5-5` and
-`--max-cost-usd 10` and `--threshold 0.8` (runs and `llm` graders vary, so one flaky run does not fail a case); a full run costs about $6 to $9. The credential is the
+`--max-cost-usd 10` and `--threshold 0.66` (a case passes with 2 of its 3 runs, so one flaky run does not fail it); a full run of the 13 cases cost $1.71 when measured. The credential is the
 `ANTHROPIC_API_KEY` secret of the `evals` environment, restricted to `main`.
 A failing case (exit 1) or a hit cost cap (exit 2) fails the run, and the
 results are kept as the `eval-results` artifact for 14 days. Bump the model ids
