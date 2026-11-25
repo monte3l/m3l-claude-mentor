@@ -3,7 +3,18 @@
 Model-facing checks for the plugin, run with `claude plugin eval`. They answer
 questions only a real model can answer: does the right skill fire for natural
 phrasing, does the mentor probe an over-claim, are the agents dispatched. They
-call a real model, so they run by hand under a cost cap. CI does not run them.
+call a real model, so they run under a cost cap, by hand or in CI.
+
+## CI
+
+`.github/workflows/evals.yml` runs the suite every Monday and on demand
+(`gh workflow run evals.yml -f case='quiz-*'` runs a subset). It pins
+`--model claude-sonnet-5-5`, `--judge-model claude-haiku-5-5` and
+`--max-cost-usd 10`; a full run costs about $6 to $9. The credential is the
+`ANTHROPIC_API_KEY` secret of the `evals` environment, restricted to `main`.
+A failing case (exit 1) or a hit cost cap (exit 2) fails the run, and the
+results are kept as the `eval-results` artifact for 14 days. Bump the model ids
+by hand in a reviewed PR.
 
 ## Run them
 
