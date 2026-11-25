@@ -61,9 +61,6 @@ symlinks and case folding. The ones the roadmap adds:
   unwritable data directory only shows in Claude Code's verbose output. A
   `doctor` command that checks the install could surface it. It is considered
   and not planned for 2.x.
-- **The "tips muted" notice can be false.** `UserPromptSubmit` can say "Mentor
-  tips muted for X" when the 500-topic cap stopped the mute from being saved.
-  Tracked in [#66](https://github.com/monte3l/m3l-mentor/issues/66).
 - **Few people can run the project.** See [Governance](GOVERNANCE.md#bus-factor).
   It needs contributors from outside the organization. There is no committed
   timeline.
