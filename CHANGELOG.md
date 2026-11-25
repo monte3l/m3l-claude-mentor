@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.1.0](https://github.com/monte3l/m3l-mentor/compare/m3l-mentor--v2.0.0...m3l-mentor--v2.1.0) (2026-11-25)
+
+
+### Features
+
+* reset a topic when a changelog change invalidates it ([6f06f58](https://github.com/monte3l/m3l-mentor/commit/6f06f58ce81b2e68c1f09f0f11dec43b693a1edd))
+* reset a topic when a changelog change invalidates it ([810dfd9](https://github.com/monte3l/m3l-mentor/commit/810dfd9f9fad9f14d66977499747b4d83dc0782d))
+
+
+### Bug Fixes
+
+* **hooks:** report a topic mute the 500-topic cap stopped ([243d6d1](https://github.com/monte3l/m3l-mentor/commit/243d6d17fc08efe703ef073b851e27f580b72996))
+* **hooks:** report a topic mute the 500-topic cap stopped ([b535e47](https://github.com/monte3l/m3l-mentor/commit/b535e475a5733ae37ea92af17272d8a9ce43aacb)), closes [#66](https://github.com/monte3l/m3l-mentor/issues/66)
+
 ## [2.0.0](https://github.com/monte3l/m3l-mentor/compare/m3l-mentor--v1.2.0...m3l-mentor--v2.0.0) (2026-11-23)
 
 
