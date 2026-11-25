@@ -10,8 +10,10 @@ name: Evals
 # - `--max-cost-usd 10`: the run stops before the next case starts once the
 #   estimate passes $10 and exits 2 with partial results. A full run costs about
 #   $6 to $9 (roughly $0.40 a case).
-# - A case below the threshold exits 1 and a hit cost cap exits 2. Both fail the
-#   run, which GitHub emails to the maintainer.
+# - `--threshold 0.8`: a case needs 0.8 to pass, not the default 1.0, because the
+#   cases run 3 times and some use an `llm` grader, so one flaky run in a case
+#   should not fail the week. A case below it exits 1 and a hit cost cap exits 2.
+#   Both fail the run, which GitHub emails to the maintainer.
 # - The credential is the ANTHROPIC_API_KEY secret of the `evals` environment,
 #   which is restricted to `main`. Use a key from a workspace with its own spend
 #   limit.
@@ -74,6 +76,7 @@ jobs:
             --model claude-sonnet-5-5 \
             --judge-model claude-haiku-5-5 \
             --max-cost-usd 10 \
+            --threshold 0.8 \
             --no-publish \
             --output-dir evals/results/ci \
             "${args[@]}"
