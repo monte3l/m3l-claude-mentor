@@ -71,12 +71,6 @@ symlinks and case folding. The ones the roadmap adds:
 - **Exam readiness is unvalidated.** Its weights, decay and thresholds are this
   project's own and were never compared with real exam outcomes, so it is
   labelled a practice indicator and never a prediction.
-- **The exam guide links are unverified.** Tracked in
-  [#100](https://github.com/monte3l/m3l-mentor/issues/100). The certification pages refused
-  automated access, so no `sourceUrl` has been opened. A web search on
-  2026-11-21 found the CCAR-F, CCDV-F and CCAR-P pages in its index but no
-  public CCDV-P page, whose `sourceUrl` is the shared partner-certifications
-  page. Open them in a browser and fix any that fail.
 
 ## What this project will not do
 
