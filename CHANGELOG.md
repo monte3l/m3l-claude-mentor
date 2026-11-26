@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.1.1](https://github.com/monte3l/m3l-mentor/compare/m3l-mentor--v2.1.0...m3l-mentor--v2.1.1) (2026-11-26)
+
+
+### Bug Fixes
+
+* **ci:** pass an eval case with 2 of 3 runs ([27fd993](https://github.com/monte3l/m3l-mentor/commit/27fd9938aa62653f914bafe19382795d4fe002a6))
+* **ci:** pass an eval case with 2 of 3 runs ([39846a3](https://github.com/monte3l/m3l-mentor/commit/39846a3ef8f3c2bb99a10485d5c962e7db98afc5))
+* **tracks:** point exam guide sourceUrl at the certification pages ([68b449e](https://github.com/monte3l/m3l-mentor/commit/68b449e46bcac4ef12e9cbf9a00860c641d4969b))
+* **tracks:** point exam guide sourceUrl at the certification pages ([7b64ebf](https://github.com/monte3l/m3l-mentor/commit/7b64ebfd06f8b1e7cc19fd76e7492045c66977da)), closes [#100](https://github.com/monte3l/m3l-mentor/issues/100)
+
 ## [2.1.0](https://github.com/monte3l/m3l-mentor/compare/m3l-mentor--v2.0.0...m3l-mentor--v2.1.0) (2026-11-25)
 
 
