@@ -209,7 +209,7 @@
   "osps_le_01_01_status": "Met",
   "osps_le_02_01_justification": "The MIT license for the repository contents is approved by the Open Source Initiative (OSI).",
   "osps_le_02_01_status": "Met",
-  "osps_le_02_02_justification": "The MIT license is approved by the Open Source Initiative (OSI). [floss_license]",
+  "osps_le_02_02_justification": "The code and plugin files in each release are MIT (LICENSE), and the two bundled fonts keep OFL-1.1 (design/source/licenses/). The release tarball also carries the MONTE3L logo files in design/source/brand/, which have their own notice and are not under the MIT terms.",
   "osps_le_02_02_status": "Met",
   "osps_le_03_01_justification": "License file found in repository.",
   "osps_le_03_01_status": "Met",
