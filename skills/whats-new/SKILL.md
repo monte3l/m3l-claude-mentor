@@ -2,7 +2,7 @@
 name: whats-new
 description: Produces a short digest of recent Claude Code changelog entries, filtered to the learner's goals and topics, and remembers the newest version seen. This skill should be used when the user asks "what's new in Claude Code", "what changed lately", "recent changes", "new release", "changelog", or "anything new I should know", or invokes /m3l-mentor:whats-new.
 argument-hint: "[focus area]"
-allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)
+allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * get-profile), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * get-profile *), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * get-goals), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * get-goals *), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * topics), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * topics *), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * reset-topic), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * reset-topic *), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * set-changelog-version), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * set-changelog-version *)
 ---
 
 # What's new
