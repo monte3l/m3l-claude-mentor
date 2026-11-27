@@ -103,7 +103,7 @@ request before you merge it.
 4. The workflow sends `release-published` to `monte3l/m3l-plugins`, which opens
    a pull request that moves the catalog pin.
 
-The shared workflows are `release-prepare.yml` and `release-finalize.yml` in
+The shared workflows are `release-prepare.yml` and `release-publish.yml` in
 `monte3l/.github`, and `.github/workflows/release.yml` here calls them.
 
 ## Conduct
