@@ -165,6 +165,35 @@ repository over HTTPS at a pinned tag and commit, so the commit it resolves to
 is the one the tag points at. The tarball is a signed copy of that same commit,
 for anyone who wants to check a release independently.
 
+## Accepted: CI install script
+
+The `Evals` workflow (`evals.yml`) installs `@anthropic-ai/claude-code` with
+`npm ci --prefix tools/ci`, and that package runs an install script. The script
+cannot be skipped: with `--ignore-scripts` the package installs without its
+native binary and `claude --version` fails, so the workflow cannot use it. The
+`ANTHROPIC_API_KEY` is set as environment on the eval step only, so the install
+step never sees it. What limits the risk:
+
+- **Exact pin.** `tools/ci/package.json` names one version, no range.
+- **Hash-pinned lockfile.** `tools/ci/package-lock.json` records the integrity
+  hash of every package, and `npm ci` fails on a mismatch.
+- **Read-only permissions.** The workflow starts with `permissions: {}` and the
+  job holds `contents: read` only. Checkout does not persist credentials.
+- **Environment limited to `main`.** The key is a secret of the `evals`
+  environment, which only `main` can use, and it comes from a workspace with its
+  own spend limit.
+- **One-day Dependabot cooldown.** A new version arrives as a reviewed pull
+  request, not before a day has passed.
+
+**Residual risk.** The installed binary is the program that receives the key
+when it runs the evals, so a malicious release of that package would have the
+key. The controls above make that unlikely and bound the damage; they do not
+remove it.
+
+**Revisit** when Anthropic changes how the package installs, for example by
+shipping the binary without an install script. Then switch the step to
+`npm ci --ignore-scripts` and remove this section.
+
 ## Accepted OpenSSF Scorecard findings
 
 Background, not policy: this explains the Scorecard results for anyone who

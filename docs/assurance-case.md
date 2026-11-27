@@ -132,5 +132,5 @@ The architecture is in [Architecture](architecture.md).
   safe because nothing is recorded.
 - **A plugin cannot ship permission rules.** The learner chooses the allow rules
   in the README, and the broad one also covers the delete and import commands.
-- **The accepted CI install script.** See [`SECURITY.md`](../SECURITY.md).
+- **The accepted CI install script.** See [`SECURITY.md`](../SECURITY.md#accepted-ci-install-script).
 - **A small maintainer team.** See [Governance](GOVERNANCE.md#bus-factor).
