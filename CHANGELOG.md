@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.2](https://github.com/monte3l/m3l-mentor/compare/m3l-mentor--v2.1.1...m3l-mentor--v2.1.2) (2026-11-27)
+
+
+### Bug Fixes
+
+* pre-approve only the subcommands each skill runs ([86e7ede](https://github.com/monte3l/m3l-mentor/commit/86e7edefaad9423a337c9741d232e870c496c916))
+
 ## [2.1.1](https://github.com/monte3l/m3l-mentor/compare/m3l-mentor--v2.1.0...m3l-mentor--v2.1.1) (2026-11-26)
 
 
