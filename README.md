@@ -175,7 +175,9 @@ your learning state in the plugin data directory unless you pass
 ## Permissions
 
 A skill can pre-approve its own commands only for the turn in which you invoke
-it. In a lesson or quiz, the mentor saves results after your next message, so
+it, and each skill pre-approves only the CLI subcommands it runs. Only the
+`profile` skill also pre-approves the export, import and delete commands, and it
+asks you to confirm before it runs the last two. In a lesson or quiz, the mentor saves results after your next message, so
 Claude Code may ask you to approve those saves. Approving them one by one is
 fine. To stop the prompts, add this rule once to your user settings
 (`~/.claude/settings.json`, or through `/permissions`):

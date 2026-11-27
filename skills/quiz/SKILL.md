@@ -2,7 +2,7 @@
 name: quiz
 description: Runs a short spaced recall quiz on Claude and Claude Code topics the learner has already seen, judging answers and recording the results. This skill should be used when the user asks to "quiz me", "quiz me on hooks", "test what I know", "test my recall" or "review what I learned", or invokes /m3l-mentor:quiz, optionally with a topic.
 argument-hint: "[topic]"
-allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)
+allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * get-profile), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * get-profile *), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * topics), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * topics *), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * record-batch), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * record-batch *)
 ---
 
 # Quiz

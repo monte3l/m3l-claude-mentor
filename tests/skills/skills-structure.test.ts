@@ -11,7 +11,9 @@ import {
   checkAllowedTools,
   checkStateAccess,
   toolEntries,
-  CLI_TOOL,
+  cliTools,
+  DESTRUCTIVE_COMMANDS,
+  SKILL_COMMANDS,
   cliCommands,
   parseFrontmatter,
   hasPhrase,
@@ -353,26 +355,47 @@ const usesCli = (name: string): boolean =>
 
 describe("allowed-tools", () => {
   test.each(SKILL_NAMES)(
-    "%s: allowed-tools is exactly the CLI Bash pattern",
+    "%s: allowed-tools is exactly the subcommands its body runs",
     (name) => {
       const entries = toolEntries(
         parseFrontmatter(readSkill(name)).data["allowed-tools"],
       );
-      expect(entries).toEqual([CLI_TOOL]);
-      expect(checkAllowedTools(entries, false)).toEqual([]);
+      const wanted = cliTools(SKILL_COMMANDS[name] ?? []);
+      expect(entries).toEqual(wanted);
+      expect(checkAllowedTools(entries, false, wanted)).toEqual([]);
+    },
+  );
+
+  test.each(SKILL_NAMES)(
+    "%s: every subcommand its body runs is pre-approved",
+    (name) => {
+      const used = new Set(
+        skillMarkdownFiles(name).flatMap((f) => usedCommands(f.body)),
+      );
+      const granted = new Set(SKILL_COMMANDS[name] ?? []);
+      for (const c of used) expect(granted.has(c)).toBe(true);
+    },
+  );
+
+  test.each(SKILL_NAMES.filter((n) => n !== "profile"))(
+    "%s: does not pre-approve export, import or delete",
+    (name) => {
+      for (const c of DESTRUCTIVE_COMMANDS)
+        expect(SKILL_COMMANDS[name] ?? []).not.toContain(c);
     },
   );
 
   test.each(["Bash", "Bash(*)", "Bash(node x *)", "WebSearch", "Read"])(
     "checker flags %s",
     (entry) => {
-      expect(checkAllowedTools([entry], true)).not.toEqual([]);
+      expect(checkAllowedTools([entry], true, [])).not.toEqual([]);
     },
   );
 
   test("checker flags WebFetch where it is not allowed, accepts the exact pattern", () => {
-    expect(checkAllowedTools(["WebFetch"], false)).not.toEqual([]);
-    expect(checkAllowedTools([CLI_TOOL, "WebFetch"], true)).toEqual([]);
+    expect(checkAllowedTools(["WebFetch"], false, [])).not.toEqual([]);
+    const tools = cliTools(["topics"]);
+    expect(checkAllowedTools([...tools, "WebFetch"], true, tools)).toEqual([]);
   });
 });
 
