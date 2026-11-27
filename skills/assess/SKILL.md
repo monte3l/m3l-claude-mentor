@@ -2,7 +2,7 @@
 name: assess
 description: Checks a learner's self-reported skill on a Claude or Claude Code topic with a verification probe, then reports the claim as confirmed, refuted or unverified, kindly and concretely. This skill should be used when the user says "I know X well", "I'm comfortable with X", "I'm advanced at hooks", "skip the basics on skills", or invokes /m3l-mentor:assess.
 argument-hint: "[topic]"
-allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)
+allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * topics), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * topics *), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * record-batch), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * record-batch *)
 ---
 
 # Assess

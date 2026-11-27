@@ -2,7 +2,7 @@
 name: teach
 description: Runs a short, adaptive, multi-turn lesson on one Claude or Claude Code topic, choosing the teaching style from the learner's stored mastery and recording the outcome. This skill should be used when the user wants to learn or be taught a topic, for example "teach me hooks", "explain plan mode to me", "give me a lesson on skills", or invokes /m3l-mentor:teach.
 argument-hint: "[topic]"
-allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)
+allowed-tools: Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * topics), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * topics *), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * get-profile), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * get-profile *), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * introduce), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * introduce *), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * record-batch), Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir * record-batch *)
 ---
 
 # Teach

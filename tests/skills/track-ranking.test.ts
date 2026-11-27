@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
-  CLI_TOOL,
+  cliTools,
+  SKILL_COMMANDS,
   hasPhrase,
   parseFrontmatter,
   readSkill,
@@ -33,9 +34,11 @@ describe.each(["teach", "quiz"])("%s skill: exam-track ranking", (name) => {
     expect(used).toContain("get-profile");
   });
 
-  test("allowed-tools stays exactly the one CLI Bash pattern", () => {
+  test("allowed-tools stays exactly the subcommands the skill runs", () => {
     const { data } = parseFrontmatter(readSkill(name));
-    expect(toolEntries(data["allowed-tools"])).toEqual([CLI_TOOL]);
+    expect(toolEntries(data["allowed-tools"])).toEqual(
+      cliTools(SKILL_COMMANDS[name] ?? []),
+    );
   });
 });
 

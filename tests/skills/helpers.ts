@@ -216,8 +216,61 @@ export function skillMarkdownFiles(
   return out;
 }
 
-export const CLI_TOOL =
-  "Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts *)";
+/**
+ * The `allowed-tools` entries for the given CLI subcommands: each one with and
+ * without trailing arguments (a rule ending in a lone `*` is the only form that
+ * also matches the bare command, and these have a wildcard for the data dir).
+ */
+export function cliTools(commands: readonly string[]): string[] {
+  const base =
+    "Bash(node ${CLAUDE_PLUGIN_ROOT}/src/cli/mentor-state.ts --data-dir *";
+  return commands.flatMap((c) => [`${base} ${c})`, `${base} ${c} *)`]);
+}
+
+/** The CLI subcommands each skill's body runs: the only ones it pre-approves. */
+export const SKILL_COMMANDS: Readonly<Record<string, readonly string[]>> = {
+  ask: ["topics"],
+  assess: ["topics", "record-batch"],
+  exam: [
+    "tracks",
+    "set-track",
+    "exam-begin",
+    "exam-answer",
+    "readiness",
+    "exam-items",
+    "exam-void",
+    "exam-unvoid",
+    "record-batch",
+  ],
+  profile: [
+    "show",
+    "get-goals",
+    "get-profile",
+    "topics",
+    "set-goals",
+    "set-mute",
+    "set-topic-mute",
+    "exclude-project",
+    "set-topic-override",
+    "introduce",
+    "record-batch",
+    "export",
+    "import",
+    "purge",
+  ],
+  quiz: ["get-profile", "topics", "record-batch"],
+  teach: ["topics", "get-profile", "introduce", "record-batch"],
+  "whats-new": [
+    "get-profile",
+    "get-goals",
+    "topics",
+    "reset-topic",
+    "set-changelog-version",
+  ],
+};
+
+/** Subcommands that change or remove stored data wholesale: only `profile` may pre-approve them. */
+export const DESTRUCTIVE_COMMANDS = ["import", "purge", "export"] as const;
 
 /** Rule: allowed-tools entries (comma separated). */
 export function toolEntries(allowedTools: string | undefined): string[] {
@@ -231,11 +284,13 @@ export function toolEntries(allowedTools: string | undefined): string[] {
 export function checkAllowedTools(
   entries: readonly string[],
   webFetchAllowed: boolean,
+  allowedBash: readonly string[],
 ): string[] {
   const problems: string[] = [];
   for (const entry of entries) {
     if (entry === "Bash" || entry.startsWith("Bash(")) {
-      if (entry !== CLI_TOOL) problems.push(`disallowed Bash entry: ${entry}`);
+      if (!allowedBash.includes(entry))
+        problems.push(`disallowed Bash entry: ${entry}`);
     } else if (entry === "WebFetch") {
       if (!webFetchAllowed)
         problems.push("WebFetch not allowed for this skill");

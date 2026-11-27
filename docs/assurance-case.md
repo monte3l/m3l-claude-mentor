@@ -132,5 +132,7 @@ The architecture is in [Architecture](architecture.md).
   safe because nothing is recorded.
 - **A plugin cannot ship permission rules.** The learner chooses the allow rules
   in the README, and the broad one also covers the delete and import commands.
+  Each skill's `allowed-tools` names only the CLI subcommands its body runs, and
+  only `profile` includes export, import and delete, behind its confirmation.
 - **The accepted CI install script.** See [`SECURITY.md`](../SECURITY.md).
 - **A small maintainer team.** See [Governance](GOVERNANCE.md#bus-factor).

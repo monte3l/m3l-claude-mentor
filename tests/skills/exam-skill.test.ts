@@ -3,7 +3,8 @@ import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 import { MAX_PENDING_ITEMS } from "../../src/internal/exam-schema.ts";
 import {
-  CLI_TOOL,
+  cliTools,
+  SKILL_COMMANDS,
   SKILLS_DIR,
   bashLines,
   hasPhrase,
@@ -298,8 +299,10 @@ describe("exam skill: answer-key risk disclosure and disputes", () => {
     ).toBe(true);
   });
 
-  test("allowed-tools stays exactly the one CLI Bash pattern", () => {
-    expect(toolEntries(skill.data["allowed-tools"])).toEqual([CLI_TOOL]);
+  test("allowed-tools stays exactly the subcommands the skill runs", () => {
+    expect(toolEntries(skill.data["allowed-tools"])).toEqual(
+      cliTools(SKILL_COMMANDS["exam"] ?? []),
+    );
   });
 
   test("no skill file claims to have corrected, voided or reset a recorded result", () => {
