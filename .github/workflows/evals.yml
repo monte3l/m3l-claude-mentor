@@ -58,6 +58,9 @@ jobs:
         with:
           node-version-file: .node-version
 
+      # No --ignore-scripts: the package's install script fetches the binary.
+      # The key is set on the eval step only, never here. See SECURITY.md,
+      # "Accepted: CI install script".
       - run: npm ci --prefix tools/ci
       - run: echo "$PWD/tools/ci/node_modules/.bin" >> "$GITHUB_PATH"
 
