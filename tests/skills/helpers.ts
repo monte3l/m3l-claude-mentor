@@ -252,8 +252,6 @@ export const SKILL_COMMANDS: Readonly<Record<string, readonly string[]>> = {
     "set-topic-mute",
     "exclude-project",
     "set-topic-override",
-    "introduce",
-    "record-batch",
     "export",
     "import",
     "purge",
