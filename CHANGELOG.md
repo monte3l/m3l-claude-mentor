@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.3](https://github.com/monte3l/m3l-mentor/compare/m3l-mentor--v2.1.2...m3l-mentor--v2.1.3) (2026-11-27)
+
+
+### Bug Fixes
+
+* drop two unused profile allowances ([992d2b7](https://github.com/monte3l/m3l-mentor/commit/992d2b71ede1c070cacfbd7176da5583ba8a7347))
+
 ## [2.1.2](https://github.com/monte3l/m3l-mentor/compare/m3l-mentor--v2.1.1...m3l-mentor--v2.1.2) (2026-11-27)
 
 
